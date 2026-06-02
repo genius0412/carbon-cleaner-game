@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --color-night: #0a0f0d;
+  --color-leaf: #34d399;
+  --color-mist: #94a3b8;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-night);
+  color: #e8efe9;
+  -webkit-font-smoothing: antialiased;
+}
