@@ -1,0 +1,144 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useGameStore } from "@/lib/store";
+import { GAME } from "@/lib/config/gameConstants";
+import type { Region } from "@/lib/engine/types";
+import { GaugesBar } from "./GaugesBar";
+import { TimeControls } from "./TimeControls";
+import { GameMap } from "./GameMap";
+import { RegionPanel } from "./panels/RegionPanel";
+import { ResearchPanel } from "./panels/ResearchPanel";
+import { BillsPanel } from "./panels/BillsPanel";
+import { TreesPanel } from "./panels/TreesPanel";
+import { CivicAction } from "./CivicAction";
+import { EndScreen } from "./EndScreen";
+import { FeedbackCard } from "@/components/ui/FeedbackCard";
+import { Button } from "@/components/ui/Button";
+
+type PanelKey = "research" | "bills" | "trees" | "civic" | null;
+
+export function Dashboard() {
+  const game = useGameStore((s) => s.game);
+  const meta = useGameStore((s) => s.meta);
+  const paused = useGameStore((s) => s.paused);
+  const speed = useGameStore((s) => s.speed);
+  const openPanels = useGameStore((s) => s.openPanels);
+  const tick = useGameStore((s) => s.tick);
+  const lastFeedback = useGameStore((s) => s.lastFeedback);
+  const clearFeedback = useGameStore((s) => s.clearFeedback);
+
+  const [region, setRegion] = useState<Region | null>(null);
+  const [panel, setPanel] = useState<PanelKey>(null);
+  const [showCode, setShowCode] = useState(true);
+
+  // --- game clock loop ---
+  const tickRef = useRef(tick);
+  tickRef.current = tick;
+  useEffect(() => {
+    const intervalMs = (GAME.realSecondsPerGameMonth * 1000) / speed;
+    const id = setInterval(() => tickRef.current(), intervalMs);
+    return () => clearInterval(id);
+  }, [speed]);
+
+  if (!game) return null;
+  const isStudent = game.mode === "student";
+
+  return (
+    <div className="flex min-h-screen flex-col p-3 sm:p-4">
+      {/* top bar */}
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-2 text-sm font-semibold">
+            <span className="h-2.5 w-2.5 rounded-full bg-leaf shadow-[0_0_12px] shadow-leaf" />
+            {game.cityName}
+          </Link>
+          <span className="rounded-full bg-white/5 px-2.5 py-0.5 text-[11px] text-mist">
+            {game.characterType === "mayor"
+              ? "Mayor"
+              : game.characterType === "student_older"
+                ? "Student 14–18"
+                : "Student 9–14"}
+          </span>
+        </div>
+        <TimeControls />
+      </div>
+
+      {/* gauges */}
+      <GaugesBar game={game} />
+
+      {/* guest resume code */}
+      {meta.guestCode && showCode && (
+        <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-amber/30 bg-amber/10 px-4 py-2 text-sm">
+          <span className="text-amber">
+            Guest resume code: <strong className="font-mono">{meta.guestCode}</strong> — copy &amp; save it to restore later.
+          </span>
+          <div className="flex gap-2">
+            <Button size="sm" variant="amber" onClick={() => navigator.clipboard?.writeText(meta.guestCode!)}>Copy</Button>
+            <Button size="sm" variant="ghost" onClick={() => setShowCode(false)}>Dismiss</Button>
+          </div>
+        </div>
+      )}
+
+      {/* main: map + actions */}
+      <div className="mt-3 grid flex-1 gap-3 lg:grid-cols-[1fr_300px]">
+        <div className="min-h-[420px]">
+          <GameMap game={game} onRegionClick={(r) => setRegion(r)} />
+        </div>
+
+        <aside className="flex flex-col gap-2">
+          <p className="text-xs uppercase tracking-widest text-mist">Actions</p>
+          <Button variant="secondary" onClick={() => setRegion(game.regions[0])}>
+            🗺️ Build on the map
+          </Button>
+          {!isStudent && (
+            <>
+              <Button variant="secondary" onClick={() => setPanel("research")}>🔬 Research Corporations</Button>
+              <Button variant="secondary" onClick={() => setPanel("bills")}>📜 Bills &amp; Legislation</Button>
+              <Button variant="secondary" onClick={() => setPanel("trees")}>🌳 Tree Planting</Button>
+            </>
+          )}
+          {isStudent && (
+            <Button onClick={() => setPanel("civic")}>✊ Civic Action</Button>
+          )}
+          {!isStudent && (
+            <Button variant="ghost" onClick={() => setPanel("civic")}>✊ Civic Action</Button>
+          )}
+
+          <div className="glass mt-2 rounded-xl p-3 text-xs text-mist">
+            <p className="font-semibold text-fog">Status</p>
+            <p className="mt-1">{paused || openPanels > 0 ? "⏸ Paused" : `▶ Running ${speed}x`}</p>
+            <p className="mt-1">Built: {game.builtInfra.length} / {game.regions.length} regions</p>
+            <p>Research done: {game.completedResearch.length}</p>
+            <p>Bills passed: {game.passedBills.length}</p>
+          </div>
+
+          {/* recent log */}
+          <div className="glass mt-1 max-h-48 overflow-y-auto rounded-xl p-3 text-xs">
+            <p className="font-semibold text-fog">Recent actions</p>
+            {game.log.length === 0 && <p className="mt-1 text-mist">No actions yet.</p>}
+            <ul className="mt-1 space-y-1">
+              {[...game.log].reverse().slice(0, 12).map((l, i) => (
+                <li key={i} className="text-mist">
+                  <span className="text-cyan">{l.yearMonth}</span> — {l.label}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </aside>
+      </div>
+
+      {/* panels */}
+      <RegionPanel region={region} onClose={() => setRegion(null)} />
+      <ResearchPanel open={panel === "research"} onClose={() => setPanel(null)} />
+      <BillsPanel open={panel === "bills"} onClose={() => setPanel(null)} />
+      <TreesPanel open={panel === "trees"} onClose={() => setPanel(null)} />
+      <CivicAction open={panel === "civic"} onClose={() => setPanel(null)} />
+
+      {/* feedback + end */}
+      <FeedbackCard data={lastFeedback} onDismiss={clearFeedback} />
+      {game.status !== "playing" && <EndScreen game={game} />}
+    </div>
+  );
+}
