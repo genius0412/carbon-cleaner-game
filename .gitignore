@@ -20,5 +20,22 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# env
-.env*.local
+# env — ignore ALL env files (they hold secrets) except the example template
+.env
+.env.*
+!.env.example
+
+# vercel
+.vercel
+
+# editors
+.vscode/
+.idea/
+*.swp
+
+# os
+Thumbs.db
+
+# logs
+*.log
+pnpm-debug.log*

@@ -26,6 +26,70 @@ drop policy if exists "profiles_modify_own" on public.profiles;
 create policy "profiles_modify_own" on public.profiles
   for all using (auth.uid() = id) with check (auth.uid() = id);
 
+-- Usernames must be unique, case-insensitively.
+create unique index if not exists profiles_username_lower_idx
+  on public.profiles (lower(username));
+
+-- Auto-create a profile row whenever a new auth user signs up. Runs as the
+-- definer so it works even before email confirmation (when there is no session
+-- yet), which reserves the username at signup time. The username comes from the
+-- signUp metadata ({ data: { username } }).
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.profiles (id, username, role)
+  values (new.id, nullif(new.raw_user_meta_data->>'username', ''), 'player')
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
+-- Is a username free? (callable by anon, before signup)
+create or replace function public.username_available(uname text)
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select not exists (
+    select 1 from public.profiles where lower(username) = lower(uname)
+  );
+$$;
+grant execute on function public.username_available(text) to anon, authenticated;
+
+-- Resolve a login identifier (username OR email) to an email address so the
+-- app can let people log in with either. Reads auth.users via definer rights;
+-- emails are never exposed in bulk.
+create or replace function public.email_for_identifier(identifier text)
+returns text
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+declare result text;
+begin
+  if position('@' in identifier) > 0 then
+    return identifier;
+  end if;
+  select u.email into result
+  from auth.users u
+  join public.profiles p on p.id = u.id
+  where lower(p.username) = lower(identifier)
+  limit 1;
+  return result;
+end;
+$$;
+grant execute on function public.email_for_identifier(text) to anon, authenticated;
+
 -- ============================================================================
 -- game_saves
 -- A save belongs to a logged-in user (user_id) OR to a guest (guest_code).
