@@ -100,6 +100,32 @@ export async function persistSave(
   }
 }
 
+/** Restore the most recent cloud save for a logged-in user. */
+export async function restoreLatestForUser(
+  userId: string,
+): Promise<{ state: GameState; meta: SaveMeta } | null> {
+  const sb = getSupabaseBrowser();
+  if (!sb) return null;
+  try {
+    const { data } = await sb
+      .from("game_saves")
+      .select("id, user_id, guest_code, state")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (data?.state) {
+      return {
+        state: data.state as GameState,
+        meta: { id: data.id, userId: data.user_id, guestCode: data.guest_code ?? undefined },
+      };
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
 /** Restore a guest save by resume code (Supabase first, else local). */
 export async function restoreByGuestCode(
   code: string,

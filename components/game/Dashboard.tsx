@@ -137,11 +137,26 @@ export function Dashboard() {
           <Button variant="secondary" onClick={() => setRegion(game.regions[0])}>
             🗺️ Build on the map
           </Button>
+
+          {/* Features unlock through the storyline. Locked ones show greyed so
+              the player can see what's coming next. */}
+          <ActionButton
+            unlocked={game.unlockedFeatures.includes("trees")}
+            label="🌳 Tree Planting"
+            onClick={() => setPanel("trees")}
+          />
           {!isStudent && (
             <>
-              <Button variant="secondary" onClick={() => setPanel("research")}>🔬 Research Corporations</Button>
-              <Button variant="secondary" onClick={() => setPanel("bills")}>📜 Bills &amp; Legislation</Button>
-              <Button variant="secondary" onClick={() => setPanel("trees")}>🌳 Tree Planting</Button>
+              <ActionButton
+                unlocked={game.unlockedFeatures.includes("research")}
+                label="🔬 Research Corporations"
+                onClick={() => setPanel("research")}
+              />
+              <ActionButton
+                unlocked={game.unlockedFeatures.includes("bills")}
+                label="📜 Bills & Legislation"
+                onClick={() => setPanel("bills")}
+              />
             </>
           )}
 
@@ -188,5 +203,33 @@ export function Dashboard() {
       <FeedbackCard data={lastFeedback} onDismiss={clearFeedback} />
       {game.status !== "playing" && <EndScreen game={game} />}
     </div>
+  );
+}
+
+/** Sidebar action that's greyed + locked until the storyline unlocks it. */
+function ActionButton({
+  unlocked,
+  label,
+  onClick,
+}: {
+  unlocked: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  if (unlocked) {
+    return (
+      <Button variant="secondary" onClick={onClick}>
+        {label}
+      </Button>
+    );
+  }
+  return (
+    <button
+      disabled
+      title="Unlocks as your story progresses"
+      className="cursor-not-allowed rounded-full border border-white/8 px-5 py-2.5 text-sm text-mist/40"
+    >
+      🔒 {label.replace(/^\S+\s/, "")}
+    </button>
   );
 }

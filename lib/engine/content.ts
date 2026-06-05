@@ -21,7 +21,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     description:
       "Swap every municipal streetlight for efficient LEDs. Cuts grid demand across the county.",
     cost: 180_000,
-    carbonDelta: -0.002,
+    carbonDelta: -0.003,
     supportDelta: 2,
     feedback:
       "LEDs use a fraction of the energy of old sodium lamps — an easy win residents notice on their utility bills. Modest carbon savings, and people like brighter, cheaper streets.",
@@ -37,7 +37,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     description:
       "Add frequent electric-ready bus lines so families can leave the car at home.",
     cost: 320_000,
-    carbonDelta: -0.004,
+    carbonDelta: -0.005,
     supportDelta: -2,
     feedback:
       "Every rider who swaps a car commute for the bus removes tailpipe emissions. Some drivers grumble about lane changes, but transit is one of the highest-leverage local levers.",
@@ -53,7 +53,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     description:
       "Require businesses to sort recyclables, diverting waste from landfill methane.",
     cost: 140_000,
-    carbonDelta: -0.0015,
+    carbonDelta: -0.002,
     supportDelta: -3,
     feedback:
       "Landfills release methane as waste rots; recycling keeps materials in use and emissions down. Businesses dislike new rules, so expect a small support dip.",
@@ -69,7 +69,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     description:
       "Cover schools, libraries, and offices with rooftop solar to generate clean power on-site.",
     cost: 450_000,
-    carbonDelta: -0.005,
+    carbonDelta: -0.007,
     supportDelta: 3,
     feedback:
       "On-site solar shrinks the county's reliance on fossil power and shields budgets from price spikes. Visible panels signal real action — voters approve.",
@@ -85,7 +85,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     description:
       "Launch a county greening program (see the Tree Planting panel to choose species).",
     cost: 90_000,
-    carbonDelta: -0.001,
+    carbonDelta: -0.0015,
     supportDelta: 5,
     feedback:
       "Trees pull carbon from the air slowly but steadily, cool neighborhoods, and are wildly popular. The offset is gradual — pair it with faster measures.",
@@ -101,7 +101,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     description:
       "Require high-efficiency standards on all new builds — pays off over decades.",
     cost: 110_000,
-    carbonDelta: -0.0025,
+    carbonDelta: -0.003,
     supportDelta: -2,
     feedback:
       "Locking in efficiency at construction time avoids decades of waste. Developers push back on upfront costs, so the support hit is real but the long game is strong.",

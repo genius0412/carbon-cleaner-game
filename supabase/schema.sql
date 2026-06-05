@@ -228,6 +228,30 @@ create policy "civic_proof_select" on storage.objects
   for select using (bucket_id = 'civic-proof');
 
 -- ============================================================================
+-- GRANTS — the Supabase API roles (anon / authenticated) need base table
+-- privileges in addition to the RLS policies above. Without these you'll get
+-- "permission denied for table ...". RLS still enforces the row-level rules;
+-- these grants just let the roles attempt the operations at all.
+-- ============================================================================
+grant usage on schema public to anon, authenticated;
+
+grant select, insert, update, delete on
+  public.profiles,
+  public.game_saves,
+  public.classrooms,
+  public.classroom_members,
+  public.civic_uploads
+to anon, authenticated;
+
+grant select on public.global_stats to anon, authenticated;
+
+-- Keep future tables/sequences working too.
+alter default privileges in schema public
+  grant select, insert, update, delete on tables to anon, authenticated;
+alter default privileges in schema public
+  grant usage, select on sequences to anon, authenticated;
+
+-- ============================================================================
 -- Realtime (optional): add tables to the realtime publication for live updates.
 -- The app polls by default, so this is optional.
 -- ============================================================================

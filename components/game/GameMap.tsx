@@ -19,42 +19,91 @@ export function GameMap({
   game: GameState;
   onRegionClick: (region: Region) => void;
 }) {
+  const MIN_ZOOM = 0.6;
+  const MAX_ZOOM = 3.2;
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
-  const dragging = useRef<{ x: number; y: number } | null>(null);
+  // drag state captured in SVG (viewBox) coordinates so motion tracks the cursor
+  const drag = useRef<{ startStage: { x: number; y: number }; panStart: { x: number; y: number } } | null>(null);
   const moved = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
   const zoomRef = useRef(zoom);
   zoomRef.current = zoom;
+  const [isDragging, setIsDragging] = useState(false);
 
-  // Non-passive wheel handler: zoom the map without scrolling the page.
+  const clamp = (z: number) => Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, z));
+
+  /** Convert client (screen) pixels into the SVG's user/viewBox coordinates. */
+  const clientToStage = (clientX: number, clientY: number) => {
+    const svg = svgRef.current;
+    const ctm = svg?.getScreenCTM();
+    if (!svg || !ctm) return null;
+    const p = new DOMPoint(clientX, clientY).matrixTransform(ctm.inverse());
+    return { x: p.x, y: p.y };
+  };
+
+  /** Zoom so the point under (clientX, clientY) stays fixed on screen. */
+  const zoomAt = (clientX: number, clientY: number, nextZoomRaw: number) => {
+    const oldZoom = zoomRef.current;
+    const newZoom = clamp(nextZoomRaw);
+    if (newZoom === oldZoom) return;
+    const c = clientToStage(clientX, clientY);
+    if (!c) {
+      setZoom(newZoom);
+      return;
+    }
+    const k = newZoom / oldZoom;
+    setPan((prev) => ({ x: c.x - k * (c.x - prev.x), y: c.y - k * (c.y - prev.y) }));
+    setZoom(newZoom);
+  };
+
+  /** Buttons zoom about the center of the visible map. */
+  const zoomByButton = (delta: number) => {
+    const el = containerRef.current;
+    if (!el) {
+      setZoom((z) => clamp(z + delta));
+      return;
+    }
+    const r = el.getBoundingClientRect();
+    zoomAt(r.left + r.width / 2, r.top + r.height / 2, zoomRef.current + delta);
+  };
+
+  // Non-passive wheel handler: zoom toward the cursor without scrolling the page.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      const z = Math.max(0.6, Math.min(3.2, zoomRef.current - e.deltaY * 0.0016));
-      setZoom(z);
+      zoomAt(e.clientX, e.clientY, zoomRef.current - e.deltaY * 0.0016);
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onPointerDown = (e: React.PointerEvent) => {
-    dragging.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
+    const s = clientToStage(e.clientX, e.clientY);
+    if (!s) return;
+    drag.current = { startStage: s, panStart: pan };
     moved.current = false;
+    setIsDragging(true);
     (e.target as Element).setPointerCapture?.(e.pointerId);
   };
   const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragging.current) return;
-    const nx = e.clientX - dragging.current.x;
-    const ny = e.clientY - dragging.current.y;
-    if (Math.abs(nx - pan.x) > 3 || Math.abs(ny - pan.y) > 3) moved.current = true;
+    if (!drag.current) return;
+    const cur = clientToStage(e.clientX, e.clientY);
+    if (!cur) return;
+    const nx = drag.current.panStart.x + (cur.x - drag.current.startStage.x);
+    const ny = drag.current.panStart.y + (cur.y - drag.current.startStage.y);
+    if (Math.abs(cur.x - drag.current.startStage.x) > 4 || Math.abs(cur.y - drag.current.startStage.y) > 4)
+      moved.current = true;
     setPan({ x: nx, y: ny });
   };
   const onPointerUp = () => {
-    dragging.current = null;
+    drag.current = null;
+    setIsDragging(false);
   };
 
   return (
@@ -64,8 +113,8 @@ export function GameMap({
     >
       {/* zoom controls */}
       <div className="absolute right-3 top-3 z-10 flex flex-col gap-1.5">
-        <Button size="sm" variant="ghost" onClick={() => setZoom((z) => Math.min(3.2, z + 0.3))}>＋</Button>
-        <Button size="sm" variant="ghost" onClick={() => setZoom((z) => Math.max(0.6, z - 0.3))}>－</Button>
+        <Button size="sm" variant="ghost" onClick={() => zoomByButton(0.3)}>＋</Button>
+        <Button size="sm" variant="ghost" onClick={() => zoomByButton(-0.3)}>－</Button>
         <Button size="sm" variant="ghost" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>⟲</Button>
       </div>
 
@@ -74,11 +123,13 @@ export function GameMap({
       </div>
 
       <svg
+        ref={svgRef}
         viewBox="0 0 1000 700"
         className="h-full w-full cursor-grab active:cursor-grabbing"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
+        onPointerLeave={onPointerUp}
       >
         <defs>
           <radialGradient id="sea" cx="50%" cy="40%" r="80%">
@@ -88,7 +139,7 @@ export function GameMap({
         </defs>
         <g
           transform={`translate(${pan.x} ${pan.y}) scale(${zoom})`}
-          style={{ transition: dragging.current ? "none" : "transform 0.18s ease-out" }}
+          style={{ transition: isDragging ? "none" : "transform 0.12s ease-out" }}
         >
           <rect x={-400} y={-400} width={1800} height={1500} fill="url(#sea)" />
           {game.regions.map((r, idx) => {

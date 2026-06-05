@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 
@@ -88,7 +89,21 @@ export function CityNamer({ onConfirm }: { onConfirm: (name: string) => void }) 
 
         <div className="mt-8">
           <p className="text-xs uppercase tracking-widest text-mist">Your city</p>
-          <p className="mt-1 font-display text-3xl font-semibold text-leaf">{name}</p>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={spinning ? "spinning" : name}
+              className="mt-1 font-display text-3xl font-semibold text-leaf"
+              initial={spinning ? { opacity: 0.4 } : { scale: 0.4, opacity: 0, filter: "blur(8px)" }}
+              animate={
+                spinning
+                  ? { opacity: 0.5 }
+                  : { scale: [0.4, 1.18, 1], opacity: 1, filter: "blur(0px)" }
+              }
+              transition={spinning ? { duration: 0.1 } : { duration: 0.55, ease: "easeOut" }}
+            >
+              {name}
+            </motion.p>
+          </AnimatePresence>
         </div>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">

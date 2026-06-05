@@ -5,10 +5,9 @@ export const metadata = { title: "Our Team — Carbon Cleaner" };
 
 // [FILL IN] team members — replace placeholders with real names/roles/photos.
 const team = [
-  { name: "[FILL IN — Name]", role: "[FILL IN — Role]", blurb: "[FILL IN — one line about this member]" },
-  { name: "[FILL IN — Name]", role: "[FILL IN — Role]", blurb: "[FILL IN — one line about this member]" },
-  { name: "[FILL IN — Name]", role: "[FILL IN — Role]", blurb: "[FILL IN — one line about this member]" },
-  { name: "[FILL IN — Name]", role: "[FILL IN — Role]", blurb: "[FILL IN — one line about this member]" },
+  { name: "Dohun Kim", role: "Game Designer & Developer", blurb: "Amazing developer with a passion for clean code." },
+  { name: "Raymond Kwok", role: "Researcher", blurb: "Dedicated researcher exploring innovative solutions." },
+  { name: "Arnie Sreeram", role: "Game Designer & Developer", blurb: "Creative game designer with a keen eye for detail." },
 ];
 
 export default function TeamPage() {
@@ -18,10 +17,9 @@ export default function TeamPage() {
       <section className="z-10 mx-auto w-full max-w-5xl px-6 py-12">
         <h1 className="font-display text-4xl font-semibold sm:text-5xl">Our Team</h1>
         <p className="mt-4 max-w-2xl text-lg text-mist">
-          The students behind Carbon Cleaner. Replace these placeholders with
-          your real names, roles, and photos.
+          The students behind Carbon Cleaner.
         </p>
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid gap-5 sm:grid-cols-1 lg:grid-cols-3">
           {team.map((m, i) => (
             <Card key={i} className="text-center">
               <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full border border-amber/40 bg-amber/10 text-xs text-amber">

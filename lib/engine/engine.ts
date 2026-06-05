@@ -61,6 +61,7 @@ export function createInitialState(
     tookNegativeActionThisMonth: false,
     log: [],
     seenStoryIds: [],
+    unlockedFeatures: [],
     civic: characterType === "mayor" ? undefined : {},
     finishedAt: null,
   };
@@ -93,9 +94,9 @@ export function effectiveInfraDelta(
   if (def.favoredTerrain.includes(region.terrain)) delta *= GAME.terrainBonus;
   else delta *= GAME.terrainPenalty;
 
-  // research efficiency boosts (each applicable, completed research = +15%)
+  // research efficiency boosts (each applicable, completed research = +25%)
   for (const rid of def.boostedBy) {
-    if (completedResearch.includes(rid)) delta *= 1.15;
+    if (completedResearch.includes(rid)) delta *= 1.25;
   }
   return delta;
 }

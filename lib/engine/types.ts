@@ -6,6 +6,9 @@
 
 export type CharacterType = "mayor" | "student_older" | "student_younger";
 
+/** Features that unlock through the storyline ("build" is always available). */
+export type FeatureKey = "trees" | "research" | "bills" | "civic";
+
 export type GameStatus = "playing" | "won" | "lost";
 
 export type Terrain =
@@ -128,6 +131,12 @@ export interface GameState {
 
   /** Story beats already shown (so they don't replay across reloads). */
   seenStoryIds: string[];
+
+  /**
+   * Features unlocked through the storyline. "build" is always available;
+   * others ("trees", "research", "bills", "civic") unlock via story beats.
+   */
+  unlockedFeatures: FeatureKey[];
 
   // civic action (student)
   civic?: {
