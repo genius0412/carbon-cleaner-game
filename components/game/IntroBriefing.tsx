@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { DataChip } from "@/components/ui/DataChip";
 
 export function IntroBriefing({ onContinue }: { onContinue: () => void }) {
   return (
@@ -14,11 +13,11 @@ export function IntroBriefing({ onContinue }: { onContinue: () => void }) {
       <Card className="mt-6 space-y-4 text-fog/90">
         <p>
           You are taking the helm of a county of <strong>100,000 residents</strong>.
-          For a century it has run on fossil fuels — its lights, cars, factories,
+          For a century it has run on fossil fuels. Its lights, cars, factories,
           and farms all add carbon to the sky.
         </p>
         <p>
-          The world's atmosphere holds roughly <DataChip id={1} /> of CO₂ today, and
+          The world's atmosphere holds over <strong>3 trillion metric tons</strong> of CO₂ today, and
           rising. In our simulation, the count sits at <strong>430 ppm</strong> and
           climbs every month. If it reaches <strong>600 ppm</strong>, the county
           fails.
@@ -26,18 +25,18 @@ export function IntroBriefing({ onContinue }: { onContinue: () => void }) {
         <p>
           Your mandate is simple to state and hard to do:{" "}
           <strong className="text-leaf">
-            reach net-zero — Carbon Gain of 0.00 ppm/month or less — before December
+            Reach net-zero aka Carbon Gain of 0.00 ppm/month or less before December
             2100
           </strong>{" "}
-          — without losing the public's trust.
+          without losing the public's trust.
         </p>
         <div className="rounded-xl border border-leaf/20 bg-leaf/5 p-4 text-sm">
           <p className="font-semibold text-leaf">Watch your gauges:</p>
           <ul className="mt-2 space-y-1 text-mist">
-            <li>• <strong className="text-fog">Carbon Gain/Month</strong> — drive it to zero. This is how you win.</li>
-            <li>• <strong className="text-fog">Current Carbon</strong> — keep it under 600 ppm.</li>
-            <li>• <strong className="text-fog">Support</strong> — below 50% you can't pass bills; below 30% residents fight back.</li>
-            <li>• <strong className="text-fog">Budget</strong> — every clean project costs money. Spend wisely.</li>
+            <li>• <strong className="text-fog">Carbon Gain/Month</strong>: Drive it to zero. This is how you win.</li>
+            <li>• <strong className="text-fog">Current Carbon</strong>: Keep it under 600 ppm.</li>
+            <li>• <strong className="text-fog">Support</strong>: Below 50% you can't pass bills; below 30% residents fight back.</li>
+            <li>• <strong className="text-fog">Budget</strong>: Every clean project costs money. Spend wisely.</li>
           </ul>
         </div>
       </Card>

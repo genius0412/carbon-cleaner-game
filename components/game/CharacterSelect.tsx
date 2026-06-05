@@ -24,7 +24,7 @@ const roles: {
     icon: "🎓",
     title: "Student (14–18)",
     age: "Older student",
-    desc: "Limited budget and local actions. You make real change through advocacy — write your own letter from data and submit proof.",
+    desc: "Limited budget and local actions. You make real change through advocacy. You can write your own letter from data and submit proof.",
     perks: ["Smaller budget", "Local actions only", "Write your own letter for a big boost"],
   },
   {
