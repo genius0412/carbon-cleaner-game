@@ -136,5 +136,7 @@ export function toggleMuted() {
 
 export function subscribeMuted(fn: (m: boolean) => void) {
   listeners.add(fn);
-  return () => listeners.delete(fn);
+  return () => {
+    listeners.delete(fn);
+  };
 }
