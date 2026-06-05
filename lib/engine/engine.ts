@@ -60,6 +60,7 @@ export function createInitialState(
     trees: [],
     tookNegativeActionThisMonth: false,
     log: [],
+    seenStoryIds: [],
     civic: characterType === "mayor" ? undefined : {},
     finishedAt: null,
   };

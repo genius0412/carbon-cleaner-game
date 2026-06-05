@@ -126,6 +126,9 @@ export interface GameState {
   tookNegativeActionThisMonth: boolean;
   log: ActionLogEntry[];
 
+  /** Story beats already shown (so they don't replay across reloads). */
+  seenStoryIds: string[];
+
   // civic action (student)
   civic?: {
     representativeTown?: string;

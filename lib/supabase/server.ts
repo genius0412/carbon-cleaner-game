@@ -1,16 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { SUPABASE_URL, SUPABASE_KEY } from "./env";
 
 /**
  * Server Supabase client (App Router). Returns null if env vars are missing.
  */
 export async function getSupabaseServer() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
+  if (!SUPABASE_URL || !SUPABASE_KEY) return null;
 
   const cookieStore = await cookies();
-  return createServerClient(url, key, {
+  return createServerClient(SUPABASE_URL, SUPABASE_KEY, {
     cookies: {
       getAll() {
         return cookieStore.getAll();

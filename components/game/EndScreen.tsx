@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useGameStore } from "@/lib/store";
@@ -13,9 +14,39 @@ export function EndScreen({ game }: { game: GameState }) {
   const won = game.status === "won";
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-night/90 p-4 backdrop-blur">
+    <motion.div
+      className="fixed inset-0 z-[150] flex items-center justify-center bg-night/90 p-4 backdrop-blur"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      {/* celebratory rising particles on a win */}
+      {won &&
+        [...Array(14)].map((_, i) => (
+          <motion.span
+            key={i}
+            className="pointer-events-none absolute text-xl"
+            style={{ left: `${(i * 7 + 5) % 100}%`, bottom: -30 }}
+            initial={{ y: 0, opacity: 0 }}
+            animate={{ y: -700, opacity: [0, 1, 0] }}
+            transition={{ duration: 4 + (i % 4), repeat: Infinity, delay: i * 0.25 }}
+          >
+            {["🌱", "🍃", "✨", "🌿"][i % 4]}
+          </motion.span>
+        ))}
+      <motion.div
+        initial={{ scale: 0.85, y: 30, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 220, damping: 22 }}
+      >
       <Card glow={won ? "leaf" : "none"} className="max-w-lg text-center">
-        <div className="text-5xl">{won ? "🌍✨" : "⏳"}</div>
+        <motion.div
+          className="text-5xl"
+          initial={{ scale: 0, rotate: -20 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ delay: 0.15, type: "spring", stiffness: 240 }}
+        >
+          {won ? "🌍✨" : "⏳"}
+        </motion.div>
         <h2 className="mt-4 font-display text-3xl font-semibold">
           {won ? "Net-Zero Achieved!" : "Time Ran Out"}
         </h2>
@@ -45,7 +76,8 @@ export function EndScreen({ game }: { game: GameState }) {
           <Button variant="ghost" onClick={reset}>Play again</Button>
         </div>
       </Card>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 

@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "@/lib/store";
-import { GAME } from "@/lib/config/gameConstants";
 import type { Region } from "@/lib/engine/types";
 import { GaugesBar } from "./GaugesBar";
+import { GameClock } from "./GameClock";
 import { TimeControls } from "./TimeControls";
 import { GameMap } from "./GameMap";
 import { RegionPanel } from "./panels/RegionPanel";
@@ -14,6 +15,7 @@ import { BillsPanel } from "./panels/BillsPanel";
 import { TreesPanel } from "./panels/TreesPanel";
 import { CivicAction } from "./CivicAction";
 import { EndScreen } from "./EndScreen";
+import { StoryModal } from "./StoryModal";
 import { FeedbackCard } from "@/components/ui/FeedbackCard";
 import { Button } from "@/components/ui/Button";
 
@@ -25,22 +27,39 @@ export function Dashboard() {
   const paused = useGameStore((s) => s.paused);
   const speed = useGameStore((s) => s.speed);
   const openPanels = useGameStore((s) => s.openPanels);
-  const tick = useGameStore((s) => s.tick);
+  const advanceClock = useGameStore((s) => s.advanceClock);
   const lastFeedback = useGameStore((s) => s.lastFeedback);
   const clearFeedback = useGameStore((s) => s.clearFeedback);
+  const civicRequested = useGameStore((s) => s.civicRequested);
+  const clearCivicRequest = useGameStore((s) => s.clearCivicRequest);
 
   const [region, setRegion] = useState<Region | null>(null);
   const [panel, setPanel] = useState<PanelKey>(null);
   const [showCode, setShowCode] = useState(true);
 
-  // --- game clock loop ---
-  const tickRef = useRef(tick);
-  tickRef.current = tick;
+  // --- smooth game clock loop (requestAnimationFrame) ---
+  const advanceRef = useRef(advanceClock);
+  advanceRef.current = advanceClock;
   useEffect(() => {
-    const intervalMs = (GAME.realSecondsPerGameMonth * 1000) / speed;
-    const id = setInterval(() => tickRef.current(), intervalMs);
-    return () => clearInterval(id);
-  }, [speed]);
+    let raf = 0;
+    let last = performance.now();
+    const loop = (now: number) => {
+      const dt = Math.min(250, now - last); // clamp after tab-away
+      last = now;
+      advanceRef.current(dt);
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  // open the civic letter desk when a civic story beat is accepted
+  useEffect(() => {
+    if (civicRequested) {
+      setPanel("civic");
+      clearCivicRequest();
+    }
+  }, [civicRequested, clearCivicRequest]);
 
   if (!game) return null;
   const isStudent = game.mode === "student";
@@ -48,7 +67,11 @@ export function Dashboard() {
   return (
     <div className="flex min-h-screen flex-col p-3 sm:p-4">
       {/* top bar */}
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+      <motion.div
+        className="mb-3 flex flex-wrap items-center justify-between gap-3"
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2 text-sm font-semibold">
             <span className="h-2.5 w-2.5 rounded-full bg-leaf shadow-[0_0_12px] shadow-leaf" />
@@ -62,32 +85,54 @@ export function Dashboard() {
                 : "Student 9–14"}
           </span>
         </div>
-        <TimeControls />
-      </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <GameClock />
+          <TimeControls />
+        </div>
+      </motion.div>
 
       {/* gauges */}
-      <GaugesBar game={game} />
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+        <GaugesBar game={game} />
+      </motion.div>
 
       {/* guest resume code */}
-      {meta.guestCode && showCode && (
-        <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-amber/30 bg-amber/10 px-4 py-2 text-sm">
-          <span className="text-amber">
-            Guest resume code: <strong className="font-mono">{meta.guestCode}</strong> — copy &amp; save it to restore later.
-          </span>
-          <div className="flex gap-2">
-            <Button size="sm" variant="amber" onClick={() => navigator.clipboard?.writeText(meta.guestCode!)}>Copy</Button>
-            <Button size="sm" variant="ghost" onClick={() => setShowCode(false)}>Dismiss</Button>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {meta.guestCode && showCode && (
+          <motion.div
+            className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-amber/30 bg-amber/10 px-4 py-2 text-sm"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            <span className="text-amber">
+              Guest resume code: <strong className="font-mono">{meta.guestCode}</strong> — copy &amp; save it to restore later.
+            </span>
+            <div className="flex gap-2">
+              <Button size="sm" variant="amber" onClick={() => navigator.clipboard?.writeText(meta.guestCode!)}>Copy</Button>
+              <Button size="sm" variant="ghost" onClick={() => setShowCode(false)}>Dismiss</Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* main: map + actions */}
       <div className="mt-3 grid flex-1 gap-3 lg:grid-cols-[1fr_300px]">
-        <div className="min-h-[420px]">
+        <motion.div
+          className="min-h-[420px]"
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1 }}
+        >
           <GameMap game={game} onRegionClick={(r) => setRegion(r)} />
-        </div>
+        </motion.div>
 
-        <aside className="flex flex-col gap-2">
+        <motion.aside
+          className="flex flex-col gap-2"
+          initial={{ opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.15 }}
+        >
           <p className="text-xs uppercase tracking-widest text-mist">Actions</p>
           <Button variant="secondary" onClick={() => setRegion(game.regions[0])}>
             🗺️ Build on the map
@@ -99,11 +144,13 @@ export function Dashboard() {
               <Button variant="secondary" onClick={() => setPanel("trees")}>🌳 Tree Planting</Button>
             </>
           )}
-          {isStudent && (
-            <Button onClick={() => setPanel("civic")}>✊ Civic Action</Button>
-          )}
-          {!isStudent && (
-            <Button variant="ghost" onClick={() => setPanel("civic")}>✊ Civic Action</Button>
+
+          {/* Civic action is NOT a permanent button — it is summoned by the
+              citizenry via story beats. Show a subtle reminder once unlocked. */}
+          {game.civic?.boostApplied && (
+            <div className="glass rounded-xl border-l-2 border-l-cyan p-3 text-xs text-cyan">
+              ✓ You answered the people's call. Your letter is on the record.
+            </div>
           )}
 
           <div className="glass mt-2 rounded-xl p-3 text-xs text-mist">
@@ -126,7 +173,7 @@ export function Dashboard() {
               ))}
             </ul>
           </div>
-        </aside>
+        </motion.aside>
       </div>
 
       {/* panels */}
@@ -136,7 +183,8 @@ export function Dashboard() {
       <TreesPanel open={panel === "trees"} onClose={() => setPanel(null)} />
       <CivicAction open={panel === "civic"} onClose={() => setPanel(null)} />
 
-      {/* feedback + end */}
+      {/* story, feedback + end */}
+      <StoryModal />
       <FeedbackCard data={lastFeedback} onDismiss={clearFeedback} />
       {game.status !== "playing" && <EndScreen game={game} />}
     </div>

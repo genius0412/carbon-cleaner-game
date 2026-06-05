@@ -21,6 +21,7 @@ import {
   type ActionResult,
 } from "./engine/engine";
 import { persistSave, makeGuestCode, type SaveMeta } from "./saves";
+import { nextStoryBeat, type StoryBeat } from "./engine/story";
 
 interface GameStore {
   game: GameState | null;
@@ -31,6 +32,12 @@ interface GameStore {
   openPanels: number;
   lastFeedback: { title: string; message: string; ok: boolean } | null;
 
+  // smooth in-month time flow (0..1 of the current month elapsed)
+  monthProgress: number;
+  // story
+  activeStory: StoryBeat | null;
+  civicRequested: boolean;
+
   // lifecycle
   newGame: (character: CharacterType, cityName: string, asGuest: boolean) => void;
   loadGame: (state: GameState, meta: SaveMeta) => void;
@@ -38,12 +45,17 @@ interface GameStore {
 
   // clock
   tick: () => void;
+  advanceClock: (deltaMs: number) => void;
   setSpeed: (s: number) => void;
   setPaused: (p: boolean) => void;
   togglePause: () => void;
   skipYear: () => void;
   openPanel: () => void;
   closePanel: () => void;
+
+  // story
+  resolveStory: (takeAction: boolean) => void;
+  clearCivicRequest: () => void;
 
   // actions
   doBuild: (regionId: string, infraId: string) => void;
@@ -77,6 +89,17 @@ export const useGameStore = create<GameStore>((set, get) => {
     scheduleSave();
   };
 
+  // Migrate older saves that predate seenStoryIds.
+  const withDefaults = (state: GameState): GameState =>
+    state.seenStoryIds ? state : { ...state, seenStoryIds: [] };
+
+  /** Fire a story beat if one is due and none is currently showing. */
+  const maybeFireStory = (game: GameState) => {
+    if (get().activeStory) return;
+    const beat = nextStoryBeat(game, game.seenStoryIds ?? []);
+    if (beat) set({ activeStory: beat });
+  };
+
   return {
     game: null,
     meta: {},
@@ -84,45 +107,129 @@ export const useGameStore = create<GameStore>((set, get) => {
     paused: false,
     openPanels: 0,
     lastFeedback: null,
+    monthProgress: 0,
+    activeStory: null,
+    civicRequested: false,
 
     newGame: (character, cityName, asGuest) => {
       const game = createInitialState(character, cityName);
       const meta: SaveMeta = asGuest ? { guestCode: makeGuestCode() } : {};
-      set({ game, meta, paused: false, speed: 1, openPanels: 0, lastFeedback: null });
+      set({
+        game,
+        meta,
+        paused: false,
+        speed: 1,
+        openPanels: 0,
+        lastFeedback: null,
+        monthProgress: 0,
+        activeStory: null,
+        civicRequested: false,
+      });
       scheduleSave();
     },
 
     loadGame: (state, meta) =>
-      set({ game: state, meta, paused: true, speed: 1, openPanels: 0 }),
+      set({
+        game: withDefaults(state),
+        meta,
+        paused: true,
+        speed: 1,
+        openPanels: 0,
+        monthProgress: 0,
+        activeStory: null,
+        civicRequested: false,
+      }),
 
-    reset: () => set({ game: null, meta: {}, openPanels: 0, lastFeedback: null }),
+    reset: () =>
+      set({
+        game: null,
+        meta: {},
+        openPanels: 0,
+        lastFeedback: null,
+        monthProgress: 0,
+        activeStory: null,
+        civicRequested: false,
+      }),
 
     tick: () => {
-      const { game, paused, openPanels } = get();
+      const { game, paused, openPanels, activeStory } = get();
       if (!game || game.status !== "playing") return;
-      if (paused || openPanels > 0) return;
+      if (paused || openPanels > 0 || activeStory) return;
       const next = tickMonth(game);
       set({ game: next });
       if (next.status !== "playing") {
         set({ paused: true });
         get().save();
       } else {
+        maybeFireStory(next);
         scheduleSave();
       }
     },
+
+    advanceClock: (deltaMs) => {
+      const { game, paused, openPanels, activeStory, speed, monthProgress } = get();
+      if (!game || game.status !== "playing") return;
+      if (paused || openPanels > 0 || activeStory) return;
+
+      const monthDurationMs = (GAME.realSecondsPerGameMonth * 1000) / speed;
+      let p = monthProgress + deltaMs / monthDurationMs;
+
+      if (p < 1) {
+        set({ monthProgress: p });
+        return;
+      }
+
+      // one or more whole months elapsed
+      const wholeMonths = Math.floor(p);
+      let next = game;
+      for (let i = 0; i < wholeMonths && next.status === "playing"; i++) {
+        next = tickMonth(next);
+      }
+      p = next.status === "playing" ? p - wholeMonths : 0;
+      set({ game: next, monthProgress: p });
+
+      if (next.status !== "playing") {
+        set({ paused: true });
+        get().save();
+      } else {
+        maybeFireStory(next);
+        scheduleSave();
+      }
+    },
+
+    resolveStory: (takeAction) => {
+      const { activeStory, game } = get();
+      if (!activeStory || !game) return;
+      const seen = game.seenStoryIds.includes(activeStory.id)
+        ? game.seenStoryIds
+        : [...game.seenStoryIds, activeStory.id];
+      set({
+        game: { ...game, seenStoryIds: seen },
+        activeStory: null,
+        civicRequested: takeAction && activeStory.kind === "civic",
+      });
+      scheduleSave();
+    },
+
+    clearCivicRequest: () => set({ civicRequested: false }),
 
     setSpeed: (s) => set({ speed: s }),
     setPaused: (p) => set({ paused: p }),
     togglePause: () => set((st) => ({ paused: !st.paused })),
 
     skipYear: () => {
-      const { game } = get();
-      if (!game || game.status !== "playing") return;
+      const { game, activeStory } = get();
+      if (!game || game.status !== "playing" || activeStory) return;
       let next = game;
       for (let i = 0; i < 12 && next.status === "playing"; i++) {
         next = tickMonth(next);
       }
-      set({ game: next, paused: next.status !== "playing" ? true : get().paused });
+      set({
+        game: next,
+        monthProgress: 0,
+        paused: next.status !== "playing" ? true : get().paused,
+      });
+      if (next.status === "playing") maybeFireStory(next);
       scheduleSave();
     },
 

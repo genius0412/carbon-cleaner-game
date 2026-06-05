@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "./Button";
 
 /**
@@ -20,31 +21,41 @@ export function FeedbackCard({
   data: FeedbackData | null;
   onDismiss: () => void;
 }) {
-  if (!data) return null;
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[120] flex justify-center p-4">
-      <div
-        className={`glass w-full max-w-xl rounded-2xl border-l-4 p-5 ${
-          data.ok ? "border-l-leaf glow-leaf" : "border-l-danger"
-        }`}
-      >
-        <div className="flex items-start gap-3">
-          <span className="text-2xl">{data.ok ? "🛰️" : "⚠️"}</span>
-          <div className="flex-1">
-            <p className="font-display text-sm font-semibold text-fog">
-              {data.title}
-            </p>
-            <p className="mt-1 text-sm leading-relaxed text-mist">
-              {data.message}
-            </p>
-          </div>
+    <AnimatePresence>
+      {data && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[120] flex justify-center p-4">
+          <motion.div
+            className={`pointer-events-auto w-full max-w-xl rounded-2xl border-l-4 p-5 glass ${
+              data.ok ? "border-l-leaf glow-leaf" : "border-l-danger"
+            }`}
+            initial={{ opacity: 0, y: 60, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 40, scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 280, damping: 26 }}
+          >
+            <div className="flex items-start gap-3">
+              <motion.span
+                className="text-2xl"
+                initial={{ scale: 0, rotate: -30 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay: 0.08, type: "spring", stiffness: 300 }}
+              >
+                {data.ok ? "🛰️" : "⚠️"}
+              </motion.span>
+              <div className="flex-1">
+                <p className="font-display text-sm font-semibold text-fog">{data.title}</p>
+                <p className="mt-1 text-sm leading-relaxed text-mist">{data.message}</p>
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Button size="sm" onClick={onDismiss}>
+                Continue
+              </Button>
+            </div>
+          </motion.div>
         </div>
-        <div className="mt-4 flex justify-end">
-          <Button size="sm" onClick={onDismiss}>
-            Continue
-          </Button>
-        </div>
-      </div>
-    </div>
+      )}
+    </AnimatePresence>
   );
 }
