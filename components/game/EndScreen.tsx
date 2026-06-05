@@ -64,15 +64,9 @@ export function EndScreen({ game }: { game: GameState }) {
         </div>
 
         <div className="mt-6 flex flex-col gap-2">
-          {meta.id ? (
-            <Link href={`/report/${meta.id}`}>
-              <Button className="w-full">📄 View final report</Button>
-            </Link>
-          ) : (
-            <Link href="/report/local">
-              <Button className="w-full">📄 View final report</Button>
-            </Link>
-          )}
+          <Link href={`/report/${meta.id ?? meta.localId ?? "local"}`}>
+            <Button className="w-full">📄 View final report</Button>
+          </Link>
           <Button variant="ghost" onClick={reset}>Play again</Button>
         </div>
       </Card>

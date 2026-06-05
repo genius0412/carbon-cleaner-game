@@ -14,13 +14,14 @@ import {
   createInitialState,
   tickMonth,
   buildInfrastructure,
+  replaceInfrastructure,
   foundResearch,
   passBill,
   plantTrees,
   applyCivicBoost,
   type ActionResult,
 } from "./engine/engine";
-import { persistSave, makeGuestCode, type SaveMeta } from "./saves";
+import { persistSave, makeGuestCode, makeLocalId, type SaveMeta } from "./saves";
 import { nextStoryBeat, type StoryBeat } from "./engine/story";
 import { playSound, type SoundName } from "./sound";
 
@@ -64,6 +65,7 @@ interface GameStore {
 
   // actions
   doBuild: (regionId: string, infraId: string) => void;
+  doReplace: (regionId: string, infraId: string) => void;
   doResearch: (researchId: string) => void;
   doBill: (billId: string) => void;
   doTrees: (treeId: string, batches: number) => void;
@@ -138,11 +140,14 @@ export const useGameStore = create<GameStore>((set, get) => {
       const game = createInitialState(character, cityName);
       // Logged-in users save under their account; otherwise generate a guest
       // resume code (unless an account-less, code-less save is explicitly wanted).
+      // every new game gets a stable local id so multiple games can be saved,
+      // listed, and resumed offline (in addition to any cloud/guest identity).
+      const localId = makeLocalId();
       const meta: SaveMeta = opts?.userId
-        ? { userId: opts.userId }
+        ? { userId: opts.userId, localId }
         : opts?.asGuest === false
-          ? {}
-          : { guestCode: makeGuestCode() };
+          ? { localId }
+          : { guestCode: makeGuestCode(), localId };
       set({
         game,
         meta,
@@ -277,6 +282,11 @@ export const useGameStore = create<GameStore>((set, get) => {
       const { game } = get();
       if (!game) return;
       applyResult(buildInfrastructure(game, regionId, infraId), "Infrastructure online", "build");
+    },
+    doReplace: (regionId, infraId) => {
+      const { game } = get();
+      if (!game) return;
+      applyResult(replaceInfrastructure(game, regionId, infraId), "Infrastructure replaced", "build");
     },
     doResearch: (researchId) => {
       const { game } = get();

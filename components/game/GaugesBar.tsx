@@ -3,13 +3,16 @@
 import { motion } from "framer-motion";
 import { Gauge } from "@/components/ui/Gauge";
 import { GAME } from "@/lib/config/gameConstants";
-import { effectiveCarbonGain } from "@/lib/engine/engine";
+import { effectiveCarbonGain, monthlyNetBudget } from "@/lib/engine/engine";
 import type { GameState } from "@/lib/engine/types";
 
 export function GaugesBar({ game }: { game: GameState }) {
   const effGain = effectiveCarbonGain(game);
   const ppmRange = GAME.failureCarbonPpm - GAME.startingCarbonPpm;
   const ppmFill = (game.carbonPpm - GAME.startingCarbonPpm) / ppmRange;
+
+  const netPerMonth = monthlyNetBudget(game);
+  const netLabel = `${netPerMonth >= 0 ? "▲ +" : "▼ −"}$${Math.abs(Math.round(netPerMonth)).toLocaleString()}/mo`;
 
   const gauges = [
     {
@@ -57,6 +60,8 @@ export function GaugesBar({ game }: { game: GameState }) {
           label="Budget"
           value={`$${(game.budget / 1_000_000).toFixed(2)}M`}
           tone={game.budget < 200_000 ? "danger" : "leaf"}
+          hint={netLabel}
+          hintTone={netPerMonth >= 0 ? "leaf" : "danger"}
         />
       ),
       pulse: (game.budget / 1_000_000).toFixed(2),

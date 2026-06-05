@@ -5,6 +5,8 @@ interface GaugeProps {
   fill?: number;
   tone?: "leaf" | "cyan" | "amber" | "danger" | "neutral";
   hint?: string;
+  /** Color the hint (e.g. to flag positive/negative cashflow). */
+  hintTone?: "leaf" | "cyan" | "amber" | "danger" | "neutral";
 }
 
 const toneColor: Record<NonNullable<GaugeProps["tone"]>, string> = {
@@ -15,7 +17,7 @@ const toneColor: Record<NonNullable<GaugeProps["tone"]>, string> = {
   neutral: "var(--color-mist)",
 };
 
-export function Gauge({ label, value, fill, tone = "leaf", hint }: GaugeProps) {
+export function Gauge({ label, value, fill, tone = "leaf", hint, hintTone }: GaugeProps) {
   const color = toneColor[tone];
   return (
     <div className="glass rounded-xl px-3 py-2.5">
@@ -39,7 +41,14 @@ export function Gauge({ label, value, fill, tone = "leaf", hint }: GaugeProps) {
           />
         </div>
       )}
-      {hint && <p className="mt-1 text-[10px] text-mist/80">{hint}</p>}
+      {hint && (
+        <p
+          className="mt-1 text-[10px] font-medium"
+          style={{ color: hintTone ? toneColor[hintTone] : "rgba(143,167,160,0.8)" }}
+        >
+          {hint}
+        </p>
+      )}
     </div>
   );
 }

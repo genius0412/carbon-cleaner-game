@@ -141,6 +141,15 @@ create policy "game_saves_update" on public.game_saves
     or (user_id is null)
   );
 
+-- Players can delete their own saves (logged-in own rows, or guest rows with
+-- no user_id). Needed for the "delete past game" action in the play menu.
+drop policy if exists "game_saves_delete" on public.game_saves;
+create policy "game_saves_delete" on public.game_saves
+  for delete using (
+    (auth.uid() is not null and auth.uid() = user_id)
+    or (user_id is null)
+  );
+
 -- ============================================================================
 -- classrooms + classroom_members
 -- ============================================================================

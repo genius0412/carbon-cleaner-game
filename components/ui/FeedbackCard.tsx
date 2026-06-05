@@ -24,9 +24,9 @@ export function FeedbackCard({
   return (
     <AnimatePresence>
       {data && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[120] flex justify-center p-4">
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[200] flex justify-center p-4">
           <motion.div
-            className={`pointer-events-auto w-full max-w-xl rounded-2xl border-l-4 p-5 glass ${
+            className={`pointer-events-auto w-full max-w-xl rounded-2xl border border-white/10 border-l-4 bg-charcoal/95 p-5 shadow-2xl backdrop-blur-md ${
               data.ok ? "border-l-leaf glow-leaf" : "border-l-danger"
             }`}
             initial={{ opacity: 0, y: 60, scale: 0.97 }}
@@ -44,8 +44,10 @@ export function FeedbackCard({
                 {data.ok ? "🛰️" : "⚠️"}
               </motion.span>
               <div className="flex-1">
-                <p className="font-display text-sm font-semibold text-fog">{data.title}</p>
-                <p className="mt-1 text-sm leading-relaxed text-mist">{data.message}</p>
+                <p className={`font-display text-base font-semibold ${data.ok ? "text-leaf" : "text-danger"}`}>
+                  {data.title}
+                </p>
+                <p className="mt-1 text-sm font-medium leading-relaxed text-fog">{data.message}</p>
               </div>
             </div>
             <div className="mt-4 flex justify-end">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "@/lib/store";
@@ -12,12 +12,24 @@ import { CharacterSelect } from "@/components/game/CharacterSelect";
 import { CityNamer } from "@/components/game/CityNamer";
 import { CityReveal } from "@/components/game/CityReveal";
 import { Dashboard } from "@/components/game/Dashboard";
-import { loadLocal, restoreLatestForUser } from "@/lib/saves";
+import {
+  listLocalSaves,
+  listSavesForUser,
+  deleteLocalSave,
+  deleteCloudSave,
+  type SaveEntry,
+} from "@/lib/saves";
+import { formatYearMonth } from "@/lib/engine/engine";
 import { useAuth } from "@/lib/auth";
-import type { CharacterType, GameState } from "@/lib/engine/types";
-import type { SaveMeta } from "@/lib/saves";
+import type { CharacterType } from "@/lib/engine/types";
 
 type Phase = "menu" | "intro" | "character" | "city" | "launch" | "playing";
+
+const CHAR_LABEL: Record<CharacterType, string> = {
+  mayor: "Mayor",
+  student_older: "Student 14–18",
+  student_younger: "Student 9–14",
+};
 
 export default function PlayPage() {
   const game = useGameStore((s) => s.game);
@@ -27,29 +39,45 @@ export default function PlayPage() {
 
   const [phase, setPhase] = useState<Phase>("menu");
   const [character, setCharacter] = useState<CharacterType>("mayor");
-  const [hasLocalSave, setHasLocalSave] = useState(false);
   const [asGuest, setAsGuest] = useState(true);
-  const [cloudSave, setCloudSave] = useState<{ state: GameState; meta: SaveMeta } | null>(null);
+  const [saves, setSaves] = useState<SaveEntry[]>([]);
 
-  useEffect(() => {
-    setHasLocalSave(!!loadLocal());
-  }, []);
-
-  // When logged in, default to saving under the account and look for a cloud save.
-  useEffect(() => {
+  // Refresh the list of saved games (cloud when logged in, else local).
+  const refreshSaves = useCallback(() => {
     if (user) {
-      setAsGuest(false);
-      restoreLatestForUser(user.id).then(setCloudSave);
+      listSavesForUser(user.id).then(setSaves);
     } else {
-      setCloudSave(null);
+      setSaves(listLocalSaves());
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user) setAsGuest(false);
+    refreshSaves();
+  }, [user, refreshSaves]);
+
+  // Reload the list whenever we land back on the menu (e.g. after "Play again").
+  useEffect(() => {
+    if (phase === "menu") refreshSaves();
+  }, [phase, refreshSaves]);
 
   // resuming an existing game from the menu jumps straight in (the onboarding
   // flow drives its own transition through the cinematic launch).
   useEffect(() => {
     if (game && phase === "menu") setPhase("playing");
   }, [game, phase]);
+
+  // After "Play again" the store clears the game; return to the menu instead of
+  // rendering a blank screen (there is no "playing" view without a game).
+  useEffect(() => {
+    if (!game && phase === "playing") setPhase("menu");
+  }, [game, phase]);
+
+  const handleDelete = async (entry: SaveEntry) => {
+    if (entry.meta.id) await deleteCloudSave(entry.meta.id);
+    deleteLocalSave(entry.key);
+    refreshSaves();
+  };
 
   if (phase === "playing" && game) {
     return (
@@ -95,28 +123,55 @@ export default function PlayPage() {
             )}
 
             <Card className="mt-4 space-y-3">
-              {/* continue cloud save (logged in) */}
-              {user && cloudSave && (
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  onClick={() => loadGame(cloudSave.state, cloudSave.meta)}
-                >
-                  ☁ Continue your saved game ({cloudSave.state.cityName})
-                </Button>
-              )}
-              {/* continue local save (guest / offline) */}
-              {!user && hasLocalSave && (
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  onClick={() => {
-                    const saved = loadLocal();
-                    if (saved) loadGame(saved.state, saved.meta);
-                  }}
-                >
-                  ⏎ Continue saved game
-                </Button>
+              {/* saved games: continue, view report, or delete */}
+              {saves.length > 0 && (
+                <div className="space-y-2 text-left">
+                  <p className="text-xs uppercase tracking-widest text-mist">Your games</p>
+                  {saves.map((s) => {
+                    const st = s.state;
+                    const statusLabel =
+                      st.status === "won"
+                        ? "Net-zero 🌍"
+                        : st.status === "lost"
+                          ? "Time ran out"
+                          : "In progress";
+                    const reportHref = `/report/${s.meta.id ?? s.meta.localId ?? "local"}`;
+                    return (
+                      <div key={s.key} className="glass rounded-xl p-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="font-display font-semibold text-fog">{st.cityName}</p>
+                            <p className="text-[11px] text-mist">
+                              {CHAR_LABEL[st.characterType]} · {statusLabel}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleDelete(s)}
+                            aria-label="Delete game"
+                            title="Delete game"
+                            className="rounded-full p-1.5 text-mist hover:bg-danger/15 hover:text-danger"
+                          >
+                            🗑
+                          </button>
+                        </div>
+                        <p className="mt-1 text-[11px] text-mist">
+                          {formatYearMonth(st)} · {st.carbonPpm.toFixed(0)} ppm · support{" "}
+                          {st.support.toFixed(0)}%
+                        </p>
+                        <div className="mt-2 flex gap-2">
+                          {st.status === "playing" ? (
+                            <Button size="sm" variant="secondary" onClick={() => loadGame(s.state, s.meta)}>
+                              ⏎ Continue
+                            </Button>
+                          ) : null}
+                          <Link href={reportHref}>
+                            <Button size="sm" variant="ghost">📄 Report</Button>
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
 
               {/* guest option only when logged out */}

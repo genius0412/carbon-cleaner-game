@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
-import { loadLocal } from "@/lib/saves";
+import { loadLocal, getLocalSave } from "@/lib/saves";
 import { formatYearMonth, effectiveCarbonGain } from "@/lib/engine/engine";
 import { aggregatedSources, allBlanks, blankTag } from "@/lib/config/dataBlanks";
 import type { GameState } from "@/lib/engine/types";
@@ -23,8 +23,9 @@ export default function ReportPage({
 
   useEffect(() => {
     (async () => {
-      if (gameId === "local") {
-        const local = loadLocal();
+      // local saves: "local" = most recent, "local-xxxx" = a specific game.
+      if (gameId === "local" || gameId.startsWith("local-")) {
+        const local = gameId === "local" ? loadLocal() : getLocalSave(gameId);
         if (local) setState(local.state);
         setLoading(false);
         return;

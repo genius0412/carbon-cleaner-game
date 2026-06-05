@@ -1,38 +1,47 @@
 # DATA_TO_FILL — Carbon Cleaner
 
-Every **real-world** number in the game is a numbered DATA BLANK. Until you fill it in, the UI shows an amber `[FILL IN #NNN]` pill. To fill one in, open `lib/config/dataBlanks.ts`, set the blank's `value` and `source`, and it will render the real number everywhere and appear on the `/sources` page automatically.
+Every **real-world** number in the game is a numbered DATA BLANK. Until you fill it in, the UI shows an amber `[FILL IN #NNN]` pill. Each entry below is written **exactly as it reads on the site**, with `___` marking the value (and unit) to supply. To fill one in, open `lib/config/dataBlanks.ts`, set the blank's `value` and `source`, and it will render everywhere and appear on the `/sources` page automatically.
 
 > Game-balance constants (budgets, support %, timelines, etc.) are NOT blanks — they live in `lib/config/gameConstants.ts` and are pre-set.
 
 **Progress: 1 / 28 filled in.**
 
-## Checklist
+## Home & About — climate context
 
-- [x] #001 — Current global atmospheric CO2 concentration (ppm) — used in: Home > climate context, About > global framing — SOURCE: Pro Oxygen. \"Daily CO2.\" CO2.Earth, https://www.co2.earth/daily-co2. Accessed 5 June 2026.
-- [ ] #002 — Global average temperature rise since pre-industrial era (deg C) — used in: Home > climate context, About — SOURCE: ____
-- [ ] #003 — Annual global CO2 emissions from fossil fuels (gigatonnes CO2/yr) — used in: About > global framing — SOURCE: ____
-- [ ] #004 — Sea level rise observed since 1900 (cm) — used in: About > impacts — SOURCE: ____
-- [ ] #005 — Share of U.S. emissions from transportation (%) — used in: About > local framing, How to Play — SOURCE: ____
-- [ ] #006 — Average per-capita CO2 emissions (United States) (tonnes CO2/person/yr) — used in: About > local framing — SOURCE: ____
-- [ ] #007 — Number of U.S. communities affected by extreme heat annually (count or %) — used in: About > local impacts — SOURCE: ____
-- [ ] #020 — Cost to convert municipal streetlights to LED (per fixture) (USD/fixture) — used in: Shop > LED Streetlight Conversion — SOURCE: ____
-- [ ] #021 — CO2 reduction from LED streetlight conversion (county scale) (tonnes CO2/yr) — used in: Shop > LED Streetlight Conversion — SOURCE: ____
-- [ ] #022 — CO2 saved per rider shifting from car to public bus (kg CO2/yr/rider) — used in: Shop > Expanded Public Bus Routes — SOURCE: ____
-- [ ] #023 — CO2 avoided by commercial recycling program (tonnes CO2/yr) — used in: Shop > Mandatory Commercial Recycling — SOURCE: ____
-- [ ] #024 — Cost to install rooftop solar per public building (USD/building) — used in: Shop > Solar Panels on Public Buildings — SOURCE: ____
-- [ ] #025 — CO2 offset by a mature urban tree per year (kg CO2/yr/tree) — used in: Shop > Urban Tree Planting, Tree Planting panel — SOURCE: ____
-- [ ] #026 — CO2 reduction from green building codes (new construction) (% reduction vs baseline) — used in: Shop > Green Building Code — SOURCE: ____
-- [ ] #027 — CO2 saved by electrifying a municipal vehicle fleet (tonnes CO2/yr) — used in: Shop > Electric County Fleet — SOURCE: ____
-- [ ] #028 — Efficiency gain from smart grid energy management (% grid loss reduction) — used in: Shop > Smart Grid Energy Management — SOURCE: ____
-- [ ] #029 — CO2 captured per direct-air-capture scrubber unit (tonnes CO2/yr/unit) — used in: Shop > Atmospheric Carbon Scrubber Array — SOURCE: ____
-- [ ] #030 — CO2 captured per algae bioreactor (tonnes CO2/yr/reactor) — used in: Shop > Algae Bio-Reactor Carbon Sinks — SOURCE: ____
-- [ ] #031 — CO2 avoided by geothermal district heating (tonnes CO2/yr) — used in: Shop > Geothermal District Heating — SOURCE: ____
-- [ ] #032 — CO2 saved by autonomous electric transit vs private cars (tonnes CO2/yr) — used in: Shop > Autonomous Electric Transit Pods — SOURCE: ____
-- [ ] #033 — Energy output of a vertical-axis wind turbine (kWh/yr/turbine) — used in: Shop > Vertical Wind Turbine Neighborhoods — SOURCE: ____
-- [ ] #034 — CO2 reduction from carbon-negative concrete vs Portland cement (% per tonne) — used in: Shop > Carbon-Negative Concrete Initiative — SOURCE: ____
-- [ ] #040 — Plastic waste reduction from single-use plastic ban (tonnes/yr) — used in: Bills > Ban on Single-Use Plastics — SOURCE: ____
-- [ ] #041 — Typical revenue from a local carbon tax (USD/yr) — used in: Bills > Carbon Tax on Local Businesses — SOURCE: ____
-- [ ] #042 — Energy savings from mandatory home energy audits (% household energy) — used in: Bills > Mandatory Home Energy Audits — SOURCE: ____
-- [ ] #043 — Emissions from gas-powered lawn equipment (per hour of use) (kg CO2/hr) — used in: Bills > Gas-Powered Lawn Equipment Ban — SOURCE: ____
-- [ ] #060 — Local representative contact info (state/district lookup) (name + office + email) — used in: Civic Action > Representative Lookup — SOURCE: ____
-- [ ] #061 — Climate statistic surfaced to letter writers (fact pool) (varies (see letterFacts.ts)) — used in: Civic Action > Letter Builder (older students) — SOURCE: ____
+- [x] **#001** — "Atmospheric CO₂ now sits near 432 ppm, far above the stable levels of human history." _(ppm)_ — SOURCE: Pro Oxygen. \"Daily CO2.\" CO2.Earth, https://www.co2.earth/daily-co2. Accessed 5 June 2026.
+- [ ] **#002** — "Global temperatures have risen about ___ since the pre-industrial era." _(deg C)_ — SOURCE: ____
+- [ ] **#003** — "Humanity emits roughly ___ from fossil fuels every year." _(gigatonnes CO2/yr)_ — SOURCE: ____
+- [ ] **#004** — "Seas have already risen ___ since 1900." _(cm)_ — SOURCE: ____
+- [ ] **#005** — "Transportation drives about ___ of U.S. emissions — a lever local leaders actually control." _(%)_ — SOURCE: ____
+- [ ] **#006** — "The average American emits about ___ each year." _(tonnes CO2/person/yr)_ — SOURCE: ____
+- [ ] **#007** — "Extreme heat already strains ___ across the country." _(count or %)_ — SOURCE: ____
+
+## Shop — infrastructure (shows under "Real impact:" on each item card)
+
+- [ ] **#020** — LED Streetlight Conversion · "Real impact: ___" _(USD/fixture)_ — SOURCE: ____
+- [ ] **#021** — LED Streetlight Conversion · "Real impact: ___" _(tonnes CO2/yr)_ — SOURCE: ____
+- [ ] **#022** — Expanded Public Bus Routes · "Real impact: ___" _(kg CO2/yr/rider)_ — SOURCE: ____
+- [ ] **#023** — Mandatory Commercial Recycling · "Real impact: ___" _(tonnes CO2/yr)_ — SOURCE: ____
+- [ ] **#024** — Solar Panels on Public Buildings · "Real impact: ___" _(USD/building)_ — SOURCE: ____
+- [ ] **#025** — Urban Tree Planting · "The real CO₂ figure per tree is a cited value: ___." _(kg CO2/yr/tree)_ — SOURCE: ____
+- [ ] **#026** — Green Building Code · "Real impact: ___" _(% reduction vs baseline)_ — SOURCE: ____
+- [ ] **#027** — Electric County Fleet · "Real impact: ___" _(tonnes CO2/yr)_ — SOURCE: ____
+- [ ] **#028** — Smart Grid Energy Management · "Real impact: ___" _(% grid loss reduction)_ — SOURCE: ____
+- [ ] **#029** — Atmospheric Carbon Scrubber Array · "Real impact: ___" _(tonnes CO2/yr/unit)_ — SOURCE: ____
+- [ ] **#030** — Algae Bio-Reactor Carbon Sinks · "Real impact: ___" _(tonnes CO2/yr/reactor)_ — SOURCE: ____
+- [ ] **#031** — Geothermal District Heating · "Real impact: ___" _(tonnes CO2/yr)_ — SOURCE: ____
+- [ ] **#032** — Autonomous Electric Transit Pods · "Real impact: ___" _(tonnes CO2/yr)_ — SOURCE: ____
+- [ ] **#033** — Vertical Wind Turbine Neighborhoods · "Real impact: ___" _(kWh/yr/turbine)_ — SOURCE: ____
+- [ ] **#034** — Carbon-Negative Concrete Initiative · "Real impact: ___" _(% per tonne)_ — SOURCE: ____
+
+## Bills & Legislation (shows under "Real impact:" on each bill card)
+
+- [ ] **#040** — Ban on Single-Use Plastics · "Real impact: ___" _(tonnes/yr)_ — SOURCE: ____
+- [ ] **#041** — Carbon Tax on Local Businesses · "Real impact: ___" _(USD/yr)_ — SOURCE: ____
+- [ ] **#042** — Mandatory Home Energy Audits · "Real impact: ___" _(% household energy)_ — SOURCE: ____
+- [ ] **#043** — Gas-Powered Lawn Equipment Ban · "Real impact: ___" _(kg CO2/hr)_ — SOURCE: ____
+
+## Civic Action
+
+- [ ] **#060** — "Contact details are a cited/editable dataset: ___" _(name + office + email)_ — SOURCE: ____
+- [ ] **#061** — "Real figures are cited via ___." _(varies (see letterFacts.ts))_ — SOURCE: ____

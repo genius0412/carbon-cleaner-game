@@ -166,6 +166,24 @@ export function recomputeCarbonGain(state: GameState): number {
   return gain;
 }
 
+/**
+ * Recurring net budget change per month: the yearly grant amortized across 12
+ * months, minus the monthly operating cost of every research project currently
+ * in progress (paralysis raises those costs). Positive = gaining money.
+ */
+export function monthlyNetBudget(state: GameState): number {
+  let net = GAME.yearlyBudgetGrant / 12;
+  for (const ar of state.activeResearch) {
+    const def = researchById(ar.defId);
+    if (!def) continue;
+    let monthly = def.monthlyCost;
+    if (state.support < GAME.supportParalysisBelow)
+      monthly *= GAME.paralysisCostMultiplier;
+    net -= monthly;
+  }
+  return net;
+}
+
 /** Effective gain including dynamic support penalties (used for win/lose & display). */
 export function effectiveCarbonGain(state: GameState): number {
   let gain = state.carbonGainPerMonth;
@@ -316,6 +334,72 @@ export function buildInfrastructure(
         yearMonth: formatYearMonth(prev),
         type: "infrastructure",
         label: `Built ${def.name}`,
+        detail: `In ${region.name} (${region.terrain}). Cost $${cost.toLocaleString()}.`,
+      },
+    ],
+  };
+  state.carbonGainPerMonth = recomputeCarbonGain(state);
+  state.status = evaluateStatus(state);
+  if (state.status !== "playing" && !state.finishedAt)
+    state.finishedAt = new Date().toISOString();
+  return { state, ok: true, message: def.feedback };
+}
+
+/**
+ * Replace the infrastructure already built in a region with a different one.
+ * Charges the new build's cost (no refund of the old), reverses the old
+ * support delta and applies the new one, and recomputes carbon output.
+ */
+export function replaceInfrastructure(
+  prev: GameState,
+  regionId: string,
+  infraId: string,
+): ActionResult {
+  const region = prev.regions.find((r) => r.id === regionId);
+  const def = infraById(infraId);
+  if (!region || !def)
+    return { state: prev, ok: false, message: "Unknown region or infrastructure." };
+  if (!region.builtInfraId)
+    return { state: prev, ok: false, message: "Nothing to replace here yet." };
+  if (region.builtInfraId === infraId)
+    return { state: prev, ok: false, message: "That's already built here." };
+  if (def.requiresResearch && !prev.completedResearch.includes(def.requiresResearch))
+    return { state: prev, ok: false, message: "Requires completed research first." };
+
+  const oldDef = infraById(region.builtInfraId);
+
+  let cost = def.cost;
+  if (prev.support < GAME.supportParalysisBelow) cost *= GAME.paralysisCostMultiplier;
+  if (prev.budget < cost)
+    return { state: prev, ok: false, message: "Not enough budget." };
+
+  const regions = prev.regions.map((r) =>
+    r.id === regionId ? { ...r, builtInfraId: infraId } : r,
+  );
+  // swap the built-infra record for this region
+  const builtInfra = prev.builtInfra
+    .filter((b) => b.regionId !== regionId)
+    .concat({ infraId, regionId });
+
+  // reverse the previous support bump, then apply the new one
+  const supportAfter = clampSupport(
+    prev.support - (oldDef?.supportDelta ?? 0) + def.supportDelta,
+  );
+
+  const state: GameState = {
+    ...prev,
+    regions,
+    budget: prev.budget - cost,
+    builtInfra,
+    support: supportAfter,
+    tookNegativeActionThisMonth:
+      prev.tookNegativeActionThisMonth || def.supportDelta < 0,
+    log: [
+      ...prev.log,
+      {
+        yearMonth: formatYearMonth(prev),
+        type: "infrastructure",
+        label: `Replaced ${oldDef?.name ?? "infrastructure"} with ${def.name}`,
         detail: `In ${region.name} (${region.terrain}). Cost $${cost.toLocaleString()}.`,
       },
     ],
