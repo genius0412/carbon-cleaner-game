@@ -54,7 +54,7 @@ export const STORY_BEATS: StoryBeat[] = [
       "The transition team's gone and the building's finally quiet. It's just us and the work now, Mayor.",
       "Here's the situation, plainly: Verdana's carbon count is climbing every single month. The atmosphere's at 430 parts per million and we're adding to it.",
       "The scientists are unanimous — if we cross 600 ppm, it's over. Failed harvests, a flooded harbor, summers nobody can work through.",
-      "But we have time, and we have a county full of people who want a future. Open the map. Pick a region. Let's put steel in the ground.",
+      "But we have time, and we have a county full of people who want a future. Open the map. Pick a region. Let's put steel in the ground. Or rather, trees in the ground.",
     ],
     trigger: (s) => s.year === 2025 && s.month >= 2,
     cta: "Let's get to work",
