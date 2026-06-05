@@ -5,7 +5,7 @@ export const metadata = { title: "Our Team — Carbon Cleaner" };
 
 // [FILL IN] team members — replace placeholders with real names/roles/photos.
 const team = [
-  { name: "Dohun Kim", role: "Game Designer & Developer", blurb: "Amazing developer with a passion for clean code." },
+  { name: "Dohun Kim", role: "Game Designer & Developer", blurb: "Amazing developer with a passion for clean code. Strategic game designer." },
   { name: "Raymond Kwok", role: "Researcher", blurb: "Dedicated researcher exploring innovative solutions." },
   { name: "Arnie Sreeram", role: "Game Designer & Developer", blurb: "Creative game designer with a keen eye for detail." },
 ];
