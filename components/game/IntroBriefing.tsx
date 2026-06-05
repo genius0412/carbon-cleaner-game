@@ -17,7 +17,7 @@ export function IntroBriefing({ onContinue }: { onContinue: () => void }) {
           and farms all add carbon to the sky.
         </p>
         <p>
-          The world's atmosphere holds over <strong>3 trillion metric tons</strong> of CO₂ today, and
+          The world's atmosphere holds over <strong>432 ppm</strong> of CO₂ today, and
           rising. In our simulation, the count sits at <strong>430 ppm</strong> and
           climbs every month. If it reaches <strong>600 ppm</strong>, the county
           fails.

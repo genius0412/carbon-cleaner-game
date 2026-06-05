@@ -4,11 +4,11 @@ Every **real-world** number in the game is a numbered DATA BLANK. Until you fill
 
 > Game-balance constants (budgets, support %, timelines, etc.) are NOT blanks — they live in `lib/config/gameConstants.ts` and are pre-set.
 
-**Progress: 0 / 28 filled in.**
+**Progress: 1 / 28 filled in.**
 
 ## Checklist
 
-- [ ] #001 — Current global atmospheric CO2 concentration (ppm) — used in: Home > climate context, About > global framing — SOURCE: ____
+- [x] #001 — Current global atmospheric CO2 concentration (ppm) — used in: Home > climate context, About > global framing — SOURCE: Pro Oxygen. \"Daily CO2.\" CO2.Earth, https://www.co2.earth/daily-co2. Accessed 5 June 2026.
 - [ ] #002 — Global average temperature rise since pre-industrial era (deg C) — used in: Home > climate context, About — SOURCE: ____
 - [ ] #003 — Annual global CO2 emissions from fossil fuels (gigatonnes CO2/yr) — used in: About > global framing — SOURCE: ____
 - [ ] #004 — Sea level rise observed since 1900 (cm) — used in: About > impacts — SOURCE: ____

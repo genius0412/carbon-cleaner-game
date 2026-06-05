@@ -46,8 +46,9 @@ export const DATA_BLANKS: Record<number, DataBlank> = {
     label: "Current global atmospheric CO2 concentration",
     unit: "ppm",
     location: "Home > climate context, About > global framing",
-    value: null,
-    source: "",
+    value: 432,
+    source:
+      "Pro Oxygen. \"Daily CO2.\" CO2.Earth, https://www.co2.earth/daily-co2. Accessed 5 June 2026.",
   },
   2: {
     id: 2,
