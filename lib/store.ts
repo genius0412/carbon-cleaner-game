@@ -88,6 +88,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     res: ActionResult,
     successTitle: string,
     successSound: SoundName = "build",
+    opts?: { silentSuccess?: boolean },
   ) => {
     if (!res.ok) {
       playSound("error");
@@ -95,10 +96,12 @@ export const useGameStore = create<GameStore>((set, get) => {
       return;
     }
     playSound(successSound);
-    set({
-      game: res.state,
-      lastFeedback: { title: successTitle, message: res.message, ok: true },
-    });
+    // Some actions (e.g. tree planting) update silently with no bottom popup.
+    set(
+      opts?.silentSuccess
+        ? { game: res.state }
+        : { game: res.state, lastFeedback: { title: successTitle, message: res.message, ok: true } },
+    );
     scheduleSave();
   };
 
@@ -301,7 +304,8 @@ export const useGameStore = create<GameStore>((set, get) => {
     doTrees: (treeId, batches) => {
       const { game } = get();
       if (!game) return;
-      applyResult(plantTrees(game, treeId, batches), "Trees planted", "trees");
+      // Planting is a quiet, repeatable action: update + sound, but no popup.
+      applyResult(plantTrees(game, treeId, batches), "Trees planted", "trees", { silentSuccess: true });
     },
     doCivicBoost: (letter) => {
       const { game } = get();

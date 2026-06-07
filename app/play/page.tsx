@@ -42,13 +42,22 @@ export default function PlayPage() {
   const [asGuest, setAsGuest] = useState(true);
   const [saves, setSaves] = useState<SaveEntry[]>([]);
 
-  // Refresh the list of saved games (cloud when logged in, else local).
-  const refreshSaves = useCallback(() => {
-    if (user) {
-      listSavesForUser(user.id).then(setSaves);
-    } else {
-      setSaves(listLocalSaves());
+  // Refresh the list of saved games. Always include local saves, and merge in
+  // cloud saves when logged in (deduped) so games show whether or not you're
+  // signed in / Supabase is configured.
+  const refreshSaves = useCallback(async () => {
+    const local = listLocalSaves();
+    const cloud = user ? await listSavesForUser(user.id) : [];
+    const seen = new Set<string>();
+    const merged: SaveEntry[] = [];
+    for (const e of [...cloud, ...local]) {
+      const id = e.meta.id ?? e.meta.localId ?? e.key;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      merged.push(e);
     }
+    merged.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    setSaves(merged);
   }, [user]);
 
   useEffect(() => {
@@ -60,12 +69,6 @@ export default function PlayPage() {
   useEffect(() => {
     if (phase === "menu") refreshSaves();
   }, [phase, refreshSaves]);
-
-  // resuming an existing game from the menu jumps straight in (the onboarding
-  // flow drives its own transition through the cinematic launch).
-  useEffect(() => {
-    if (game && phase === "menu") setPhase("playing");
-  }, [game, phase]);
 
   // After "Play again" the store clears the game; return to the menu instead of
   // rendering a blank screen (there is no "playing" view without a game).
@@ -123,6 +126,13 @@ export default function PlayPage() {
             )}
 
             <Card className="mt-4 space-y-3">
+              {/* a game already in memory (e.g. navigated here mid-play) */}
+              {game && game.status === "playing" && (
+                <Button variant="secondary" className="w-full" onClick={() => setPhase("playing")}>
+                  ⏎ Resume current game ({game.cityName})
+                </Button>
+              )}
+
               {/* saved games: continue, view report, or delete */}
               {saves.length > 0 && (
                 <div className="space-y-2 text-left">
@@ -160,7 +170,14 @@ export default function PlayPage() {
                         </p>
                         <div className="mt-2 flex gap-2">
                           {st.status === "playing" ? (
-                            <Button size="sm" variant="secondary" onClick={() => loadGame(s.state, s.meta)}>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => {
+                                loadGame(s.state, s.meta);
+                                setPhase("playing");
+                              }}
+                            >
                               ⏎ Continue
                             </Button>
                           ) : null}

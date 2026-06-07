@@ -110,8 +110,8 @@ export function CityNamer({ onConfirm }: { onConfirm: (name: string) => void }) 
           <Button variant="secondary" onClick={spin} disabled={spinning}>
             {hasSpun ? "🎲 Spin again" : "🎲 Spin the wheels"}
           </Button>
-          <Button onClick={() => onConfirm(name)} disabled={spinning}>
-            Found {name} →
+          <Button onClick={() => onConfirm(name)} disabled={spinning || !hasSpun}>
+            {hasSpun ? `Found ${name} →` : "Spin to name your city"}
           </Button>
         </div>
       </Card>
