@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
+import { GoogleButton } from "@/components/auth/GoogleButton";
 import { restoreByGuestCode } from "@/lib/saves";
 import { useGameStore } from "@/lib/store";
 
@@ -17,6 +18,18 @@ export default function LoginPage() {
   const [code, setCode] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [next, setNext] = useState("/play");
+
+  // Surface an OAuth failure bounced back from /auth/callback, and remember a
+  // safe ?next= path (e.g. a teacher invite link) to return to after login.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("error") === "oauth") {
+      setMsg("Google sign-in didn't complete. Please try again.");
+    }
+    const n = params.get("next");
+    if (n && n.startsWith("/") && !n.startsWith("//")) setNext(n);
+  }, []);
 
   const login = async () => {
     setBusy(true);
@@ -60,7 +73,7 @@ export default function LoginPage() {
         setMsg(error.message);
       }
     } else {
-      router.push("/play");
+      router.push(next);
     }
   };
 
@@ -103,13 +116,26 @@ export default function LoginPage() {
           <Button className="w-full" onClick={login} disabled={busy}>
             {busy ? "Logging in…" : "Log in"}
           </Button>
+
+          <div className="flex items-center gap-3 text-xs text-mist">
+            <span className="h-px flex-1 bg-white/10" />
+            or
+            <span className="h-px flex-1 bg-white/10" />
+          </div>
+          <GoogleButton next={next} onError={setMsg} />
+
           <div className="flex items-center justify-between text-xs text-mist">
             <Link href="/forgot-password" className="hover:text-fog">
               Forgot your password?
             </Link>
             <span>
               No account?{" "}
-              <Link href="/signup" className="text-leaf hover:underline">Sign up</Link>
+              <Link
+                href={`/signup?next=${encodeURIComponent(next)}`}
+                className="text-leaf hover:underline"
+              >
+                Sign up
+              </Link>
             </span>
           </div>
         </Card>

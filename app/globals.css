@@ -26,6 +26,22 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Respect the OS "reduce motion" setting: near-instant transitions, no looping
+   ambient animations, no smooth-scroll. Framer Motion is handled separately via
+   <MotionConfig reducedMotion="user">. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
 body {
   background-color: var(--color-night);
   color: var(--color-fog);
@@ -36,6 +52,33 @@ body {
 h1, h2, h3, .font-display {
   font-family: var(--font-display);
   letter-spacing: -0.01em;
+}
+
+/* Tailwind v4's Preflight resets buttons to cursor:default — restore the
+   pointer for every interactive element. :where() keeps these at zero
+   specificity so any explicit Tailwind cursor-* utility (e.g. cursor-help,
+   cursor-not-allowed) still overrides them. */
+:where(
+  button,
+  a,
+  label[for],
+  summary,
+  select,
+  [role="button"],
+  [role="tab"],
+  [role="link"],
+  [role="menuitem"],
+  [role="option"],
+  [role="switch"],
+  [role="checkbox"],
+  [role="radio"]
+) {
+  cursor: pointer;
+}
+
+:where(button, [role="button"], input, select)[disabled],
+:where([aria-disabled="true"]) {
+  cursor: not-allowed;
 }
 
 /* glassy translucent card */

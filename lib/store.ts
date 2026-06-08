@@ -19,6 +19,7 @@ import {
   passBill,
   plantTrees,
   applyCivicBoost,
+  performStudentAction,
   type ActionResult,
 } from "./engine/engine";
 import { persistSave, makeGuestCode, makeLocalId, type SaveMeta } from "./saves";
@@ -33,6 +34,10 @@ interface GameStore {
   // number of open panels/modals; >0 => auto-paused
   openPanels: number;
   lastFeedback: { title: string; message: string; ok: boolean } | null;
+
+  // save status (for the manual save button + "last saved" indicator)
+  lastSavedAt: number | null; // epoch ms of the last successful persist
+  saving: boolean;
 
   // smooth in-month time flow (0..1 of the current month elapsed)
   monthProgress: number;
@@ -70,10 +75,12 @@ interface GameStore {
   doResearch: (researchId: string) => void;
   doBill: (billId: string) => void;
   doTrees: (treeId: string, batches: number) => void;
+  doStudentAction: (actionId: string, scale?: number) => void;
   doCivicBoost: (letter: string) => void;
   setCivic: (patch: Partial<NonNullable<GameState["civic"]>>) => void;
 
   clearFeedback: () => void;
+  setFeedback: (f: { title: string; message: string; ok: boolean } | null) => void;
   save: () => Promise<void>;
 }
 
@@ -111,6 +118,8 @@ export const useGameStore = create<GameStore>((set, get) => {
     ...state,
     seenStoryIds: state.seenStoryIds ?? [],
     unlockedFeatures: state.unlockedFeatures ?? [],
+    studentActions: state.studentActions ?? [],
+    studentActionCarbon: state.studentActionCarbon ?? 0,
   });
 
   /** Fire a story beat if one is due and none is currently showing. */
@@ -136,6 +145,8 @@ export const useGameStore = create<GameStore>((set, get) => {
     paused: false,
     openPanels: 0,
     lastFeedback: null,
+    lastSavedAt: null,
+    saving: false,
     monthProgress: 0,
     activeStory: null,
     civicRequested: false,
@@ -170,7 +181,8 @@ export const useGameStore = create<GameStore>((set, get) => {
       set({
         game: withDefaults(state),
         meta,
-        paused: true,
+        // Resume with time flowing right away (matches new games).
+        paused: false,
         speed: 1,
         openPanels: 0,
         monthProgress: 0,
@@ -322,6 +334,15 @@ export const useGameStore = create<GameStore>((set, get) => {
       // Planting is a quiet, repeatable action: update + sound, but no popup.
       applyResult(plantTrees(game, treeId, batches), "Trees planted", "trees", { silentSuccess: true });
     },
+    doStudentAction: (actionId, scale = 1) => {
+      const { game } = get();
+      if (!game) return;
+      // The challenge modal shows the outcome, so suppress the bottom popup on
+      // success (errors like cooldown still surface).
+      applyResult(performStudentAction(game, actionId, scale), "Action taken", "civic", {
+        silentSuccess: true,
+      });
+    },
     doCivicBoost: (letter) => {
       const { game } = get();
       if (!game) return;
@@ -346,12 +367,28 @@ export const useGameStore = create<GameStore>((set, get) => {
     },
 
     clearFeedback: () => set({ lastFeedback: null }),
+    setFeedback: (lastFeedback) => set({ lastFeedback }),
 
     save: async () => {
       const { game, meta } = get();
       if (!game) return;
-      const newMeta = await persistSave(game, meta);
-      if (newMeta.id !== meta.id) set({ meta: newMeta });
+      set({ saving: true });
+      // persistSave writes localStorage synchronously, then does a best-effort
+      // cloud upsert. Don't let a slow/stalled cloud write hang the indicator
+      // (or the "Save & exit" button) — the local save is already done.
+      const persist = (async () => {
+        try {
+          const newMeta = await persistSave(game, meta);
+          if (newMeta.id !== meta.id) set({ meta: newMeta });
+        } catch {
+          /* local save already succeeded; ignore cloud errors */
+        }
+      })();
+      await Promise.race([
+        persist,
+        new Promise<void>((resolve) => setTimeout(resolve, 3000)),
+      ]);
+      set({ saving: false, lastSavedAt: Date.now() });
     },
   };
 });

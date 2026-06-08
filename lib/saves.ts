@@ -163,6 +163,9 @@ function rowFromState(state: GameState, meta: SaveMeta) {
     budget: state.budget,
     year_month: formatYearMonth(state),
     finished_at: state.finishedAt ?? null,
+    // Stable creation time (anti-cheat for class joins). Only sent when known
+    // so legacy saves without it leave the column untouched.
+    ...(state.createdAt ? { created_at: state.createdAt } : {}),
     updated_at: new Date().toISOString(),
   };
 }

@@ -110,6 +110,7 @@ create table if not exists public.game_saves (
   budget double precision,
   year_month text,
   finished_at timestamptz,
+  created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
 
@@ -190,6 +191,34 @@ drop policy if exists "classroom_members_insert" on public.classroom_members;
 create policy "classroom_members_insert" on public.classroom_members
   for insert with check (true);
 
+-- Anti-cheat: a game may only join a class that already existed when the game
+-- was created. Blocks entering an old, already-progressed game into a new class.
+-- (Legacy saves with a null created_at are grandfathered in.)
+create or replace function public.enforce_class_join_time()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  game_created timestamptz;
+  class_created timestamptz;
+begin
+  select created_at into game_created from public.game_saves where id = new.game_save_id;
+  select created_at into class_created from public.classrooms where id = new.classroom_id;
+  if game_created is not null and class_created is not null and game_created < class_created then
+    raise exception 'This game was created before the class; it cannot join (anti-cheat).'
+      using errcode = 'check_violation';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_enforce_class_join_time on public.classroom_members;
+create trigger trg_enforce_class_join_time
+  before insert on public.classroom_members
+  for each row execute function public.enforce_class_join_time();
+
 -- ============================================================================
 -- civic_uploads
 -- ============================================================================
@@ -214,10 +243,13 @@ create policy "civic_uploads_insert" on public.civic_uploads
 -- ============================================================================
 -- global_stats — a view exposing the "reached net-zero" count for the Home page
 -- ============================================================================
+-- Counts games that actually reached net-zero (a win): finished, with carbon
+-- gain at or below zero. (carbon_gain stores effectiveCarbonGain at save time.)
 create or replace view public.global_stats as
   select count(*)::int as total_finished
   from public.game_saves
-  where finished_at is not null;
+  where finished_at is not null
+    and carbon_gain <= 0;
 
 -- ============================================================================
 -- Storage bucket for civic-action proof screenshots

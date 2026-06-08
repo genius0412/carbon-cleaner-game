@@ -6,6 +6,7 @@ import { SiteNav, SiteFooter } from "@/components/SiteNav";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
+import { classInviteLink, joinClassByCode } from "@/lib/classroom";
 import { useAuth } from "@/lib/auth";
 import { useGameStore } from "@/lib/store";
 
@@ -22,12 +23,30 @@ interface TeacherClass {
   member_count?: number;
 }
 
-/** Short, readable class code (no ambiguous characters). */
-function makeClassCode(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let out = "";
-  for (let i = 0; i < 6; i++) out += chars[Math.floor(Math.random() * chars.length)];
-  return out;
+/** Turn a Supabase/route error into an actionable message. */
+function friendlyClassError(error: {
+  message?: string;
+  error?: string;
+  code?: string;
+}): string {
+  const msg = error.message ?? error.error ?? "";
+  const code = error.code;
+
+  // Table/policies not applied in the live database (schema drift).
+  if (/permission denied for (table|relation|schema)/i.test(msg)) {
+    return "Your Supabase database is missing INSERT permission on the classrooms table. Re-run the schema GRANTs (see README/schema.sql).";
+  }
+  if (code === "42P01" || /does not exist/i.test(msg)) {
+    return "The classrooms table doesn't exist in your database yet — run schema.sql in Supabase.";
+  }
+  if (/row-level security/i.test(msg)) {
+    return "Blocked by row-level security on classrooms. Re-run the classroom policies from schema.sql in Supabase.";
+  }
+  if (code === "PGRST301" || /jwt|not authenticated/i.test(msg)) {
+    return "Your session wasn't recognized — please log in again.";
+  }
+  // Fall back to the raw reason so nothing is hidden.
+  return msg ? `Couldn't create class: ${msg}` : "Couldn't create a class code. Please try again.";
 }
 
 export default function ClassroomPage() {
@@ -77,34 +96,34 @@ function TeacherSection({ user }: { user: { id: string; username: string | null 
   }, [loadClasses]);
 
   const createClass = async () => {
-    const sb = getSupabaseBrowser();
-    if (!sb || !user) return;
+    if (!user) return;
     setBusy(true);
     setMsg(null);
 
-    // generate a code, retrying on the rare collision (join_code is unique)
-    let created: TeacherClass | null = null;
-    for (let attempt = 0; attempt < 5 && !created; attempt++) {
-      const code = makeClassCode();
-      const { data, error } = await sb
-        .from("classrooms")
-        .insert({ join_code: code, name: name.trim() || "Untitled Class", teacher_id: user.id })
-        .select("id, join_code, name")
-        .single();
-      if (!error && data) {
-        created = data as TeacherClass;
-      } else if (error && !/duplicate|unique/i.test(error.message)) {
-        setMsg(error.message);
-        break;
+    // Create server-side: the route authenticates from the cookie session, so
+    // the RLS teacher check passes even when the browser client fails to attach
+    // the auth token.
+    try {
+      const res = await fetch("/api/classroom/create", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: name.trim() }),
+      });
+      const payload = await res.json();
+      setBusy(false);
+
+      if (res.ok && payload.class) {
+        setJustCreated((payload.class as TeacherClass).join_code);
+        setName("");
+        loadClasses();
+      } else {
+        // eslint-disable-next-line no-console
+        console.error("[classroom] create failed:", payload);
+        setMsg(friendlyClassError(payload));
       }
-    }
-    setBusy(false);
-    if (created) {
-      setJustCreated(created.join_code);
-      setName("");
-      loadClasses();
-    } else if (!msg) {
-      setMsg("Couldn't create a class code. Please try again.");
+    } catch {
+      setBusy(false);
+      setMsg("Couldn't reach the server. Please try again.");
     }
   };
 
@@ -163,20 +182,139 @@ function TeacherSection({ user }: { user: { id: string; username: string | null 
           <p className="text-xs uppercase tracking-widest text-mist">Your classes</p>
           <ul className="mt-2 space-y-2">
             {classes.map((c) => (
-              <li key={c.id} className="glass flex items-center justify-between rounded-xl px-4 py-2.5">
-                <div>
-                  <p className="text-sm font-semibold text-fog">{c.name}</p>
-                  <p className="font-mono text-xs tracking-widest text-cyan">{c.join_code}</p>
-                </div>
-                <Button size="sm" variant="ghost" onClick={() => navigator.clipboard?.writeText(c.join_code)}>
-                  Copy code
-                </Button>
-              </li>
+              <TeacherClassRow key={c.id} cls={c} onRenamed={loadClasses} />
             ))}
           </ul>
         </div>
       )}
     </Card>
+  );
+}
+
+/* ---------------- One class row: rename, copy code, share link ---------- */
+function TeacherClassRow({
+  cls,
+  onRenamed,
+}: {
+  cls: TeacherClass;
+  onRenamed: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(cls.name ?? "");
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const flash = (msg: string) => {
+    setNote(msg);
+    setTimeout(() => setNote(null), 1800);
+  };
+
+  const saveName = async () => {
+    const trimmed = name.trim();
+    if (!trimmed || trimmed === (cls.name ?? "")) {
+      setEditing(false);
+      return;
+    }
+    setBusy(true);
+    setErr(null);
+    try {
+      const res = await fetch("/api/classroom/update", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: cls.id, name: trimmed }),
+      });
+      const payload = await res.json();
+      setBusy(false);
+      if (res.ok) {
+        setEditing(false);
+        onRenamed();
+      } else {
+        setErr(friendlyClassError(payload));
+      }
+    } catch {
+      setBusy(false);
+      setErr("Couldn't reach the server. Please try again.");
+    }
+  };
+
+  return (
+    <li className="glass rounded-xl px-4 py-2.5">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          {editing ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                autoFocus
+                className="flex-1 rounded-lg border border-white/12 bg-night/60 px-2.5 py-1.5 text-sm outline-none focus:border-leaf/50"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") saveName();
+                  if (e.key === "Escape") {
+                    setName(cls.name ?? "");
+                    setEditing(false);
+                  }
+                }}
+              />
+              <Button size="sm" onClick={saveName} disabled={busy}>
+                {busy ? "Saving…" : "Save"}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setName(cls.name ?? "");
+                  setEditing(false);
+                  setErr(null);
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <p className="truncate text-sm font-semibold text-fog">
+                {cls.name || "Untitled Class"}
+              </p>
+              <span className="rounded-full bg-white/8 px-2 py-0.5 font-mono text-[11px] tracking-widest text-cyan">
+                {cls.join_code}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {!editing && (
+          <div className="flex shrink-0 gap-2">
+            <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
+              Rename
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                navigator.clipboard?.writeText(cls.join_code);
+                flash("Code copied");
+              }}
+            >
+              Copy code
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                navigator.clipboard?.writeText(classInviteLink(cls.join_code));
+                flash("Invite link copied");
+              }}
+            >
+              🔗 Share link
+            </Button>
+          </div>
+        )}
+      </div>
+      {note && <p className="mt-1 text-[11px] text-leaf">{note}</p>}
+      {err && <p className="mt-1 text-[11px] text-amber">{err}</p>}
+    </li>
   );
 }
 
@@ -189,14 +327,27 @@ function JoinWithGameSection() {
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  if (!game) return null; // only relevant if a game is in progress
+  // Joining links your game to the class scoreboard, so it needs an active
+  // game. If none is loaded, explain that instead of hiding the section.
+  if (!game) {
+    return (
+      <Card className="mt-6">
+        <h2 className="font-display text-xl font-semibold text-cyan">Join a class with your game</h2>
+        <p className="mt-1 text-sm text-mist">
+          To put your city on a class scoreboard, you first need a game going.
+          Start or continue one, then come back here with your teacher&apos;s code.
+        </p>
+        <Link
+          href="/play"
+          className="mt-3 inline-block rounded-full bg-leaf px-5 py-2 text-sm font-semibold text-night transition-transform hover:scale-105"
+        >
+          Start or continue a game →
+        </Link>
+      </Card>
+    );
+  }
 
   const join = async () => {
-    const sb = getSupabaseBrowser();
-    if (!sb) {
-      setMsg("Joining a class requires Supabase to be configured.");
-      return;
-    }
     setBusy(true);
     setMsg(null);
 
@@ -209,25 +360,9 @@ function JoinWithGameSection() {
       return;
     }
 
-    const { data: cls } = await sb
-      .from("classrooms")
-      .select("id")
-      .eq("join_code", code.trim().toUpperCase())
-      .maybeSingle();
-    if (!cls) {
-      setBusy(false);
-      setMsg("No class found with that code.");
-      return;
-    }
-
-    const { error } = await sb
-      .from("classroom_members")
-      .upsert(
-        { classroom_id: cls.id, game_save_id: saveId, city_name: game.cityName },
-        { onConflict: "classroom_id,game_save_id" },
-      );
+    const result = await joinClassByCode(code, saveId, game.cityName, game.createdAt);
     setBusy(false);
-    setMsg(error ? error.message : `Joined! ${game.cityName} is now on the scoreboard.`);
+    setMsg(result.message);
   };
 
   return (
@@ -257,6 +392,7 @@ function JoinWithGameSection() {
 function ScoreboardSection() {
   const [code, setCode] = useState("");
   const [joined, setJoined] = useState<string | null>(null);
+  const [className, setClassName] = useState<string | null>(null);
   const [rows, setRows] = useState<Row[]>([]);
   const [found, setFound] = useState<boolean | null>(null); // null = not checked yet
   const [msg, setMsg] = useState<string | null>(null);
@@ -266,6 +402,7 @@ function ScoreboardSection() {
     setRows([]);
     setFound(null);
     setMsg(null);
+    setClassName(null);
     setJoined(code.trim().toUpperCase());
   };
 
@@ -282,7 +419,7 @@ function ScoreboardSection() {
       try {
         const { data: cls } = await sb
           .from("classrooms")
-          .select("id")
+          .select("id, name")
           .eq("join_code", joined)
           .maybeSingle();
         if (!cls) {
@@ -293,6 +430,7 @@ function ScoreboardSection() {
           }
           return;
         }
+        if (active) setClassName((cls.name as string | null) ?? null);
         const { data } = await sb
           .from("classroom_members")
           .select("city_name, game_saves(carbon_gain, finished_at, city_name)")
@@ -342,7 +480,14 @@ function ScoreboardSection() {
       {/* only render the class block once the code is confirmed valid */}
       {joined && found === true && (
         <div className="mt-5">
-          <h3 className="font-display text-sm font-semibold text-cyan">Class {joined}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-display text-lg font-semibold text-cyan">
+              {className || "Class"}
+            </h3>
+            <span className="rounded-full bg-white/8 px-2 py-0.5 font-mono text-[11px] tracking-widest text-mist">
+              {joined}
+            </span>
+          </div>
           <div className="mt-3 space-y-2">
             {rows.length === 0 && (
               <p className="text-sm text-mist">Waiting for players to join…</p>

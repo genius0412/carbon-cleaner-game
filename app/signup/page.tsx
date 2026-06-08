@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
+import { GoogleButton } from "@/components/auth/GoogleButton";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -15,6 +16,13 @@ export default function SignupPage() {
   const [msg, setMsg] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [next, setNext] = useState("/play");
+
+  // Remember a safe ?next= path (e.g. a teacher invite link) to return to.
+  useEffect(() => {
+    const n = new URLSearchParams(window.location.search).get("next");
+    if (n && n.startsWith("/") && !n.startsWith("//")) setNext(n);
+  }, []);
 
   const signup = async () => {
     setMsg(null);
@@ -91,7 +99,7 @@ export default function SignupPage() {
     if (data.session) {
       // email confirmation disabled → logged straight in
       setMsg("Account created! Taking you to the game…");
-      setTimeout(() => router.push("/play"), 1200);
+      setTimeout(() => router.push(next), 1200);
     } else {
       setMsg(
         "Account created! Check your email for a confirmation link, then come back and log in.",
@@ -132,10 +140,24 @@ export default function SignupPage() {
           <Button className="w-full" onClick={signup} disabled={busy}>
             {busy ? "Creating…" : "Sign up"}
           </Button>
+
+          <div className="flex items-center gap-3 text-xs text-mist">
+            <span className="h-px flex-1 bg-white/10" />
+            or
+            <span className="h-px flex-1 bg-white/10" />
+          </div>
+          <GoogleButton label="Sign up with Google" next={next} onError={setMsg} />
+
           <p className="text-center text-xs text-mist">
-            Have an account? <Link href="/login" className="text-leaf hover:underline">Log in</Link>
+            Have an account?{" "}
+            <Link
+              href={`/login?next=${encodeURIComponent(next)}`}
+              className="text-leaf hover:underline"
+            >
+              Log in
+            </Link>
             {" · "}
-            <Link href="/play" className="text-leaf hover:underline">Play as guest</Link>
+            <Link href={next} className="text-leaf hover:underline">Play as guest</Link>
           </p>
         </Card>
         {msg && (

@@ -95,9 +95,49 @@ export interface TreeDef {
 /** A logged action for the timeline / final report. */
 export interface ActionLogEntry {
   yearMonth: string; // "March 2031"
-  type: "infrastructure" | "research" | "bill" | "trees" | "civic";
+  type: "infrastructure" | "research" | "bill" | "trees" | "civic" | "student";
   label: string;
   detail: string;
+}
+
+/** Grassroots actions a student can realistically take. */
+export type StudentActionCategory =
+  | "awareness"
+  | "school"
+  | "lifestyle"
+  | "community"
+  | "fundraising";
+
+export interface StudentActionDef {
+  id: string;
+  name: string;
+  icon: string;
+  category: StudentActionCategory;
+  description: string;
+  /** Budget spent on materials (often 0 — students mostly spend effort). */
+  cost: number;
+  /** Budget raised (fundraisers). */
+  budgetDelta?: number;
+  /** ppm/mo added to the base carbon gain (negative = removes carbon). */
+  carbonDelta: number;
+  /** Immediate support change (%). */
+  supportDelta: number;
+  /** Can it be done more than once? */
+  repeatable: boolean;
+  /** Minimum in-game months between repeats (0 = none). */
+  cooldownMonths: number;
+  /** Each repeat multiplies effects by diminishing^count (1 = no decay). */
+  diminishing: number;
+  /** Flavor shown after taking the action. */
+  feedback: string;
+}
+
+/** Per-action progress record for student actions. */
+export interface StudentActionRecord {
+  id: string;
+  count: number;
+  /** Absolute month index (year*12 + month-1) of the last time it was done. */
+  lastMonthIndex: number;
 }
 
 export interface GameState {
@@ -105,6 +145,9 @@ export interface GameState {
   mode: "mayor" | "student";
   characterType: CharacterType;
   cityName: string;
+  /** Real-world ISO timestamp when the game was created (anti-cheat: a game
+   *  can only join a class that existed at or before this time). */
+  createdAt?: string;
 
   // time
   year: number;
@@ -124,6 +167,11 @@ export interface GameState {
   activeResearch: ActiveResearch[];
   passedBills: string[];
   trees: { defId: string; batches: number }[];
+
+  /** Grassroots student actions taken, with repeat counts + cooldown tracking. */
+  studentActions: StudentActionRecord[];
+  /** Cumulative ppm/mo reduction from student actions (<= 0). */
+  studentActionCarbon: number;
 
   // bookkeeping
   tookNegativeActionThisMonth: boolean;
