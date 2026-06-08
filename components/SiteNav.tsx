@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { LeafLogo } from "@/components/ui/LeafLogo";
 
 const links = [
   { href: "/about", label: "About" },
+  { href: "/team", label: "Our Team" },
   { href: "/how-to-play", label: "How to Play" },
-  { href: "/team", label: "Team" },
+  { href: "/classroom", label: "Classroom" },
   { href: "/sources", label: "Sources" },
 ];
 
@@ -11,7 +13,7 @@ export function SiteNav() {
   return (
     <header className="z-20 flex items-center justify-between px-6 py-5 sm:px-10">
       <Link href="/" className="flex items-center gap-2 text-sm font-semibold tracking-wide">
-        <span className="h-2.5 w-2.5 rounded-full bg-leaf shadow-[0_0_12px] shadow-leaf" />
+        <LeafLogo className="h-6 w-6 text-leaf drop-shadow-[0_0_8px_rgba(61,220,132,0.45)]" />
         Carbon Cleaner
       </Link>
       <nav className="hidden items-center gap-7 text-sm text-mist sm:flex">
@@ -41,6 +43,10 @@ export function SiteFooter() {
   return (
     <footer className="z-10 border-t border-white/8 px-6 py-8 text-center text-xs text-mist sm:px-10">
       <div className="mx-auto flex max-w-4xl flex-col items-center gap-3">
+        <Link href="/" className="flex items-center gap-2 font-semibold text-fog">
+          <LeafLogo className="h-5 w-5 text-leaf" />
+          Carbon Cleaner
+        </Link>
         <nav className="flex flex-wrap justify-center gap-5">
           <Link href="/about" className="hover:text-fog">About</Link>
           <Link href="/how-to-play" className="hover:text-fog">How to Play</Link>

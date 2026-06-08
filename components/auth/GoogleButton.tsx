@@ -10,9 +10,12 @@ import { getSupabaseBrowser } from "@/lib/supabase/client";
  */
 export function GoogleButton({
   label = "Continue with Google",
+  next = "/play",
   onError,
 }: {
   label?: string;
+  /** Safe relative path to return to after sign-in (e.g. a teacher invite). */
+  next?: string;
   onError?: (message: string) => void;
 }) {
   const [busy, setBusy] = useState(false);
@@ -24,10 +27,14 @@ export function GoogleButton({
       return;
     }
     setBusy(true);
+    const callback = new URL("/auth/callback", window.location.origin);
+    if (next && next.startsWith("/") && !next.startsWith("//")) {
+      callback.searchParams.set("next", next);
+    }
     const { error } = await sb.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callback.toString(),
       },
     });
     if (error) {

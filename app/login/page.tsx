@@ -18,12 +18,17 @@ export default function LoginPage() {
   const [code, setCode] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [next, setNext] = useState("/play");
 
-  // Surface an OAuth failure bounced back from /auth/callback.
+  // Surface an OAuth failure bounced back from /auth/callback, and remember a
+  // safe ?next= path (e.g. a teacher invite link) to return to after login.
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("error") === "oauth") {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("error") === "oauth") {
       setMsg("Google sign-in didn't complete. Please try again.");
     }
+    const n = params.get("next");
+    if (n && n.startsWith("/") && !n.startsWith("//")) setNext(n);
   }, []);
 
   const login = async () => {
@@ -68,7 +73,7 @@ export default function LoginPage() {
         setMsg(error.message);
       }
     } else {
-      router.push("/play");
+      router.push(next);
     }
   };
 
@@ -117,7 +122,7 @@ export default function LoginPage() {
             or
             <span className="h-px flex-1 bg-white/10" />
           </div>
-          <GoogleButton onError={setMsg} />
+          <GoogleButton next={next} onError={setMsg} />
 
           <div className="flex items-center justify-between text-xs text-mist">
             <Link href="/forgot-password" className="hover:text-fog">
@@ -125,7 +130,12 @@ export default function LoginPage() {
             </Link>
             <span>
               No account?{" "}
-              <Link href="/signup" className="text-leaf hover:underline">Sign up</Link>
+              <Link
+                href={`/signup?next=${encodeURIComponent(next)}`}
+                className="text-leaf hover:underline"
+              >
+                Sign up
+              </Link>
             </span>
           </div>
         </Card>

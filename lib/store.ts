@@ -79,6 +79,7 @@ interface GameStore {
   setCivic: (patch: Partial<NonNullable<GameState["civic"]>>) => void;
 
   clearFeedback: () => void;
+  setFeedback: (f: { title: string; message: string; ok: boolean } | null) => void;
   save: () => Promise<void>;
 }
 
@@ -179,7 +180,8 @@ export const useGameStore = create<GameStore>((set, get) => {
       set({
         game: withDefaults(state),
         meta,
-        paused: true,
+        // Resume with time flowing right away (matches new games).
+        paused: false,
         speed: 1,
         openPanels: 0,
         monthProgress: 0,
@@ -350,6 +352,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     },
 
     clearFeedback: () => set({ lastFeedback: null }),
+    setFeedback: (lastFeedback) => set({ lastFeedback }),
 
     save: async () => {
       const { game, meta } = get();

@@ -46,6 +46,7 @@ export function createInitialState(
     mode,
     characterType,
     cityName: cityName || `${GAME.stateName} City`,
+    createdAt: new Date().toISOString(),
     year: GAME.startYear,
     month: GAME.startMonth,
     status: "playing",

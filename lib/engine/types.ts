@@ -145,6 +145,9 @@ export interface GameState {
   mode: "mayor" | "student";
   characterType: CharacterType;
   cityName: string;
+  /** Real-world ISO timestamp when the game was created (anti-cheat: a game
+   *  can only join a class that existed at or before this time). */
+  createdAt?: string;
 
   // time
   year: number;

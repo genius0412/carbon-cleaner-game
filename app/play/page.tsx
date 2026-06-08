@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "@/lib/store";
 import { ToastProvider } from "@/components/ui/Toast";
+import { LeafLogo } from "@/components/ui/LeafLogo";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { IntroBriefing } from "@/components/game/IntroBriefing";
@@ -20,10 +21,11 @@ import {
   type SaveEntry,
 } from "@/lib/saves";
 import { formatYearMonth } from "@/lib/engine/engine";
+import { joinClassByCode, normalizeClassCode } from "@/lib/classroom";
 import { useAuth } from "@/lib/auth";
 import type { CharacterType } from "@/lib/engine/types";
 
-type Phase = "menu" | "intro" | "character" | "city" | "launch" | "playing";
+type Phase = "menu" | "joinclass" | "intro" | "character" | "city" | "launch" | "playing";
 
 const CHAR_LABEL: Record<CharacterType, string> = {
   mayor: "Mayor",
@@ -31,16 +33,61 @@ const CHAR_LABEL: Record<CharacterType, string> = {
   student_younger: "Student 9–14",
 };
 
+/** Where login/signup should return to, preserving the class code if present. */
+function classCodeNext(code: string): string {
+  const c = normalizeClassCode(code);
+  return c ? `/play?class=${encodeURIComponent(c)}` : "/play";
+}
+
 export default function PlayPage() {
   const game = useGameStore((s) => s.game);
   const newGame = useGameStore((s) => s.newGame);
   const loadGame = useGameStore((s) => s.loadGame);
+  const save = useGameStore((s) => s.save);
   const { user, loading: authLoading, signOut } = useAuth();
 
   const [phase, setPhase] = useState<Phase>("menu");
   const [character, setCharacter] = useState<CharacterType>("mayor");
   const [asGuest, setAsGuest] = useState(true);
   const [saves, setSaves] = useState<SaveEntry[]>([]);
+  // Class the new game should auto-join after it's created (from the join step
+  // or a teacher's invite link).
+  const [classCode, setClassCode] = useState("");
+  const [pendingClassCode, setPendingClassCode] = useState<string | null>(null);
+
+  // Teacher invite link: /play?class=CODE → jump straight to the join step with
+  // the code pre-filled so students don't have to type anything.
+  useEffect(() => {
+    const c = new URLSearchParams(window.location.search).get("class");
+    if (c && !game) {
+      setClassCode(normalizeClassCode(c));
+      setPhase("joinclass");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // After a new game is created, link it to the chosen class (best-effort, in
+  // the background so it never blocks the launch). The result is surfaced in
+  // the game via the feedback card.
+  const autoJoinClass = useCallback(
+    async (code: string, cityName: string) => {
+      await save();
+      const { meta: m, game: g, setFeedback } = useGameStore.getState();
+      const saveId = m.id;
+      if (!saveId) {
+        setFeedback({
+          title: "Class not joined yet",
+          message:
+            "Couldn't link your game to the class — open “Join a class” from the game menu to try again.",
+          ok: false,
+        });
+        return;
+      }
+      const res = await joinClassByCode(code, saveId, cityName, g?.createdAt);
+      setFeedback({ title: res.ok ? "Joined class" : "Class", message: res.message, ok: res.ok });
+    },
+    [save],
+  );
 
   // Refresh the list of saved games. Always include local saves, and merge in
   // cloud saves when logged in (deduped) so games show whether or not you're
@@ -119,7 +166,10 @@ export default function PlayPage() {
         {phase === "menu" && (
           <div className="mx-auto max-w-md text-center">
             <Link href="/" className="text-sm text-mist hover:text-fog">← Home</Link>
-            <h1 className="mt-4 font-display text-4xl font-semibold">Carbon Cleaner</h1>
+            <h1 className="mt-4 flex items-center justify-center gap-2 font-display text-4xl font-semibold">
+              <LeafLogo className="h-9 w-9 text-leaf drop-shadow-[0_0_10px_rgba(61,220,132,0.5)]" />
+              Carbon Cleaner
+            </h1>
             <p className="mt-2 text-mist">Begin your mission to net-zero.</p>
             {/* logged-in banner */}
             {user && (
@@ -210,7 +260,14 @@ export default function PlayPage() {
                 </label>
               )}
 
-              <Button className="w-full" onClick={() => setPhase("intro")}>
+              <Button
+                className="w-full"
+                onClick={() => {
+                  setClassCode("");
+                  setPendingClassCode(null);
+                  setPhase("joinclass");
+                }}
+              >
                 ✦ New game
               </Button>
 
@@ -236,6 +293,90 @@ export default function PlayPage() {
           </div>
         )}
 
+        {phase === "joinclass" && (
+          <div className="mx-auto max-w-md text-center">
+            <h1 className="flex items-center justify-center gap-2 font-display text-3xl font-semibold">
+              <LeafLogo className="h-8 w-8 text-leaf drop-shadow-[0_0_10px_rgba(61,220,132,0.5)]" />
+              Join a class?
+            </h1>
+            <p className="mt-3 text-sm text-mist">
+              If your teacher gave you a class code, enter it now to put your city
+              on the class scoreboard. No code? No problem — you can join a class
+              at any time from the game menu.
+            </p>
+            <Card className="mt-5 space-y-3">
+              <input
+                autoFocus
+                className="w-full rounded-lg border border-white/12 bg-night/60 px-3 py-2 text-center font-mono text-lg uppercase tracking-widest outline-none focus:border-leaf/50"
+                placeholder="CLASS CODE"
+                value={classCode}
+                onChange={(e) => setClassCode(e.target.value.toUpperCase())}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && classCode.trim()) {
+                    setPendingClassCode(normalizeClassCode(classCode));
+                    setPhase("intro");
+                  }
+                }}
+              />
+              <Button
+                className="w-full"
+                disabled={!classCode.trim()}
+                onClick={() => {
+                  setPendingClassCode(normalizeClassCode(classCode));
+                  setPhase("intro");
+                }}
+              >
+                Join class &amp; continue →
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full"
+                onClick={() => {
+                  setPendingClassCode(null);
+                  setPhase("intro");
+                }}
+              >
+                Don&apos;t join a class
+              </Button>
+            </Card>
+
+            {/* Let students sign in so their game saves to their account. The
+                class code is preserved via ?next= so they return right here. */}
+            {!user && (
+              <p className="mt-4 text-xs text-mist">
+                Want your game saved to your account?{" "}
+                <Link
+                  href={`/login?next=${encodeURIComponent(classCodeNext(classCode))}`}
+                  className="text-leaf hover:underline"
+                >
+                  Log in
+                </Link>{" "}
+                or{" "}
+                <Link
+                  href={`/signup?next=${encodeURIComponent(classCodeNext(classCode))}`}
+                  className="text-leaf hover:underline"
+                >
+                  sign up
+                </Link>
+                . You&apos;ll come right back to this class.
+              </p>
+            )}
+            {user && (
+              <p className="mt-4 text-xs text-mist">
+                Signed in as{" "}
+                <strong className="text-leaf">{user.username ?? user.email}</strong>
+              </p>
+            )}
+
+            <button
+              onClick={() => setPhase("menu")}
+              className="mt-4 text-xs text-mist hover:text-fog"
+            >
+              ← Back
+            </button>
+          </div>
+        )}
+
         {phase === "intro" && <IntroBriefing onContinue={() => setPhase("character")} />}
 
         {phase === "character" && (
@@ -252,6 +393,11 @@ export default function PlayPage() {
             onConfirm={(name) => {
               newGame(character, name, { asGuest, userId: user?.id ?? null });
               setPhase("launch");
+              // Link the fresh game to the chosen class in the background.
+              if (pendingClassCode) {
+                autoJoinClass(pendingClassCode, name);
+                setPendingClassCode(null);
+              }
             }}
           />
         )}
