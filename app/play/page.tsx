@@ -46,7 +46,13 @@ export default function PlayPage() {
   // cloud saves when logged in (deduped) so games show whether or not you're
   // signed in / Supabase is configured.
   const refreshSaves = useCallback(async () => {
-    const local = listLocalSaves();
+    // Local saves are mirrored copies that may belong to a signed-in account.
+    // Only surface ones the *current* viewer owns: when logged out (guest),
+    // that's guest saves only (no userId); when logged in, that's your own
+    // saves plus guest saves — never another account's leftovers.
+    const local = listLocalSaves().filter((e) =>
+      user ? !e.meta.userId || e.meta.userId === user.id : !e.meta.userId,
+    );
     const cloud = user ? await listSavesForUser(user.id) : [];
     const seen = new Set<string>();
     const merged: SaveEntry[] = [];
@@ -61,7 +67,8 @@ export default function PlayPage() {
   }, [user]);
 
   useEffect(() => {
-    if (user) setAsGuest(false);
+    // Logged in → default to saving under the account; logged out → guest mode.
+    setAsGuest(!user);
     refreshSaves();
   }, [user, refreshSaves]);
 
@@ -85,7 +92,7 @@ export default function PlayPage() {
   if (phase === "playing" && game) {
     return (
       <ToastProvider>
-        <Dashboard />
+        <Dashboard onExit={() => setPhase("menu")} />
       </ToastProvider>
     );
   }

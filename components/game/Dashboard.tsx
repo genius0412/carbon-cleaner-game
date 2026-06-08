@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "@/lib/store";
 import type { Region } from "@/lib/engine/types";
@@ -13,15 +12,16 @@ import { RegionPanel } from "./panels/RegionPanel";
 import { ResearchPanel } from "./panels/ResearchPanel";
 import { BillsPanel } from "./panels/BillsPanel";
 import { TreesPanel } from "./panels/TreesPanel";
+import { StudentActionsPanel } from "./panels/StudentActionsPanel";
 import { CivicAction } from "./CivicAction";
 import { EndScreen } from "./EndScreen";
 import { StoryModal } from "./StoryModal";
 import { FeedbackCard } from "@/components/ui/FeedbackCard";
 import { Button } from "@/components/ui/Button";
 
-type PanelKey = "research" | "bills" | "trees" | "civic" | null;
+type PanelKey = "research" | "bills" | "trees" | "civic" | "student" | null;
 
-export function Dashboard() {
+export function Dashboard({ onExit }: { onExit?: () => void }) {
   const game = useGameStore((s) => s.game);
   const meta = useGameStore((s) => s.meta);
   const paused = useGameStore((s) => s.paused);
@@ -32,6 +32,7 @@ export function Dashboard() {
   const clearFeedback = useGameStore((s) => s.clearFeedback);
   const civicRequested = useGameStore((s) => s.civicRequested);
   const clearCivicRequest = useGameStore((s) => s.clearCivicRequest);
+  const save = useGameStore((s) => s.save);
 
   const [region, setRegion] = useState<Region | null>(null);
   const [panel, setPanel] = useState<PanelKey>(null);
@@ -73,10 +74,20 @@ export function Dashboard() {
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2 text-sm font-semibold">
+          <button
+            onClick={async () => {
+              await save(); // flush the latest state before leaving
+              onExit?.();
+            }}
+            className="flex items-center gap-2 rounded-full border border-white/12 px-3 py-1.5 text-sm font-semibold text-fog/90 hover:bg-white/5"
+            title="Save & exit to the menu"
+          >
+            ⏏ Exit
+          </button>
+          <span className="flex items-center gap-2 text-sm font-semibold">
             <span className="h-2.5 w-2.5 rounded-full bg-leaf shadow-[0_0_12px] shadow-leaf" />
             {game.cityName}
-          </Link>
+          </span>
           <span className="rounded-full bg-white/5 px-2.5 py-0.5 text-[11px] text-mist">
             {game.characterType === "mayor"
               ? "Mayor"
@@ -86,6 +97,7 @@ export function Dashboard() {
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <SaveStatus />
           <GameClock />
           <TimeControls />
         </div>
@@ -137,6 +149,14 @@ export function Dashboard() {
           <Button variant="secondary" onClick={() => setRegion(game.regions[0])}>
             🗺️ Build on the map
           </Button>
+
+          {/* Grassroots actions are always available to students — no budget or
+              storyline gate. This is the heart of what a student can do. */}
+          {isStudent && (
+            <Button onClick={() => setPanel("student")}>
+              ✊ Take Action
+            </Button>
+          )}
 
           {/* Features unlock through the storyline. Locked ones show greyed so
               the player can see what's coming next. */}
@@ -196,6 +216,7 @@ export function Dashboard() {
       <ResearchPanel open={panel === "research"} onClose={() => setPanel(null)} />
       <BillsPanel open={panel === "bills"} onClose={() => setPanel(null)} />
       <TreesPanel open={panel === "trees"} onClose={() => setPanel(null)} />
+      <StudentActionsPanel open={panel === "student"} onClose={() => setPanel(null)} />
       <CivicAction open={panel === "civic"} onClose={() => setPanel(null)} />
 
       {/* story, feedback + end */}
@@ -204,6 +225,55 @@ export function Dashboard() {
       {game.status !== "playing" && <EndScreen game={game} />}
     </div>
   );
+}
+
+/** Manual save button + live "last saved" indicator. */
+function SaveStatus() {
+  const save = useGameStore((s) => s.save);
+  const saving = useGameStore((s) => s.saving);
+  const lastSavedAt = useGameStore((s) => s.lastSavedAt);
+
+  // Re-render every 15s so the relative time stays fresh.
+  const [, setNow] = useState(Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 15_000);
+    return () => clearInterval(t);
+  }, []);
+
+  const label = saving
+    ? "Saving…"
+    : lastSavedAt
+      ? `Saved ${relativeTime(lastSavedAt)}`
+      : "Not saved yet";
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="hidden text-[11px] text-mist sm:inline" aria-live="polite">
+        {saving ? "💾 " : "✓ "}
+        {label}
+      </span>
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={() => save()}
+        disabled={saving}
+        title="Save now"
+      >
+        {saving ? "Saving…" : "💾 Save"}
+      </Button>
+    </div>
+  );
+}
+
+/** Compact relative time: "just now", "2m ago", "1h ago". */
+function relativeTime(ts: number): string {
+  const secs = Math.max(0, Math.round((Date.now() - ts) / 1000));
+  if (secs < 10) return "just now";
+  if (secs < 60) return `${secs}s ago`;
+  const mins = Math.round(secs / 60);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  return `${hrs}h ago`;
 }
 
 /** Sidebar action that's greyed + locked until the storyline unlocks it. */

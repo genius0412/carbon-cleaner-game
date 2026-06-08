@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
+import { GoogleButton } from "@/components/auth/GoogleButton";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -132,6 +133,14 @@ export default function SignupPage() {
           <Button className="w-full" onClick={signup} disabled={busy}>
             {busy ? "Creating…" : "Sign up"}
           </Button>
+
+          <div className="flex items-center gap-3 text-xs text-mist">
+            <span className="h-px flex-1 bg-white/10" />
+            or
+            <span className="h-px flex-1 bg-white/10" />
+          </div>
+          <GoogleButton label="Sign up with Google" onError={setMsg} />
+
           <p className="text-center text-xs text-mist">
             Have an account? <Link href="/login" className="text-leaf hover:underline">Log in</Link>
             {" · "}

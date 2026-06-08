@@ -23,6 +23,7 @@ import {
   researchById,
   billById,
 } from "./content";
+import { studentActionById } from "./studentActions";
 
 // ---------------------------------------------------------------------------
 // Initialization
@@ -58,6 +59,8 @@ export function createInitialState(
     activeResearch: [],
     passedBills: [],
     trees: [],
+    studentActions: [],
+    studentActionCarbon: 0,
     tookNegativeActionThisMonth: false,
     log: [],
     seenStoryIds: [],
@@ -163,7 +166,15 @@ export function recomputeCarbonGain(state: GameState): number {
     gain -= GAME.student.civicActionCarbonBoost;
   }
 
+  // grassroots student actions (cumulative, already stored as a <= 0 sum)
+  gain += state.studentActionCarbon ?? 0;
+
   return gain;
+}
+
+/** Absolute month index for cooldown math: year*12 + (month-1). */
+export function monthIndex(state: GameState): number {
+  return state.year * 12 + (state.month - 1);
 }
 
 /**
@@ -546,6 +557,115 @@ export function applyCivicBoost(prev: GameState, letter: string): GameState {
   if (state.status !== "playing" && !state.finishedAt)
     state.finishedAt = new Date().toISOString();
   return state;
+}
+
+/**
+ * Availability + remaining cooldown for a student action, so the UI can show
+ * "Done", "Available in N months", or a live button without duplicating rules.
+ */
+export interface StudentActionStatus {
+  count: number;
+  /** True if it can be taken right now (ignoring budget). */
+  available: boolean;
+  /** Months until it can be repeated (0 if available now). */
+  cooldownLeft: number;
+  /** One-time action that has already been used. */
+  doneOnce: boolean;
+}
+
+export function studentActionStatus(
+  state: GameState,
+  actionId: string,
+): StudentActionStatus {
+  const def = studentActionById(actionId);
+  const rec = (state.studentActions ?? []).find((r) => r.id === actionId);
+  const count = rec?.count ?? 0;
+  if (!def) return { count, available: false, cooldownLeft: 0, doneOnce: false };
+
+  const doneOnce = !def.repeatable && count >= 1;
+  let cooldownLeft = 0;
+  if (rec && def.cooldownMonths > 0) {
+    cooldownLeft = Math.max(0, rec.lastMonthIndex + def.cooldownMonths - monthIndex(state));
+  }
+  return { count, available: !doneOnce && cooldownLeft === 0, cooldownLeft, doneOnce };
+}
+
+/**
+ * Take a grassroots student action (advocacy, school project, fundraiser, …).
+ * `scale` (0..1) is how well the player did the action's challenge — it scales
+ * the rewards (carbon/support/budget), never the cost. Defaults to full.
+ */
+export function performStudentAction(
+  prev: GameState,
+  actionId: string,
+  scale = 1,
+): ActionResult {
+  const def = studentActionById(actionId);
+  if (!def) return { state: prev, ok: false, message: "Unknown action." };
+
+  const records = prev.studentActions ?? [];
+  const rec = records.find((r) => r.id === actionId);
+  const count = rec?.count ?? 0;
+
+  if (!def.repeatable && count >= 1)
+    return { state: prev, ok: false, message: "You've already done this one." };
+
+  const now = monthIndex(prev);
+  if (rec && def.cooldownMonths > 0) {
+    const wait = rec.lastMonthIndex + def.cooldownMonths - now;
+    if (wait > 0)
+      return {
+        state: prev,
+        ok: false,
+        message: `Give it time — you can do this again in ${wait} month${wait > 1 ? "s" : ""}.`,
+      };
+  }
+
+  if (def.cost > 0 && prev.budget < def.cost)
+    return { state: prev, ok: false, message: "Not enough budget for materials." };
+
+  // Diminishing returns on repeats keep spamming one action from winning;
+  // challenge performance (scale) further tunes this run's payoff.
+  const perf = Math.max(0, Math.min(1, scale));
+  const factor = Math.pow(def.diminishing, count) * perf;
+  const carbon = def.carbonDelta * factor;
+  const support = def.supportDelta * factor;
+  const budgetGain = (def.budgetDelta ?? 0) * factor;
+
+  const studentActions = rec
+    ? records.map((r) =>
+        r.id === actionId ? { ...r, count: count + 1, lastMonthIndex: now } : r,
+      )
+    : [...records, { id: actionId, count: 1, lastMonthIndex: now }];
+
+  const detailBits: string[] = [];
+  if (carbon < 0) detailBits.push(`carbon −${Math.abs(carbon).toFixed(4)} ppm/mo`);
+  if (support) detailBits.push(`support ${support > 0 ? "+" : ""}${support.toFixed(1)}%`);
+  if (def.cost > 0) detailBits.push(`cost $${def.cost.toLocaleString()}`);
+  if (budgetGain) detailBits.push(`+$${Math.round(budgetGain).toLocaleString()} raised`);
+
+  const state: GameState = {
+    ...prev,
+    budget: prev.budget - def.cost + budgetGain,
+    support: clampSupport(prev.support + support),
+    studentActions,
+    studentActionCarbon: (prev.studentActionCarbon ?? 0) + carbon,
+    tookNegativeActionThisMonth: prev.tookNegativeActionThisMonth || support < 0,
+    log: [
+      ...prev.log,
+      {
+        yearMonth: formatYearMonth(prev),
+        type: "student",
+        label: def.name,
+        detail: detailBits.join(", ") || def.description,
+      },
+    ],
+  };
+  state.carbonGainPerMonth = recomputeCarbonGain(state);
+  state.status = evaluateStatus(state);
+  if (state.status !== "playing" && !state.finishedAt)
+    state.finishedAt = new Date().toISOString();
+  return { state, ok: true, message: def.feedback };
 }
 
 /** Infrastructure available to the current character (students are limited). */
