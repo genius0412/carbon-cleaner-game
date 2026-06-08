@@ -21,7 +21,7 @@ import {
   type SaveEntry,
 } from "@/lib/saves";
 import { formatYearMonth } from "@/lib/engine/engine";
-import { joinClassByCode, normalizeClassCode } from "@/lib/classroom";
+import { joinClassByCode, normalizeClassCode, getClassAllowedRoles } from "@/lib/classroom";
 import { useAuth } from "@/lib/auth";
 import type { CharacterType } from "@/lib/engine/types";
 
@@ -46,7 +46,13 @@ export default function PlayPage() {
   const save = useGameStore((s) => s.save);
   const { user, loading: authLoading, signOut } = useAuth();
 
-  const [phase, setPhase] = useState<Phase>("menu");
+  // Derive the starting phase from the store so a remount (mobile tab eviction
+  // / bfcache restore, the Supabase auth-lock recovery, dev Fast Refresh) drops
+  // the player back INTO their live game instead of kicking them to the menu —
+  // the game itself lives in the store and survives the remount.
+  const [phase, setPhase] = useState<Phase>(() =>
+    useGameStore.getState().game?.status === "playing" ? "playing" : "menu",
+  );
   const [character, setCharacter] = useState<CharacterType>("mayor");
   const [asGuest, setAsGuest] = useState(true);
   const [saves, setSaves] = useState<SaveEntry[]>([]);
@@ -54,6 +60,24 @@ export default function PlayPage() {
   // or a teacher's invite link).
   const [classCode, setClassCode] = useState("");
   const [pendingClassCode, setPendingClassCode] = useState<string | null>(null);
+  // Roles the joined class permits (null = no restriction / not in a class).
+  const [allowedRoles, setAllowedRoles] = useState<CharacterType[] | null>(null);
+
+  // When a class is chosen, fetch which roles it allows so the role picker can
+  // limit the options. No class (or no restriction) → offer every role.
+  useEffect(() => {
+    let active = true;
+    if (!pendingClassCode) {
+      setAllowedRoles(null);
+      return;
+    }
+    getClassAllowedRoles(pendingClassCode).then((roles) => {
+      if (active) setAllowedRoles(roles);
+    });
+    return () => {
+      active = false;
+    };
+  }, [pendingClassCode]);
 
   // Teacher invite link: /play?class=CODE → jump straight to the join step with
   // the code pre-filled so students don't have to type anything.
@@ -381,6 +405,7 @@ export default function PlayPage() {
 
         {phase === "character" && (
           <CharacterSelect
+            allowedRoles={allowedRoles}
             onSelect={(t) => {
               setCharacter(t);
               setPhase("city");

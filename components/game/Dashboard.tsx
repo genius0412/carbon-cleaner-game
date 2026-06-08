@@ -18,11 +18,13 @@ import { JoinClassModal } from "./JoinClassModal";
 import { OnboardingTour } from "./OnboardingTour";
 import { EndScreen } from "./EndScreen";
 import { StoryModal } from "./StoryModal";
+import { Scoreboard } from "./Scoreboard";
+import { useAutoPause } from "./useAutoPause";
 import { FeedbackCard } from "@/components/ui/FeedbackCard";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
 import { LeafLogo } from "@/components/ui/LeafLogo";
-import { listClassesForSave, type SaveClass } from "@/lib/classroom";
-import { formatYearMonth } from "@/lib/engine/engine";
+import { listClassesForSave, fetchClassScoreboard, type SaveClass } from "@/lib/classroom";
 
 type PanelKey = "research" | "bills" | "trees" | "civic" | "student" | null;
 
@@ -45,18 +47,19 @@ export function Dashboard({ onExit }: { onExit?: () => void }) {
   const [showCode, setShowCode] = useState(true);
   const [joinOpen, setJoinOpen] = useState(false);
   const [membershipKey, setMembershipKey] = useState(0);
+  // Live scoreboard modal: null = closed; a string (possibly empty) = open,
+  // pre-filling that class code. Pause the clock while it's open.
+  const [scoreboardCode, setScoreboardCode] = useState<string | null>(null);
+  useAutoPause(scoreboardCode !== null);
   const [showTour, setShowTour] = useState(false);
-  const [showOnboard, setShowOnboard] = useState(false);
 
   // First-time players get the guided tour (clock frozen so they can read).
-  // Returning players skip straight to playing with time flowing + a brief cue.
+  // Returning players skip straight to playing with time flowing.
   useEffect(() => {
     const done = typeof window !== "undefined" && localStorage.getItem("cc-tour-done");
     if (done) {
       setPaused(false);
-      setShowOnboard(true);
-      const t = setTimeout(() => setShowOnboard(false), 5200);
-      return () => clearTimeout(t);
+      return;
     }
     setShowTour(true);
     setPaused(true);
@@ -70,8 +73,6 @@ export function Dashboard({ onExit }: { onExit?: () => void }) {
     }
     setShowTour(false);
     setPaused(false); // time starts flowing once the tour ends
-    setShowOnboard(true);
-    setTimeout(() => setShowOnboard(false), 5200);
   };
 
   const replayTour = () => {
@@ -109,12 +110,6 @@ export function Dashboard({ onExit }: { onExit?: () => void }) {
   return (
     <div className="flex min-h-screen flex-col p-3 sm:p-4">
       <OnboardingTour open={showTour} cityName={game.cityName} onClose={finishTour} />
-      <TimeFlowingBanner
-        show={showOnboard}
-        date={formatYearMonth(game)}
-        cityName={game.cityName}
-        onDismiss={() => setShowOnboard(false)}
-      />
 
       {/* top bar */}
       <motion.div
@@ -221,7 +216,7 @@ export function Dashboard({ onExit }: { onExit?: () => void }) {
           {/* Grassroots actions are always available to students — no budget or
               storyline gate. This is the heart of what a student can do. */}
           {isStudent && (
-            <Button onClick={() => setPanel("student")}>
+            <Button variant="secondary" onClick={() => setPanel("student")}>
               ✊ Take Action
             </Button>
           )}
@@ -257,14 +252,24 @@ export function Dashboard({ onExit }: { onExit?: () => void }) {
           )}
 
           {/* Show which class(es) this game is in, or a join button if none. */}
-          <ClassMembership refreshKey={membershipKey} onJoin={() => setJoinOpen(true)} />
+          <ClassMembership
+            refreshKey={membershipKey}
+            onJoin={() => setJoinOpen(true)}
+            onScoreboard={(code) => setScoreboardCode(code)}
+          />
 
           <div className="glass mt-2 rounded-xl p-3 text-xs text-mist">
             <p className="font-semibold text-fog">Status</p>
             <p className="mt-1">{paused || openPanels > 0 ? "⏸ Paused" : `▶ Running ${speed}x`}</p>
             <p className="mt-1">Built: {game.builtInfra.length} / {game.regions.length} regions</p>
-            <p>Research done: {game.completedResearch.length}</p>
-            <p>Bills passed: {game.passedBills.length}</p>
+            {/* Research & bills are mayor-only features — hide them for students. */}
+            {!isStudent && (
+              <>
+                <p>Research done: {game.completedResearch.length}</p>
+                <p>Bills passed: {game.passedBills.length}</p>
+              </>
+            )}
+            {isStudent && <p>Actions taken: {game.studentActions.length}</p>}
           </div>
 
           {/* recent log */}
@@ -296,6 +301,18 @@ export function Dashboard({ onExit }: { onExit?: () => void }) {
           setMembershipKey((k) => k + 1); // re-check membership after joining
         }}
       />
+      <Modal
+        open={scoreboardCode !== null}
+        onClose={() => setScoreboardCode(null)}
+        title="🏆 Live scoreboard"
+        wide
+      >
+        <p className="mb-3 text-sm text-mist">
+          Watch the live standings for your class. Finishers rank first by finish
+          time, then everyone still playing ranks by lowest carbon gain.
+        </p>
+        <Scoreboard initialCode={scoreboardCode ?? ""} fixed myId={meta.id ?? null} />
+      </Modal>
 
       {/* story, feedback + end */}
       <StoryModal />
@@ -354,63 +371,16 @@ function relativeTime(ts: number): string {
   return `${hrs}h ago`;
 }
 
-/** One-time onboarding cue that time has started flowing. */
-function TimeFlowingBanner({
-  show,
-  date,
-  cityName,
-  onDismiss,
-}: {
-  show: boolean;
-  date: string;
-  cityName: string;
-  onDismiss: () => void;
-}) {
-  return (
-    <AnimatePresence>
-      {show && (
-        <motion.div
-          className="pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center px-4"
-          initial={{ opacity: 0, y: -24 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -24 }}
-          transition={{ type: "spring", stiffness: 280, damping: 26 }}
-        >
-          <button
-            onClick={onDismiss}
-            className="pointer-events-auto flex items-center gap-3 rounded-2xl border border-leaf/30 bg-charcoal px-5 py-3 text-left shadow-[0_8px_30px_rgba(0,0,0,0.5),0_0_30px_rgba(61,220,132,0.15)]"
-          >
-            <motion.span
-              className="relative flex h-3 w-3 shrink-0"
-              animate={{ scale: [1, 1.25, 1] }}
-              transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-leaf opacity-60" />
-              <span className="relative inline-flex h-3 w-3 rounded-full bg-leaf" />
-            </motion.span>
-            <div>
-              <p className="font-display text-sm font-semibold text-fog">
-                ▶ The clock is ticking — {date}
-              </p>
-              <p className="mt-0.5 text-xs text-mist">
-                Guide {cityName} to net-zero. Time is flowing now — pause or change
-                speed up top whenever you need to think.
-              </p>
-            </div>
-          </button>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-}
-
 /** Shows the class(es) this game is in, or a join button when it's in none. */
 function ClassMembership({
   refreshKey,
   onJoin,
+  onScoreboard,
 }: {
   refreshKey: number;
   onJoin: () => void;
+  /** Open the live scoreboard for a specific class code. */
+  onScoreboard: (code: string) => void;
 }) {
   const meta = useGameStore((s) => s.meta);
   const [classes, setClasses] = useState<SaveClass[] | null>(null);
@@ -444,23 +414,79 @@ function ClassMembership({
   }
 
   return (
+    <div className="space-y-2">
+      {classes.map((c) => (
+        <ClassCard
+          key={c.id}
+          cls={c}
+          myId={meta.id ?? null}
+          refreshKey={refreshKey}
+          onScoreboard={onScoreboard}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** One class the game belongs to: name, live size + the player's current place. */
+function ClassCard({
+  cls,
+  myId,
+  refreshKey,
+  onScoreboard,
+}: {
+  cls: SaveClass;
+  myId: string | null;
+  refreshKey: number;
+  onScoreboard: (code: string) => void;
+}) {
+  const [count, setCount] = useState<number | null>(null);
+  const [rank, setRank] = useState<number | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      const board = await fetchClassScoreboard(cls.join_code);
+      if (!active || !board) return;
+      setCount(board.rows.length);
+      const idx = board.rows.findIndex((r) => myId && r.game_save_id === myId);
+      setRank(idx >= 0 ? idx + 1 : null);
+    };
+    load();
+    const t = setInterval(load, 10000);
+    return () => {
+      active = false;
+      clearInterval(t);
+    };
+  }, [cls.join_code, myId, refreshKey]);
+
+  return (
     <div className="glass rounded-xl p-3 text-xs">
-      <p className="font-semibold text-fog">
-        🏫 {classes.length > 1 ? "Your classes" : "Your class"}
+      <div className="flex items-center justify-between gap-2">
+        <span className="min-w-0 flex-1 truncate font-semibold text-fog">
+          🏫 {cls.name || "Untitled Class"}
+        </span>
+        <span className="shrink-0 font-mono tracking-widest text-cyan">{cls.join_code}</span>
+      </div>
+      <p className="mt-1 text-mist">
+        {count === null ? (
+          "Loading standings…"
+        ) : (
+          <>
+            {rank !== null ? (
+              <>
+                <span className="font-semibold text-leaf">#{rank}</span> of{" "}
+              </>
+            ) : null}
+            {count} {count === 1 ? "player" : "players"}
+          </>
+        )}
       </p>
-      <ul className="mt-1.5 space-y-1">
-        {classes.map((c) => (
-          <li key={c.id} className="flex items-center justify-between gap-2">
-            <span className="truncate text-fog">{c.name || "Untitled Class"}</span>
-            <span className="shrink-0 font-mono tracking-widest text-cyan">{c.join_code}</span>
-          </li>
-        ))}
-      </ul>
       <button
-        onClick={onJoin}
-        className="mt-2 text-mist transition-colors hover:text-fog"
+        onClick={() => onScoreboard(cls.join_code)}
+        className="mt-1.5 text-mist transition-colors hover:text-fog"
       >
-        + Join another class
+        🏆 Live scoreboard
       </button>
     </div>
   );

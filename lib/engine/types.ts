@@ -128,6 +128,14 @@ export interface StudentActionDef {
   cooldownMonths: number;
   /** Each repeat multiplies effects by diminishing^count (1 = no decay). */
   diminishing: number;
+  /** Action ids that must be completed (count ≥ 1) before this one unlocks. */
+  requires?: string[];
+  /**
+   * Foundational boost: while this action has been done (count ≥ 1), the
+   * carbon/support/funds from every OTHER student action are multiplied by
+   * (1 + synergyBoost). Founding a club makes everything else more effective.
+   */
+  synergyBoost?: number;
   /** Flavor shown after taking the action. */
   feedback: string;
 }

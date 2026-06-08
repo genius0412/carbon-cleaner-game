@@ -40,9 +40,17 @@ const roles: {
 
 export function CharacterSelect({
   onSelect,
+  allowedRoles,
 }: {
   onSelect: (type: CharacterType) => void;
+  /** When set, only these roles are offered (e.g. a class restricts choices). */
+  allowedRoles?: CharacterType[] | null;
 }) {
+  const visible =
+    allowedRoles && allowedRoles.length > 0
+      ? roles.filter((r) => allowedRoles.includes(r.type))
+      : roles;
+  const restricted = visible.length < roles.length;
   return (
     <div className="mx-auto max-w-5xl">
       <motion.h1
@@ -59,10 +67,16 @@ export function CharacterSelect({
         animate={{ opacity: 1 }}
         transition={{ delay: 0.15 }}
       >
-        Each role experiences Verdana differently. Pick the one that fits you.
+        {restricted
+          ? "Your teacher set which roles this class can play. Pick one below."
+          : "Each role experiences Verdana differently. Pick the one that fits you."}
       </motion.p>
-      <div className="mt-10 grid gap-5 md:grid-cols-3">
-        {roles.map((r, i) => (
+      <div
+        className={`mt-10 grid gap-5 ${
+          visible.length === 1 ? "mx-auto max-w-sm" : visible.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"
+        }`}
+      >
+        {visible.map((r, i) => (
           <motion.button
             key={r.type}
             onClick={() => onSelect(r.type)}
@@ -70,8 +84,8 @@ export function CharacterSelect({
             initial={{ opacity: 0, y: 60, rotateX: -25, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
             transition={{ delay: 0.25 + i * 0.15, type: "spring", stiffness: 180, damping: 18 }}
-            whileHover={{ y: -8, scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ y: -8, scale: 1.03, transition: { type: "spring", stiffness: 400, damping: 22 } }}
+            whileTap={{ scale: 0.98, transition: { duration: 0.1 } }}
             style={{ transformPerspective: 1000 }}
           >
             <Card className="h-full transition-colors hover:border-leaf/40 hover:glow-leaf">

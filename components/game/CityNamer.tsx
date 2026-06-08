@@ -17,7 +17,7 @@ const WHEEL_B = [
   "haven", "vale", "ridge", "shire", "field", "wood", "ford", "bridge",
   "port", "ton", "ville", "burg", "dale", "mont", "crest", "brook",
   "grove", "stead", "wick", "march", "moor", "cliff", "bay", "cove",
-  "spring", "falls", "glen", "harbor", "meadow", "hollow", "reach", "point",
+  "spring", "falls", "glen", "harbor", "meadow", "hollow", "reach", "point", "view"
 ];
 
 function pick<T>(arr: T[]): T {
@@ -76,8 +76,7 @@ export function CityNamer({ onConfirm }: { onConfirm: (name: string) => void }) 
     <div className="mx-auto max-w-xl text-center">
       <h1 className="font-display text-4xl font-semibold">Name your city</h1>
       <p className="mt-3 text-mist">
-        Spin the two wheels until you find a name you love. No typing — let fate
-        (and good word lists) decide.
+        Spin the two wheels until you find a name you love.
       </p>
 
       <Card className="mt-8">

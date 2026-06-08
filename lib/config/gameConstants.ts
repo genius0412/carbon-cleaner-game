@@ -17,8 +17,8 @@ export const GAME = {
   startYear: 2025,
   startMonth: 1, // January
   endYear: 2100, // last playable year (game over Jan 2101)
-  // Real time -> game time. 1 in-game month per real minute at 1x.
-  realSecondsPerGameMonth: 60,
+  // Real time -> game time. 1 in-game month per 30 real seconds at 1x.
+  realSecondsPerGameMonth: 30,
   speedOptions: [1, 1.5, 2.5] as const,
 
   // --- Carbon (ppm) ---

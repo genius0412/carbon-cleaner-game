@@ -12,6 +12,7 @@ import type {
   CharacterType,
   InfrastructureDef,
   Region,
+  StudentActionDef,
 } from "./types";
 import { buildRegions } from "./regions";
 import {
@@ -23,7 +24,7 @@ import {
   researchById,
   billById,
 } from "./content";
-import { studentActionById } from "./studentActions";
+import { studentActionById, STUDENT_ACTIONS } from "./studentActions";
 
 // ---------------------------------------------------------------------------
 // Initialization
@@ -572,6 +573,38 @@ export interface StudentActionStatus {
   cooldownLeft: number;
   /** One-time action that has already been used. */
   doneOnce: boolean;
+  /** True when a prerequisite action hasn't been completed yet. */
+  locked: boolean;
+  /** Names of prerequisite actions still missing (for the UI hint). */
+  missingRequirements: string[];
+  /** Extra effectiveness from foundational actions, e.g. 0.25 = +25%. */
+  synergyBonus: number;
+}
+
+/** Has this student action been completed at least once? */
+function studentActionDone(state: GameState, id: string): boolean {
+  return (state.studentActions ?? []).some((r) => r.id === id && r.count >= 1);
+}
+
+/** Prerequisite action names not yet completed for this def. */
+function missingRequirementNames(state: GameState, def: StudentActionDef): string[] {
+  return (def.requires ?? [])
+    .filter((reqId) => !studentActionDone(state, reqId))
+    .map((reqId) => studentActionById(reqId)?.name ?? reqId);
+}
+
+/**
+ * Combined effectiveness multiplier from every completed "foundational" action
+ * (e.g. the Climate Club), excluding the action being performed so it can't
+ * boost itself. 1.0 when nothing foundational has been done yet.
+ */
+function synergyMultiplier(state: GameState, exceptId: string): number {
+  let mult = 1;
+  for (const a of STUDENT_ACTIONS) {
+    if (a.id === exceptId || !a.synergyBoost) continue;
+    if (studentActionDone(state, a.id)) mult += a.synergyBoost;
+  }
+  return mult;
 }
 
 export function studentActionStatus(
@@ -581,14 +614,33 @@ export function studentActionStatus(
   const def = studentActionById(actionId);
   const rec = (state.studentActions ?? []).find((r) => r.id === actionId);
   const count = rec?.count ?? 0;
-  if (!def) return { count, available: false, cooldownLeft: 0, doneOnce: false };
+  if (!def)
+    return {
+      count,
+      available: false,
+      cooldownLeft: 0,
+      doneOnce: false,
+      locked: false,
+      missingRequirements: [],
+      synergyBonus: 0,
+    };
 
   const doneOnce = !def.repeatable && count >= 1;
+  const missingRequirements = missingRequirementNames(state, def);
+  const locked = missingRequirements.length > 0;
   let cooldownLeft = 0;
   if (rec && def.cooldownMonths > 0) {
     cooldownLeft = Math.max(0, rec.lastMonthIndex + def.cooldownMonths - monthIndex(state));
   }
-  return { count, available: !doneOnce && cooldownLeft === 0, cooldownLeft, doneOnce };
+  return {
+    count,
+    available: !doneOnce && !locked && cooldownLeft === 0,
+    cooldownLeft,
+    doneOnce,
+    locked,
+    missingRequirements,
+    synergyBonus: synergyMultiplier(state, actionId) - 1,
+  };
 }
 
 /**
@@ -611,6 +663,15 @@ export function performStudentAction(
   if (!def.repeatable && count >= 1)
     return { state: prev, ok: false, message: "You've already done this one." };
 
+  // Locked until its prerequisite actions are done (e.g. found a club first).
+  const missing = missingRequirementNames(prev, def);
+  if (missing.length > 0)
+    return {
+      state: prev,
+      ok: false,
+      message: `Do this first: ${missing.join(", ")}.`,
+    };
+
   const now = monthIndex(prev);
   if (rec && def.cooldownMonths > 0) {
     const wait = rec.lastMonthIndex + def.cooldownMonths - now;
@@ -626,9 +687,11 @@ export function performStudentAction(
     return { state: prev, ok: false, message: "Not enough budget for materials." };
 
   // Diminishing returns on repeats keep spamming one action from winning;
-  // challenge performance (scale) further tunes this run's payoff.
+  // challenge performance (scale) further tunes this run's payoff; foundational
+  // actions already taken (a club) make this one land harder via synergy.
   const perf = Math.max(0, Math.min(1, scale));
-  const factor = Math.pow(def.diminishing, count) * perf;
+  const synergy = synergyMultiplier(prev, actionId);
+  const factor = Math.pow(def.diminishing, count) * perf * synergy;
   const carbon = def.carbonDelta * factor;
   const support = def.supportDelta * factor;
   const budgetGain = (def.budgetDelta ?? 0) * factor;

@@ -345,23 +345,31 @@ function TapChallenge({
   const [left, setLeft] = useState(challenge.seconds);
   const [started, setStarted] = useState(false);
   const fired = useRef(false);
+  // Mirror count in a ref so the completion handler can read the final tally
+  // without making the countdown depend on `count` (which would reset the
+  // per-second timeout on every tap, freezing the clock when tapping fast).
+  const countRef = useRef(0);
 
+  // Countdown: one tick per second while running. Depends only on `started`
+  // and `left`, so rapid taps never restart it.
   useEffect(() => {
-    if (!started) return;
-    if (left <= 0) {
-      if (!fired.current) {
-        fired.current = true;
-        onDone(Math.min(1, count / challenge.goal));
-      }
-      return;
-    }
+    if (!started || left <= 0) return;
     const t = setTimeout(() => setLeft((l) => l - 1), 1000);
     return () => clearTimeout(t);
-  }, [started, left, count, challenge.goal, onDone]);
+  }, [started, left]);
+
+  // When the clock hits zero, score it once from the final tap count.
+  useEffect(() => {
+    if (started && left <= 0 && !fired.current) {
+      fired.current = true;
+      onDone(Math.min(1, countRef.current / challenge.goal));
+    }
+  }, [started, left, challenge.goal, onDone]);
 
   const tap = () => {
     if (!started) setStarted(true);
-    setCount((c) => c + 1);
+    countRef.current += 1;
+    setCount(countRef.current);
   };
 
   const pct = Math.min(100, (count / challenge.goal) * 100);

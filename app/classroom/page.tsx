@@ -6,20 +6,17 @@ import { SiteNav, SiteFooter } from "@/components/SiteNav";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
-import { classInviteLink, joinClassByCode } from "@/lib/classroom";
+import { classInviteLink, joinClassByCode, ALL_ROLES, sanitizeRoles } from "@/lib/classroom";
 import { useAuth } from "@/lib/auth";
 import { useGameStore } from "@/lib/store";
-
-interface Row {
-  city_name: string;
-  carbon_gain: number;
-  finished_at: string | null;
-}
+import { Scoreboard } from "@/components/game/Scoreboard";
+import type { CharacterType } from "@/lib/engine/types";
 
 interface TeacherClass {
   id: string;
   join_code: string;
   name: string | null;
+  allowed_roles: string[] | null;
   member_count?: number;
 }
 
@@ -85,7 +82,7 @@ function TeacherSection({ user }: { user: { id: string; username: string | null 
     if (!sb || !user) return;
     const { data } = await sb
       .from("classrooms")
-      .select("id, join_code, name")
+      .select("id, join_code, name, allowed_roles")
       .eq("teacher_id", user.id)
       .order("created_at", { ascending: false });
     setClasses((data as TeacherClass[]) ?? []);
@@ -204,10 +201,59 @@ function TeacherClassRow({
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  // Local copy of the allowed roles so toggling feels instant. An empty array
+  // means "no restriction" (students may pick any role).
+  const [roles, setRoles] = useState<CharacterType[]>(sanitizeRoles(cls.allowed_roles));
+  const [rolesBusy, setRolesBusy] = useState(false);
 
   const flash = (msg: string) => {
     setNote(msg);
     setTimeout(() => setNote(null), 1800);
+  };
+
+  // What's effectively allowed right now: an empty stored set means "all".
+  const allTypes = ALL_ROLES.map((r) => r.type);
+  const effective = roles.length === 0 ? allTypes : roles;
+
+  // Toggle a role on/off and persist. Disallowing the last remaining role would
+  // lock students out entirely, so that click is ignored. Selecting all roles
+  // is stored as "no restriction" ([]). Reverts on failure.
+  const toggleRole = async (type: CharacterType) => {
+    const turningOff = effective.includes(type);
+    const nextEffective = turningOff
+      ? effective.filter((r) => r !== type)
+      : [...effective, type];
+    if (nextEffective.length === 0) {
+      setErr("At least one role must stay available.");
+      return;
+    }
+    // Re-order to match ALL_ROLES, then collapse "everything" to no-restriction.
+    const ordered = allTypes.filter((t) => nextEffective.includes(t));
+    const next = ordered.length === allTypes.length ? [] : ordered;
+
+    const prev = roles;
+    setRoles(next);
+    setRolesBusy(true);
+    setErr(null);
+    try {
+      const res = await fetch("/api/classroom/update", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: cls.id, allowedRoles: next }),
+      });
+      setRolesBusy(false);
+      if (res.ok) {
+        flash(next.length === 0 ? "Any role allowed" : "Roles updated");
+        onRenamed();
+      } else {
+        setRoles(prev);
+        setErr(friendlyClassError(await res.json()));
+      }
+    } catch {
+      setRolesBusy(false);
+      setRoles(prev);
+      setErr("Couldn't reach the server. Please try again.");
+    }
   };
 
   const saveName = async () => {
@@ -312,6 +358,42 @@ function TeacherClassRow({
           </div>
         )}
       </div>
+
+      {/* Role restriction: which roles students in this class may pick. */}
+      <div className="mt-2.5 border-t border-white/8 pt-2.5">
+        <p className="text-[11px] uppercase tracking-widest text-mist">
+          Roles students can choose
+        </p>
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          {ALL_ROLES.map((r) => {
+            const on = effective.includes(r.type);
+            return (
+              <button
+                key={r.type}
+                onClick={() => toggleRole(r.type)}
+                disabled={rolesBusy}
+                aria-pressed={on}
+                className={`rounded-full border px-3 py-1 text-[11px] transition-colors disabled:opacity-60 ${
+                  on
+                    ? "border-leaf/40 bg-leaf/15 text-leaf"
+                    : "border-white/12 bg-night/40 text-mist hover:text-fog"
+                }`}
+              >
+                {on ? "✓ " : ""}
+                {r.label}
+              </button>
+            );
+          })}
+        </div>
+        <p className="mt-1 text-[11px] text-mist">
+          {roles.length === 0
+            ? "No restriction — students can pick any role."
+            : `Students may only play: ${roles
+                .map((t) => ALL_ROLES.find((r) => r.type === t)?.label ?? t)
+                .join(", ")}.`}
+        </p>
+      </div>
+
       {note && <p className="mt-1 text-[11px] text-leaf">{note}</p>}
       {err && <p className="mt-1 text-[11px] text-amber">{err}</p>}
     </li>
@@ -390,135 +472,12 @@ function JoinWithGameSection() {
 
 /* ---------------- Everyone: live scoreboard by code ---------------- */
 function ScoreboardSection() {
-  const [code, setCode] = useState("");
-  const [joined, setJoined] = useState<string | null>(null);
-  const [className, setClassName] = useState<string | null>(null);
-  const [rows, setRows] = useState<Row[]>([]);
-  const [found, setFound] = useState<boolean | null>(null); // null = not checked yet
-  const [msg, setMsg] = useState<string | null>(null);
-
-  const view = () => {
-    // reset any previous (possibly valid) result before checking the new code
-    setRows([]);
-    setFound(null);
-    setMsg(null);
-    setClassName(null);
-    setJoined(code.trim().toUpperCase());
-  };
-
-  useEffect(() => {
-    if (!joined) return;
-    const sb = getSupabaseBrowser();
-    if (!sb) {
-      setMsg("Supabase isn't configured — the live scoreboard needs it.");
-      setFound(false);
-      return;
-    }
-    let active = true;
-    const fetchRows = async () => {
-      try {
-        const { data: cls } = await sb
-          .from("classrooms")
-          .select("id, name")
-          .eq("join_code", joined)
-          .maybeSingle();
-        if (!cls) {
-          if (active) {
-            setFound(false);
-            setRows([]);
-            setMsg("No classroom found with that code.");
-          }
-          return;
-        }
-        if (active) setClassName((cls.name as string | null) ?? null);
-        const { data } = await sb
-          .from("classroom_members")
-          .select("city_name, game_saves(carbon_gain, finished_at, city_name)")
-          .eq("classroom_id", cls.id);
-        const mapped: Row[] = (data ?? []).map((m: any) => ({
-          city_name: m.city_name ?? m.game_saves?.city_name ?? "Unknown",
-          carbon_gain: m.game_saves?.carbon_gain ?? 999,
-          finished_at: m.game_saves?.finished_at ?? null,
-        }));
-        if (active) {
-          setFound(true);
-          setRows(rankRows(mapped));
-          setMsg(null);
-        }
-      } catch {
-        if (active) {
-          setFound(false);
-          setMsg("Could not load the scoreboard.");
-        }
-      }
-    };
-    fetchRows();
-    const t = setInterval(fetchRows, 10000);
-    return () => {
-      active = false;
-      clearInterval(t);
-    };
-  }, [joined]);
-
   return (
     <Card className="mt-6">
       <h2 className="font-display text-xl font-semibold text-leaf">Live scoreboard</h2>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <input
-          className="flex-1 rounded-lg border border-white/12 bg-night/60 px-3 py-2 font-mono text-sm uppercase outline-none focus:border-leaf/50"
-          placeholder="Class code"
-          value={code}
-          onChange={(e) => setCode(e.target.value.toUpperCase())}
-        />
-        <Button onClick={view} disabled={!code}>
-          View
-        </Button>
+      <div className="mt-3">
+        <Scoreboard />
       </div>
-
-      {msg && <p className="mt-4 text-sm text-amber">{msg}</p>}
-
-      {/* only render the class block once the code is confirmed valid */}
-      {joined && found === true && (
-        <div className="mt-5">
-          <div className="flex items-center gap-2">
-            <h3 className="font-display text-lg font-semibold text-cyan">
-              {className || "Class"}
-            </h3>
-            <span className="rounded-full bg-white/8 px-2 py-0.5 font-mono text-[11px] tracking-widest text-mist">
-              {joined}
-            </span>
-          </div>
-          <div className="mt-3 space-y-2">
-            {rows.length === 0 && (
-              <p className="text-sm text-mist">Waiting for players to join…</p>
-            )}
-            {rows.map((r, i) => (
-              <div key={i} className="glass flex items-center justify-between rounded-xl px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <span className="font-display text-lg font-semibold text-mist">#{i + 1}</span>
-                  <span className="font-semibold text-fog">{r.city_name}</span>
-                  {r.finished_at && (
-                    <span className="rounded-full bg-leaf/15 px-2 py-0.5 text-[10px] text-leaf">
-                      ✓ net-zero
-                    </span>
-                  )}
-                </div>
-                <span className="text-sm text-cyan">{r.carbon_gain.toFixed(4)} ppm/mo</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </Card>
   );
-}
-
-function rankRows(rows: Row[]): Row[] {
-  const finishers = rows
-    .filter((r) => r.finished_at)
-    .sort((a, b) => (a.finished_at! < b.finished_at! ? -1 : 1));
-  const playing = rows
-    .filter((r) => !r.finished_at)
-    .sort((a, b) => a.carbon_gain - b.carbon_gain);
-  return [...finishers, ...playing];
 }
