@@ -60,6 +60,7 @@ interface GameStore {
   setSpeed: (s: number) => void;
   setPaused: (p: boolean) => void;
   togglePause: () => void;
+  skipMonth: () => void;
   skipYear: () => void;
   openPanel: () => void;
   closePanel: () => void;
@@ -272,6 +273,20 @@ export const useGameStore = create<GameStore>((set, get) => {
     setSpeed: (s) => set({ speed: s }),
     setPaused: (p) => set({ paused: p }),
     togglePause: () => set((st) => ({ paused: !st.paused })),
+
+    skipMonth: () => {
+      const { game, activeStory } = get();
+      if (!game || game.status !== "playing" || activeStory) return;
+      const next = tickMonth(game);
+      set({
+        game: next,
+        monthProgress: 0,
+        paused: next.status !== "playing" ? true : get().paused,
+      });
+      if (next.status === "playing") maybeFireStory(next);
+      else endSound(next.status);
+      scheduleSave();
+    },
 
     skipYear: () => {
       const { game, activeStory } = get();

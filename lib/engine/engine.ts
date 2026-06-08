@@ -246,6 +246,9 @@ export function tickMonth(prev: GameState): GameState {
   }
   state.activeResearch = stillActive;
 
+  // 1b) municipal budget grant, disbursed every month (1/12 of the yearly grant)
+  state.budget += GAME.yearlyBudgetGrant / 12;
+
   // 2) passive support recovery (only if no negative action this month)
   if (!state.tookNegativeActionThisMonth && state.support < GAME.passiveRecoveryCap) {
     state.support = Math.min(
@@ -272,8 +275,6 @@ export function tickMonth(prev: GameState): GameState {
   if (month > 12) {
     month = 1;
     year += 1;
-    // yearly budget grant at the start of each in-game year
-    state.budget += GAME.yearlyBudgetGrant;
   }
   state.month = month;
   state.year = year;

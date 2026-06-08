@@ -10,6 +10,7 @@ export function TimeControls() {
   const openPanels = useGameStore((s) => s.openPanels);
   const togglePause = useGameStore((s) => s.togglePause);
   const setSpeed = useGameStore((s) => s.setSpeed);
+  const skipMonth = useGameStore((s) => s.skipMonth);
   const skipYear = useGameStore((s) => s.skipYear);
 
   const autoPaused = openPanels > 0;
@@ -38,6 +39,10 @@ export function TimeControls() {
           </button>
         ))}
       </div>
+
+      <Button size="sm" variant="secondary" onClick={skipMonth}>
+        ⏩ Skip Month
+      </Button>
 
       <Button size="sm" variant="secondary" onClick={skipYear}>
         ⏭ Skip Year
