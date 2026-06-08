@@ -32,7 +32,7 @@ export function GaugesBar({ game }: { game: GameState }) {
       node: (
         <Gauge
           label="Current Carbon"
-          value={`${game.carbonPpm.toFixed(1)} ppm`}
+          value={`${game.carbonPpm.toFixed(2)} ppm`}
           fill={ppmFill}
           tone={game.carbonPpm > 540 ? "danger" : game.carbonPpm > 480 ? "amber" : "cyan"}
           hint={`Fails at ${GAME.failureCarbonPpm}`}

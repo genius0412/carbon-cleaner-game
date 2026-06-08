@@ -48,7 +48,7 @@ export const GAME = {
 
   // --- Budget ($) ---
   startingBudget: 2_000_000,
-  yearlyBudgetGrant: 1_000_000, // granted at the start of each in-game year
+  yearlyBudgetGrant: 1_000_000, // disbursed monthly (1/12 each in-game month)
 
   // --- Student mode adjustments ---
   student: {
