@@ -255,22 +255,17 @@ export const DATA_BLANKS: Record<number, DataBlank> = {
     source: "https://www.sustainablewoodstock.org/e-lawncare-movement-gains-momentum/",
   },
 
-  // ---- Civic-action: representative & local data ----
-  60: {
-    id: 60,
-    label: "Local representative contact info (state/district lookup)",
-    unit: "name + office + email",
-    location: "Civic Action > Representative Lookup",
-    value: null,
-    source: "",
-  },
+  // ---- Civic-action: local data ----
+  // (#060 representative-lookup blank retired: students look up / enter their
+  //  own official rather than us shipping fabricated contact data.)
   61: {
     id: 61,
-    label: "Climate statistic surfaced to letter writers (fact pool)",
-    unit: "varies (see letterFacts.ts)",
+    label: "Average U.S. household carbon footprint (per year)",
+    unit: "metric tons",
     location: "Civic Action > Letter Builder (older students)",
-    value: null,
-    source: "",
+    value: 48,
+    source:
+      "https://greenly.earth/en-us/blog/company-guide/what-is-the-average-american-carbon-footprint-and-how-to-reduce-it",
   },
 };
 

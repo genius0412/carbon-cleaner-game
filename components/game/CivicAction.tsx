@@ -59,7 +59,8 @@ export function CivicAction({ open, onClose }: { open: boolean; onClose: () => v
           <Button size="sm" onClick={handleLookup}>Look up</Button>
         </div>
         <p className="mt-2 text-[11px] text-mist">
-          Contact details are a cited/editable dataset: <DataChip id={60} />
+          We don't store anyone's contact info, look your own officials up on
+          your city and state government websites.
         </p>
         {reps.length > 0 && (
           <ul className="mt-3 space-y-2">
@@ -217,8 +218,8 @@ function OlderLetterComposer({
     <Card className="mb-4">
       <h3 className="font-display text-sm font-semibold text-cyan">2 · Write your letter</h3>
       <p className="mt-1 text-xs text-mist">
-        Use these data points (your unique set) to make a persuasive case. Real
-        figures are cited via <DataChip id={61} />.
+        Use these data points (your unique set) to make a persuasive case. Hover
+        any figure to see its source.
       </p>
       <ul className="mt-3 space-y-1.5">
         {facts.map((f) => (
@@ -226,7 +227,7 @@ function OlderLetterComposer({
             {f.text.split("{{blank}}").map((part, i, arr) => (
               <span key={i}>
                 {part}
-                {i < arr.length - 1 && <DataChip id={61} />}
+                {i < arr.length - 1 && <DataChip id={f.blankId} />}
               </span>
             ))}
           </li>

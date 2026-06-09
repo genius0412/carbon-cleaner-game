@@ -2,12 +2,12 @@
  * letterContent.ts
  * Content for the Civic Action letter builder.
  *
- * - REP_DIRECTORY: a small, editable STUB dataset for representative lookup.
- *   Do NOT fetch unreliable live data. The human can expand this JSON, and
- *   real contact details are DATA BLANK #060.
+ * - REP_DIRECTORY / GENERIC_REPS: guidance for representative lookup. We do
+ *   NOT ship fabricated contact data, students look up (or enter) their own
+ *   real official's details instead.
  * - SENTENCE_BLOCKS: pre-written blocks for the younger (drag-and-drop) flow.
- * - FACT_POOL: climate facts/statistics for the older (compose) flow. The
- *   actual numbers are DATA BLANK #061, the framing sentences are ours.
+ * - FACT_POOL: climate facts for the older (compose) flow; each fact cites a
+ *   real, numbered DATA BLANK via `blankId`.
  */
 
 export interface Representative {
@@ -22,45 +22,25 @@ export interface RepEntry {
   reps: Representative[];
 }
 
-/** Stub directory, match is case-insensitive substring on town. */
-export const REP_DIRECTORY: RepEntry[] = [
-  {
-    town: "Example Town",
-    reps: [
-      {
-        office: "City Council Member",
-        name: "[FILL IN #060, name]",
-        email: "[FILL IN #060, email]",
-        address: "Dear Council Member [Last Name],",
-      },
-      {
-        office: "State Representative",
-        name: "[FILL IN #060, name]",
-        email: "[FILL IN #060, email]",
-        address: "Dear Representative [Last Name],",
-      },
-      {
-        office: "Mayor's Office",
-        name: "[FILL IN #060, name]",
-        email: "[FILL IN #060, email]",
-        address: "Dear Mayor [Last Name],",
-      },
-    ],
-  },
-];
+/**
+ * We don't ship fabricated contact data. The directory is intentionally empty,
+ * so every lookup returns the guidance entries below, which point students to
+ * their own real officials.
+ */
+export const REP_DIRECTORY: RepEntry[] = [];
 
-/** Generic fallback shown when a town isn't in the directory. */
+/** Guidance shown for any town: how to find your own real representatives. */
 export const GENERIC_REPS: Representative[] = [
   {
     office: "Your City Council Member",
-    name: "[FILL IN #060, look up at your city's website]",
-    email: "[FILL IN #060, official email]",
+    name: "Look them up on your city or county website",
+    email: "Use the official contact address listed there",
     address: "Dear Council Member [Last Name],",
   },
   {
     office: "Your State Representative",
-    name: "[FILL IN #060, find via your state legislature site]",
-    email: "[FILL IN #060, official email]",
+    name: "Find them via your state legislature's website",
+    email: "Use the official contact address listed there",
     address: "Dear Representative [Last Name],",
   },
 ];
@@ -93,19 +73,22 @@ export const SENTENCE_BLOCKS: SentenceBlock[] = [
   { id: "c2", role: "closing", text: "Sincerely, [your name]" },
 ];
 
-/** Fact pool for older students; numbers are DATA BLANK #061. */
+/** Fact pool for older students; each fact's number is a cited DATA BLANK. */
 export interface ClimateFact {
   id: string;
-  text: string; // includes a [FILL IN #061] chip placeholder marker {{blank}}
+  /** The {{blank}} marker is rendered as <DataChip id={blankId} />. */
+  blankId: number;
+  text: string;
 }
 
 export const FACT_POOL: ClimateFact[] = [
-  { id: "fp1", text: "Atmospheric CO₂ has risen to roughly {{blank}} ppm, a level not seen in human history." },
-  { id: "fp2", text: "Global average temperatures have already climbed about {{blank}} above pre-industrial levels." },
-  { id: "fp3", text: "Transportation accounts for nearly {{blank}} of emissions in the United States, making local transit choices powerful." },
-  { id: "fp4", text: "The average American emits about {{blank}} of CO₂ each year, far above the global average." },
-  { id: "fp5", text: "Sea levels have risen about {{blank}} since 1900, threatening coastal communities like ours." },
-  { id: "fp6", text: "Each year, extreme heat affects {{blank}} communities, straining health systems and budgets." },
+  { id: "fp1", blankId: 1, text: "Atmospheric CO₂ has risen to roughly {{blank}}, a level not seen in human history." },
+  { id: "fp2", blankId: 2, text: "Global average temperatures have already climbed about {{blank}} above pre-industrial levels." },
+  { id: "fp3", blankId: 5, text: "Transportation accounts for nearly {{blank}} of emissions in the United States, making local transit choices powerful." },
+  { id: "fp4", blankId: 6, text: "The average American has a carbon footprint of about {{blank}}, far above the global average." },
+  { id: "fp5", blankId: 4, text: "Sea levels have risen about {{blank}} since 1900, threatening coastal communities like ours." },
+  { id: "fp6", blankId: 7, text: "Each year, extreme heat puts about {{blank}} of the U.S. population at risk, straining health systems and budgets." },
+  { id: "fp7", blankId: 61, text: "A typical U.S. household emits about {{blank}} of CO₂ each year, so local choices add up fast." },
 ];
 
 /** Deterministic-ish random pick of `n` facts based on a seed string. */
