@@ -5,21 +5,23 @@ import { getSupabaseBrowser } from "@/lib/supabase/client";
 import { listLocalSaves } from "@/lib/saves";
 
 /**
- * Live global counter: "X players have reached net-zero". Reads the
- * public.global_stats view, but never blocks on it: a slow/stalled Supabase
- * call falls back (after a short timeout) to the player's own net-zero count
- * from localStorage, so the number always shows and reflects your own win even
- * when the cloud read lags. Re-checks on focus + every 20s.
+ * Live global counter: "X players have reached net-zero". This is a UNIVERSAL
+ * number — it reflects the public.global_stats view (the same for everyone),
+ * never the viewer's own games. A slow/stalled Supabase call keeps the last
+ * known cloud value rather than personalizing it. The local count is only used
+ * as a last resort when there's no backend configured at all (dev/offline),
+ * where no shared value exists. Re-checks on focus + every 20s.
  */
 export function NetZeroCounter() {
   const [count, setCount] = useState<number | null>(null);
 
   const load = useCallback(async () => {
-    const local = localNetZeroCount();
     const sb = getSupabaseBrowser();
 
+    // No backend at all (dev/offline) → no shared value exists; fall back to the
+    // player's own local wins just so the widget isn't stuck on "…".
     if (!sb) {
-      setCount(local);
+      setCount(localNetZeroCount());
       return;
     }
 
@@ -40,9 +42,9 @@ export function NetZeroCounter() {
       new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000)),
     ]);
 
-    // Show the cloud total when available; otherwise keep the best we have, but
-    // never less than the player's own verified local wins.
-    setCount((prev) => Math.max(cloud ?? prev ?? 0, local));
+    // Universal value only: show the cloud total when available; otherwise keep
+    // the last known cloud value. Never mix in the viewer's own win count.
+    setCount((prev) => cloud ?? prev);
   }, []);
 
   useEffect(() => {
