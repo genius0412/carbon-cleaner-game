@@ -33,7 +33,7 @@ export default function Home() {
         <h1 className="max-w-4xl text-balance text-5xl font-semibold leading-[1.05] tracking-tight sm:text-7xl">
           Lead your county to
           <br />
-          <span className="text-leaf">net-zero by 2100.</span>
+          <span className="text-leaf">net-zero by 2050.</span>
         </h1>
         <p className="mt-6 max-w-2xl text-balance text-lg leading-relaxed text-mist">
           Carbon Cleaner is a climate-strategy game where you govern a fictional

@@ -10,7 +10,7 @@ const grotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-grotesk" }
 export const metadata: Metadata = {
   title: "Carbon Cleaner, climate strategy for a cleaner tomorrow",
   description:
-    "A browser-based climate-strategy game. Lead a fictional U.S. county to net-zero by 2100, built as an AP World History civic-action project on climate change.",
+    "A browser-based climate-strategy game. Lead a fictional U.S. county to net-zero by 2050, built as an AP World History civic-action project on climate change.",
 };
 
 export default function RootLayout({

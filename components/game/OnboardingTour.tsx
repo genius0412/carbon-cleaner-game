@@ -40,7 +40,7 @@ export function OnboardingTour({
       {
         part: 1,
         title: "Welcome, change-maker",
-        body: `Your mission: guide ${cityName} to net-zero before the year 2100. First, the essentials, then a few optional tips you can skip.`,
+        body: `Your mission: guide ${cityName} to net-zero before the year 2050. First, the essentials, then a few optional tips you can skip.`,
       },
       {
         part: 1,
@@ -71,7 +71,7 @@ export function OnboardingTour({
         part: 2,
         selector: '[data-tour="clock"]',
         title: "Time is always flowing",
-        body: "When unpaused, every month your built projects shift the climate. Watch the date climb toward 2100.",
+        body: "When unpaused, every month your built projects shift the climate. Watch the date climb toward 2050.",
       },
       {
         part: 2,

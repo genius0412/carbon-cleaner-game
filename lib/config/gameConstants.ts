@@ -16,7 +16,7 @@ export const GAME = {
   // --- Time ---
   startYear: 2025,
   startMonth: 1, // January
-  endYear: 2100, // last playable year (game over Jan 2101)
+  endYear: 2050, // last playable year (game over Jan 2051)
   // Real time -> game time. 1 in-game month per 30 real seconds at 1x.
   realSecondsPerGameMonth: 30,
   speedOptions: [1, 1.5, 2.5] as const,

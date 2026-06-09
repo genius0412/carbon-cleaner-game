@@ -292,12 +292,12 @@ export function tickMonth(prev: GameState): GameState {
 export function evaluateStatus(state: GameState): GameState["status"] {
   // lose: carbon hits failure threshold
   if (state.carbonPpm >= GAME.failureCarbonPpm) return "lost";
-  // win: effective gain at or below net-zero, before Jan 2101
+  // win: effective gain at or below net-zero, before Jan 2051
   if (effectiveCarbonGain(state) <= GAME.netZeroThreshold) {
     // require minimal governing function (support not in total paralysis)
     if (state.support >= GAME.supportParalysisBelow) return "won";
   }
-  // lose: reached Jan 2101 without net zero
+  // lose: reached Jan 2051 without net zero
   if (state.year > GAME.endYear) return "lost";
   return "playing";
 }

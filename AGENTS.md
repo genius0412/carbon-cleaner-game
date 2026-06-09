@@ -17,10 +17,10 @@ Project hygiene: clear folder structure, commented code, a README.md with setup 
 Keep the game loop in one well-isolated module (e.g. lib/engine/) so the simulation logic is testable and separate from UI.
 2. The fictional world
 The game is set in a fictional U.S.-style state (default name Verdana, but the player names their own city, see §6). Default starting conditions (these are tunable game constants, NOT real-world data, keep as given unless noted):
-Year: January 2025, ends December 2100 (game over Jan 2101).
+Year: January 2025, ends December 2050 (game over Jan 2051).
 Population: 100,000.
 Starting global CO₂: 430 ppm. Failure threshold: 600 ppm.
-Starting Carbon Gain: positive (county is emitting); goal is ≤ 0.00 ppm/month before Dec 2100.
+Starting Carbon Gain: positive (county is emitting); goal is ≤ 0.00 ppm/month before Dec 2050.
 Starting Population Support: 65%.
 Starting budget: $2,000,000, plus $1,000,000 at the start of each in-game year (carries over).
 3. DATA-BLANK convention (CRITICAL, the human will fill these in)
@@ -65,8 +65,8 @@ Speed options: 1x, 1.5x, 2.5x (replace any other speeds).
 Skip Forward (jump +1 year).
 Auto-pause: time freezes automatically whenever the player is taking an action (a panel/modal is open) and resumes when they close it.
 6.3 Win / lose
-Win: Carbon Gain/Month ≤ 0.00 at any time before Dec 2100 (with at least minimal governing function intact).
-Lose: reach Jan 2101 without net-zero, or Current Carbon Amount hits 600 ppm.
+Win: Carbon Gain/Month ≤ 0.00 at any time before Dec 2050 (with at least minimal governing function intact).
+Lose: reach Jan 2051 without net-zero, or Current Carbon Amount hits 600 ppm.
 6.4 The map
 A pan-and-zoom cartoon SVG map of the fictional state, divided into many labeled regions. Think Google-Maps-lite: drag to pan, scroll/buttons to zoom, but the art is flat and friendly.
 Regions have terrain types (mountains, forest, plains, coast, urban, farmland). Terrain affects which infrastructure makes sense (e.g. geothermal/wind favor mountains; solar favors plains; algae/scrubbers favor coast/urban, apply small efficiency modifiers).
@@ -197,7 +197,7 @@ Global finished counter on Home.
 Classroom join-by-code → live scoreboard: rank by progress = lowest Carbon Gain/Month (closer to/below zero = better), showing each player's city name. Once a player finishes, finishers are ranked by finish time (first → last) above everyone still playing.
 Guest resume: guest saves keyed by guest_code; pasting the code restores the save.
 11. Onboarding flow
-Intro briefing (a few paragraphs of flavor): who the player is, the state of the world (100k residents, carbon-dependent, 430 ppm), the mandate (net-zero by 2100 without losing public trust), and a quick gauge explainer.
+Intro briefing (a few paragraphs of flavor): who the player is, the state of the world (100k residents, carbon-dependent, 430 ppm), the mandate (net-zero by 2050 without losing public trust), and a quick gauge explainer.
 Character Select (Mayor / older student / younger student).
 City naming: two spinning randomizer wheels whose results combine into one city name (e.g. wheel A = "New / Port / Mount / Lake…", wheel B = "haven / vale / ridge / shire…"). The player spins until they like the result; no free typing. Provide large word lists on both wheels.
 Load the dashboard.

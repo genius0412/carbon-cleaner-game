@@ -2,7 +2,7 @@
 
 A browser-based **climate-strategy game** built as an AP World History civic-action
 project on climate change. Lead a fictional U.S. county (default state: *Verdana*,
-population 100,000) to **carbon net-zero by 2100**, without losing the public's
+population 100,000) to **carbon net-zero by 2050**, without losing the public's
 trust, by building clean infrastructure, funding research, passing legislation,
 planting trees, and taking **real-world civic action**.
 
@@ -157,8 +157,8 @@ is isolated from the UI and easy to reason about or unit-test.
 
 ## 🎮 How to win
 
-Drive **Carbon Gain/Month to ≤ 0.00 ppm** before December 2100 while keeping at
-least minimal public support. You lose if you reach January 2101 without net-zero,
+Drive **Carbon Gain/Month to ≤ 0.00 ppm** before December 2050 while keeping at
+least minimal public support. You lose if you reach January 2051 without net-zero,
 or if atmospheric carbon hits **600 ppm**.
 
 ---

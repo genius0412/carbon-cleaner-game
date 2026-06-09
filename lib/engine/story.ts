@@ -69,7 +69,7 @@ export const STORY_BEATS: StoryBeat[] = [
     title: "How we win this",
     lines: [
       "Mayor, before you spend a dollar, understand the one number that matters: Carbon Gain per Month. Right now it's positive. We're emitting.",
-      "Every project you build pushes that number down. Get it to zero or below, net-zero, and we've won, even if it's not yet 2100.",
+      "Every project you build pushes that number down. Get it to zero or below, net-zero, and we've won, even if it's not yet 2050.",
       "And terrain matters. Solar loves the open plains; wind and geothermal want the mountains; algae and scrubbers belong on the coast and in the city. Build where the land works for you and you'll get more out of every project.",
     ],
     trigger: (s) => s.year === 2025 && s.month >= 3,
@@ -262,11 +262,11 @@ export const STORY_BEATS: StoryBeat[] = [
     avatar: "🧭",
     title: "Halfway there",
     lines: [
-      "It's the middle of the century, Mayor. Half your mandate spent.",
+      "We're halfway through your mandate, Mayor. Half your time's already spent.",
       "Take a breath and look at what Verdana's become under you, the panels on the rooftops, the turbines on the ridge, the kids who've never known a smoggy sky.",
       "But sentiment won't finish the job. Check your gain number against zero, and let's plan the back half like the future depends on it. Because it does.",
     ],
-    trigger: (s) => s.year >= 2050,
+    trigger: (s) => s.year >= 2038,
     cta: "Plan the back half",
   },
   {
@@ -294,7 +294,7 @@ export const STORY_BEATS: StoryBeat[] = [
     lines: [
       "Mayor, monthly carbon gain is almost flat. We are one, maybe two good decisions from net-zero.",
       "Whatever's left in the tank, one more region, one more bill, one more efficiency breakthrough landing, now is when it counts.",
-      "A century from now, people will point to this moment and this county. Finish it.",
+      "Years from now, people will point to this moment and this county. Finish it.",
     ],
     trigger: (s) => s.carbonGainPerMonth > 0 && s.carbonGainPerMonth < 0.008,
     cta: "Finish it",

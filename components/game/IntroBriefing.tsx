@@ -31,10 +31,10 @@ const SCENES: Scene[] = [
   {
     tag: "The mandate",
     art: "🎯",
-    title: "Your mission, until 2100",
+    title: "Your mission, until 2050",
     accent: "leaf",
     body: [
-      "Bend the curve. Get the county's monthly carbon gain down to zero, net-zero, before the century ends.",
+      "Bend the curve. Get the county's monthly carbon gain down to zero, net-zero, before 2050.",
       "Build clean infrastructure across the map, fund breakthrough research, pass bold laws, and plant living carbon sinks. Every region is a choice.",
     ],
   },
