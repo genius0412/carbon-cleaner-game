@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import type { GameState, Region } from "@/lib/engine/types";
 import { infraById } from "@/lib/engine/content";
 import { paintKey, tileCenter, GRID_COLS } from "@/lib/map/iso";
@@ -61,6 +61,14 @@ export function GameMap({
     setPan((prev) => ({ x: c.x - k * (c.x - prev.x), y: c.y - k * (c.y - prev.y) }));
     setZoom(newZoom);
   };
+
+  /** Snap the view back to the default (centered, 1x) position. */
+  const recenter = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+  // Show a prominent "back to map" button once the view has drifted far.
+  const offCenter = Math.hypot(pan.x, pan.y) > 160 || zoom < 0.85 || zoom > 1.75;
 
   /** Buttons zoom about the center of the visible map. */
   const zoomByButton = (delta: number) => {
@@ -135,12 +143,28 @@ export function GameMap({
       <div className="absolute right-3 top-3 z-10 flex flex-col gap-1.5">
         <Button size="sm" variant="ghost" onClick={() => zoomByButton(0.3)}>＋</Button>
         <Button size="sm" variant="ghost" onClick={() => zoomByButton(-0.3)}>－</Button>
-        <Button size="sm" variant="ghost" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>⟲</Button>
+        <Button size="sm" variant="ghost" onClick={recenter} title="Recenter map">⟲</Button>
       </div>
 
       <div className="absolute left-3 top-3 z-10 rounded-lg bg-night/60 px-3 py-1.5 text-xs text-mist backdrop-blur">
         Drag to pan · scroll to zoom · click a region to act
       </div>
+
+      {/* prominent recenter button, appears when you've panned/zoomed far away */}
+      <AnimatePresence>
+        {offCenter && (
+          <motion.button
+            type="button"
+            onClick={recenter}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full border border-leaf/40 bg-charcoal/90 px-4 py-2 text-xs font-semibold text-leaf shadow-lg backdrop-blur transition-colors hover:bg-leaf/15"
+          >
+            🗺️ Back to map
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       <svg
         ref={svgRef}
