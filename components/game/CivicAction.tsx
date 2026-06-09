@@ -90,8 +90,8 @@ export function CivicAction({ open, onClose }: { open: boolean; onClose: () => v
         <h3 className="font-display text-sm font-semibold text-cyan">3 · Take real action (optional, big boost)</h3>
         <p className="mt-2 text-sm text-mist">
           Send your letter to your representative for real, then upload a
-          screenshot of the email you sent. We run a lenient check that it looks
-          like a climate-related message — not a forgery detector.
+          screenshot of the email you sent to earn a big boost. <span className="text-danger">Your screenshot
+          will appear in your final report.</span>
         </p>
         {game.civic?.boostApplied ? (
           <div className="mt-3 rounded-xl bg-leaf/15 p-3 text-sm text-leaf">
@@ -106,8 +106,9 @@ export function CivicAction({ open, onClose }: { open: boolean; onClose: () => v
             onPassed={() => {
               doCivicBoost(game.civic?.letter ?? "");
               toast("Civic action verified — boost applied!", "success");
+              // auto-close once approved; small delay lets the success toast register
+              setTimeout(onClose, 1200);
             }}
-            onFail={(reason) => toast(reason, "error")}
           />
         )}
       </Card>
@@ -253,23 +254,26 @@ function ProofUploader({
   gameSaveId,
   onChecking,
   onPassed,
-  onFail,
 }: {
   letter: string;
   disabled: boolean;
   gameSaveId?: string;
   onChecking: (b: boolean) => void;
   onPassed: () => void;
-  onFail: (reason: string) => void;
 }) {
   const [file, setFile] = useState<File | null>(null);
+  // Inline error shown below the submit area (instead of a top-right toast).
+  const [error, setError] = useState<string | null>(null);
+  // Dev-only: which checker the server actually used (gemini | vision | keyword | accepted | error).
+  const [debug, setDebug] = useState<{ method?: string; passed?: boolean; reason?: string } | null>(null);
   const setCivic = useGameStore((s) => s.setCivic);
 
   const submit = async () => {
     if (!file) {
-      onFail("Choose a screenshot first.");
+      setError("Choose a screenshot first.");
       return;
     }
+    setError(null);
     onChecking(true);
     try {
       // read as base64
@@ -305,6 +309,7 @@ function ProofUploader({
         }),
       });
       const data = await res.json();
+      setDebug({ method: data.method, passed: data.passed, reason: data.reason });
 
       // record upload result (best-effort) in Supabase
       if (sb && imagePath) {
@@ -321,25 +326,60 @@ function ProofUploader({
 
       setCivic({ proofUploaded: true, proofPassedCheck: !!data.passed });
       if (data.passed) onPassed();
-      else onFail(data.reason || "The check didn't pass. Try a clearer screenshot.");
+      else setError(data.reason || "The check didn't pass. Try a clearer screenshot.");
     } catch {
-      onFail("Something went wrong checking your upload.");
+      setError("Something went wrong checking your upload.");
     } finally {
       onChecking(false);
     }
   };
 
+  const isDev = process.env.NODE_ENV !== "production";
+  // gemini/vision = the image was actually read; keyword/accepted = it was NOT.
+  const sawImage = debug?.method === "gemini" || debug?.method === "vision";
+
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-3">
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-        className="text-xs text-mist file:mr-3 file:rounded-full file:border-0 file:bg-leaf/20 file:px-3 file:py-1.5 file:text-leaf"
-      />
-      <Button size="sm" onClick={submit} disabled={disabled || !file}>
-        {disabled ? "Checking…" : "Submit proof"}
-      </Button>
+    <div className="mt-3 space-y-2">
+      <div className="flex flex-wrap items-center gap-3">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            setFile(e.target.files?.[0] ?? null);
+            setError(null);
+          }}
+          className="text-xs text-mist file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-leaf/20 file:px-3 file:py-1.5 file:text-leaf"
+        />
+        <Button size="sm" onClick={submit} disabled={disabled || !file}>
+          {disabled ? "Checking…" : "Submit proof"}
+        </Button>
+      </div>
+
+      {error && (
+        <p className="rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-xs text-danger">
+          {error}
+        </p>
+      )}
+
+      {isDev && debug?.method && (
+        <div
+          className={`inline-flex flex-wrap items-center gap-2 rounded-md border px-2 py-1 font-mono text-[11px] ${
+            sawImage
+              ? "border-leaf/40 bg-leaf/10 text-leaf"
+              : "border-amber/40 bg-amber/10 text-amber"
+          }`}
+          title={
+            sawImage
+              ? "A vision model actually read the image."
+              : "The image was NOT read — server fell back to a text/keyword check."
+          }
+        >
+          <span className="font-semibold">dev · checker: {debug.method}</span>
+          <span className="opacity-70">{sawImage ? "read image ✓" : "did not read image ✗"}</span>
+          {typeof debug.passed === "boolean" && <span>· {debug.passed ? "PASS" : "FAIL"}</span>}
+          {debug.reason && <span className="opacity-70">· {debug.reason}</span>}
+        </div>
+      )}
     </div>
   );
 }

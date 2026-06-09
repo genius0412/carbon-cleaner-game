@@ -243,12 +243,20 @@ export function Dashboard({ onExit }: { onExit?: () => void }) {
             </>
           )}
 
-          {/* Civic action is NOT a permanent button — it is summoned by the
-              citizenry via story beats. Show a subtle reminder once unlocked. */}
-          {game.civic?.boostApplied && (
+          {/* Civic action is summoned by the citizenry via a story beat. If the
+              player defers it ("Do it later"), the feature is still unlocked, so
+              surface a standing "Write a letter" button until it's done. Once the
+              real action lands, swap it for a subtle confirmation. */}
+          {game.civic?.boostApplied ? (
             <div className="glass rounded-xl border-l-2 border-l-cyan p-3 text-xs text-cyan">
               ✓ You answered the people's call. Your letter is on the record.
             </div>
+          ) : (
+            game.unlockedFeatures.includes("civic") && (
+              <Button variant="secondary" onClick={() => setPanel("civic")}>
+                ✉️ Write a letter
+              </Button>
+            )
           )}
 
           {/* Show which class(es) this game is in, or a join button if none. */}
@@ -260,6 +268,7 @@ export function Dashboard({ onExit }: { onExit?: () => void }) {
 
           <div className="glass mt-2 rounded-xl p-3 text-xs text-mist">
             <p className="font-semibold text-fog">Status</p>
+            <PlayerNameEditor />
             <p className="mt-1">{paused || openPanels > 0 ? "⏸ Paused" : `▶ Running ${speed}x`}</p>
             <p className="mt-1">Built: {game.builtInfra.length} / {game.regions.length} regions</p>
             {/* Research & bills are mayor-only features — hide them for students. */}
@@ -308,8 +317,7 @@ export function Dashboard({ onExit }: { onExit?: () => void }) {
         wide
       >
         <p className="mb-3 text-sm text-mist">
-          Watch the live standings for your class. Finishers rank first by finish
-          time, then everyone still playing ranks by lowest carbon gain.
+          Live standings for your class.
         </p>
         <Scoreboard initialCode={scoreboardCode ?? ""} fixed myId={meta.id ?? null} />
       </Modal>
@@ -357,6 +365,65 @@ function SaveStatus() {
         {saving ? "Saving…" : "💾 Save"}
       </Button>
     </div>
+  );
+}
+
+/** Inline editor for the player's display name (shown on leaderboards). */
+function PlayerNameEditor() {
+  const game = useGameStore((s) => s.game);
+  const setPlayerName = useGameStore((s) => s.setPlayerName);
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState("");
+
+  if (!game) return null;
+  const current = game.playerName?.trim();
+
+  const start = () => {
+    setValue(current ?? "");
+    setEditing(true);
+  };
+  const commit = () => {
+    setPlayerName(value);
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <div className="mt-1 flex items-center gap-1.5">
+        <input
+          autoFocus
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit();
+            if (e.key === "Escape") setEditing(false);
+          }}
+          maxLength={40}
+          placeholder="Your name"
+          className="min-w-0 flex-1 rounded-md border border-white/12 bg-night/60 px-2 py-1 text-[11px] text-fog outline-none focus:border-leaf/50"
+        />
+        <button onClick={commit} className="text-leaf hover:text-fog" aria-label="Save name">
+          ✓
+        </button>
+        <button
+          onClick={() => setEditing(false)}
+          className="text-mist hover:text-fog"
+          aria-label="Cancel"
+        >
+          ✕
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <p className="mt-1">
+      Playing as{" "}
+      <span className="font-semibold text-fog">{current || "Unnamed"}</span>{" "}
+      <button onClick={start} className="text-cyan hover:text-fog" title="Set your display name">
+        ✎ edit
+      </button>
+    </p>
   );
 }
 

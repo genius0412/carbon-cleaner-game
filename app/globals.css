@@ -140,6 +140,94 @@ h1, h2, h3, .font-display {
   animation: pulseGlow 2.4s ease-in-out infinite;
 }
 
+/* ----------------------------------------------------------------
+   Isometric map — ambient / passive animation keyframes.
+   All continuous loops live here (CSS, GPU transforms) so frequent
+   game-clock re-renders never re-run animation in JS. The
+   prefers-reduced-motion block above neutralizes every one of these.
+   ---------------------------------------------------------------- */
+
+/* slow rotation for turbine blades / crane arms */
+@keyframes iso-spin {
+  to { transform: rotate(360deg); }
+}
+.iso-spin { animation: iso-spin 4s linear infinite; transform-origin: center; transform-box: fill-box; }
+.iso-spin-slow { animation: iso-spin 9s linear infinite; transform-origin: center; transform-box: fill-box; }
+
+/* gentle vertical bob so structures feel alive */
+@keyframes iso-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2.5px); }
+}
+.iso-bob { animation: iso-bob 3.4s ease-in-out infinite; }
+
+/* shimmering coastal water */
+@keyframes water-shimmer {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.9; }
+}
+.water-shimmer { animation: water-shimmer 3.6s ease-in-out infinite; }
+
+/* rising steam / heat plume — fades and lifts */
+@keyframes steam-rise {
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  25% { opacity: 0.7; }
+  100% { transform: translateY(-26px) scale(1.5); opacity: 0; }
+}
+.steam-rise { animation: steam-rise 3s ease-out infinite; transform-box: fill-box; }
+
+/* rising bubbles for algae tanks */
+@keyframes bubble-rise {
+  0% { transform: translateY(0); opacity: 0; }
+  20% { opacity: 0.9; }
+  100% { transform: translateY(-14px); opacity: 0; }
+}
+.bubble-rise { animation: bubble-rise 2.2s ease-in infinite; transform-box: fill-box; }
+
+/* sweeping highlight across solar panels */
+@keyframes glint-sweep {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.85; }
+}
+.glint-sweep { animation: glint-sweep 4.5s ease-in-out infinite; }
+
+/* swaying trees / grass */
+@keyframes sway {
+  0%, 100% { transform: rotate(-2.5deg); }
+  50% { transform: rotate(2.5deg); }
+}
+.sway { animation: sway 4s ease-in-out infinite; transform-origin: bottom center; transform-box: fill-box; }
+
+/* slow soft glow pulse for lamps / charging lights */
+@keyframes iso-glow {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+.iso-glow { animation: iso-glow 2.6s ease-in-out infinite; }
+
+/* a vehicle sliding back and forth along a short road */
+@keyframes vehicle-shuttle {
+  0% { transform: translate(-16px, 8px); }
+  50% { transform: translate(16px, -8px); }
+  100% { transform: translate(-16px, 8px); }
+}
+.vehicle-shuttle { animation: vehicle-shuttle 5s ease-in-out infinite; }
+
+/* energy pulse travelling along the smart-grid line */
+@keyframes energy-pulse {
+  0% { transform: translate(-18px, 9px); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translate(18px, -9px); opacity: 0; }
+}
+.energy-pulse { animation: energy-pulse 3s linear infinite; }
+
+/* drifting clouds across the sky */
+@keyframes cloud-drift {
+  from { transform: translateX(-180px); }
+  to { transform: translateX(1180px); }
+}
+
 /* scrollbars */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: rgba(61, 220, 132, 0.25); border-radius: 8px; }

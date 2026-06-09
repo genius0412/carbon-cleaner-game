@@ -7,9 +7,10 @@
  *
  * Design rules:
  *  - "build" is always available; everything else is introduced through story.
- *  - Civic action is summoned by the citizenry — never a permanent button — and
- *    is only ever asked for ONCE (you don't spam your representative). Civic
- *    beats are suppressed once the player has actually sent their letter.
+ *  - Civic action is summoned by the citizenry via a beat — not available from
+ *    the start. It is only ever ASKED for ONCE (you don't spam your rep), but if
+ *    the player defers it the Dashboard keeps a "Write a letter" button until
+ *    it's done. Civic beats are suppressed once the letter has actually been sent.
  *
  * Pure + data-only so it stays testable and UI-agnostic.
  */

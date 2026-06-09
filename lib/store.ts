@@ -49,7 +49,7 @@ interface GameStore {
   newGame: (
     character: CharacterType,
     cityName: string,
-    opts?: { asGuest?: boolean; userId?: string | null },
+    opts?: { asGuest?: boolean; userId?: string | null; playerName?: string | null },
   ) => void;
   loadGame: (state: GameState, meta: SaveMeta) => void;
   reset: () => void;
@@ -78,6 +78,7 @@ interface GameStore {
   doStudentAction: (actionId: string, scale?: number) => void;
   doCivicBoost: (letter: string) => void;
   setCivic: (patch: Partial<NonNullable<GameState["civic"]>>) => void;
+  setPlayerName: (name: string) => void;
 
   clearFeedback: () => void;
   setFeedback: (f: { title: string; message: string; ok: boolean } | null) => void;
@@ -153,6 +154,9 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     newGame: (character, cityName, opts) => {
       const game = createInitialState(character, cityName);
+      // Seed the display name from the logged-in user's account name (guests
+      // leave it unset and can name themselves in-game).
+      if (opts?.playerName) game.playerName = opts.playerName;
       // Logged-in users save under their account; otherwise generate a guest
       // resume code (unless an account-less, code-less save is explicitly wanted).
       // every new game gets a stable local id so multiple games can be saved,
@@ -363,6 +367,13 @@ export const useGameStore = create<GameStore>((set, get) => {
       const { game } = get();
       if (!game) return;
       set({ game: { ...game, civic: { ...(game.civic ?? {}), ...patch } } });
+      scheduleSave();
+    },
+
+    setPlayerName: (name) => {
+      const { game } = get();
+      if (!game) return;
+      set({ game: { ...game, playerName: name.trim() || undefined } });
       scheduleSave();
     },
 

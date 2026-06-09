@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/Button";
 
 /**
  * Cinematic advisor briefing. Story beats reveal line-by-line. Civic beats end
- * with a call-to-action that opens the letter desk — this is the ONLY way the
- * Civic Action flow surfaces (it is not a permanent button).
+ * with a call-to-action that opens the letter desk, or "Do it later" to defer.
+ * Deferring still unlocks the civic feature, so the Dashboard surfaces a
+ * "Write a letter" button until the action is actually completed.
  */
 export function StoryModal() {
   const beat = useGameStore((s) => s.activeStory);
@@ -113,7 +114,7 @@ export function StoryModal() {
                   className="text-xs text-mist hover:text-fog"
                   onClick={() => resolveStory(false)}
                 >
-                  Not now
+                  Do it later
                 </button>
                 <Button variant="secondary" onClick={() => resolveStory(true)}>
                   {beat.cta ?? "Take action"}

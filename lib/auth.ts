@@ -8,6 +8,14 @@ export interface AuthUser {
   id: string;
   email: string | null;
   username: string | null;
+  /** Friendly, editable display name (separate from the unique username). */
+  displayName: string | null;
+  /** False until the user has chosen/confirmed a display name (OAuth prompt). */
+  displayNameConfirmed: boolean;
+  /** Primary sign-in method, e.g. "email" or "google". */
+  provider: string | null;
+  /** All linked sign-in methods (a Google user who adds a password has both). */
+  providers: string[];
 }
 
 /**
@@ -33,20 +41,27 @@ export function useAuth() {
     // it deadlocks (the symptom: "Checking session…" then a false logged-out
     // state on client-side navigation). We defer it with setTimeout so the lock
     // is released first.
-    const enrichUsername = async (id: string) => {
+    const enrichProfile = async (id: string) => {
       try {
         const { data } = await sb
           .from("profiles")
-          .select("username")
+          .select("username, display_name, display_name_confirmed")
           .eq("id", id)
           .maybeSingle();
-        if (active && data?.username) {
+        if (active && data) {
           setUser((prev) =>
-            prev && prev.id === id ? { ...prev, username: data.username } : prev,
+            prev && prev.id === id
+              ? {
+                  ...prev,
+                  username: data.username ?? prev.username,
+                  displayName: data.display_name ?? prev.displayName,
+                  displayNameConfirmed: !!data.display_name_confirmed,
+                }
+              : prev,
           );
         }
       } catch {
-        /* ignore — username stays null */
+        /* ignore — fields stay at their session defaults */
       }
     };
 
@@ -59,12 +74,33 @@ export function useAuth() {
         setLoading(false);
         return;
       }
-      const metaUsername =
-        (u.user_metadata?.username as string | undefined) ?? null;
-      setUser({ id: u.id, email: u.email ?? null, username: metaUsername });
+      const meta = u.user_metadata ?? {};
+      const metaUsername = (meta.username as string | undefined) ?? null;
+      const metaDisplay =
+        (meta.display_name as string | undefined) ??
+        metaUsername ??
+        (meta.full_name as string | undefined) ??
+        (meta.name as string | undefined) ??
+        null;
+      // Which provider(s) the account is linked to (e.g. "email", "google").
+      const providers =
+        (u.app_metadata?.providers as string[] | undefined) ??
+        (u.app_metadata?.provider ? [u.app_metadata.provider] : []);
+      setUser({
+        id: u.id,
+        email: u.email ?? null,
+        username: metaUsername,
+        displayName: metaDisplay,
+        // Assume confirmed until the profile says otherwise, so we don't flash
+        // the prompt for already-set-up users; enrichProfile corrects this.
+        displayNameConfirmed: true,
+        provider: (u.app_metadata?.provider as string | undefined) ?? providers[0] ?? null,
+        providers,
+      });
       setLoading(false);
-      // Defer the profiles query until after the lock is released.
-      if (!metaUsername) setTimeout(() => enrichUsername(u.id), 0);
+      // Defer the profiles query until after the lock is released — it fills in
+      // the username/display name and the authoritative confirmed flag.
+      setTimeout(() => enrichProfile(u.id), 0);
     };
 
     // onAuthStateChange fires INITIAL_SESSION on subscribe and is our source of

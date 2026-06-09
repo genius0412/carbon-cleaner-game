@@ -1,16 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import type { GameState, Region } from "@/lib/engine/types";
-import { TERRAIN_COLORS } from "@/lib/engine/regions";
 import { infraById } from "@/lib/engine/content";
+import { paintKey, tileCenter, GRID_COLS } from "@/lib/map/iso";
+import { IsoTile } from "@/components/game/map/IsoTile";
+import { Building } from "@/components/game/map/Buildings";
+import { Ambient } from "@/components/game/map/Ambient";
 import { Button } from "@/components/ui/Button";
 
 /**
- * Pan-and-zoom cartoon SVG map. Drag to pan, scroll or buttons to zoom.
- * Scroll-to-zoom is bound with a NON-PASSIVE native listener so it never
- * scrolls the page behind it. Clicking a region opens its panel (auto-pause).
+ * Isometric city-builder map. Drag to pan, scroll or buttons to zoom. Scroll-to-
+ * zoom uses a NON-PASSIVE native listener so it never scrolls the page behind it.
+ * Regions are drawn back-to-front (painter's algorithm); each built region gets a
+ * bespoke animated structure. Clicking a tile opens its panel (auto-pause).
  */
 export function GameMap({
   game,
@@ -106,6 +110,22 @@ export function GameMap({
     setIsDragging(false);
   };
 
+  // Stable selection handler so memoized tiles don't re-render on every pan.
+  const selectRef = useRef(onRegionClick);
+  selectRef.current = onRegionClick;
+  const handleSelect = useCallback((region: Region) => {
+    if (!moved.current) selectRef.current(region);
+  }, []);
+
+  // Normalize grid coords (old saves may predate gx/gy) and sort back-to-front.
+  const tiles = game.regions
+    .map((r, idx) => ({
+      region: r,
+      gx: r.gx ?? idx % GRID_COLS,
+      gy: r.gy ?? Math.floor(idx / GRID_COLS),
+    }))
+    .sort((a, b) => paintKey(a.gx, a.gy) - paintKey(b.gx, b.gy));
+
   return (
     <div
       ref={containerRef}
@@ -132,7 +152,7 @@ export function GameMap({
         onPointerLeave={onPointerUp}
       >
         <defs>
-          <radialGradient id="sea" cx="50%" cy="40%" r="80%">
+          <radialGradient id="sea" cx="50%" cy="42%" r="80%">
             <stop offset="0%" stopColor="#0d2420" />
             <stop offset="100%" stopColor="#06110f" />
           </radialGradient>
@@ -142,52 +162,25 @@ export function GameMap({
           style={{ transition: isDragging ? "none" : "transform 0.12s ease-out" }}
         >
           <rect x={-400} y={-400} width={1800} height={1500} fill="url(#sea)" />
-          {game.regions.map((r, idx) => {
-            const built = r.builtInfraId ? infraById(r.builtInfraId) : null;
+
+          {/* land + structures, painted back-to-front */}
+          {tiles.map(({ region, gx, gy }) => {
+            const built = region.builtInfraId ? infraById(region.builtInfraId) : null;
+            const c = tileCenter(gx, gy);
             return (
-              <g
-                key={r.id}
-                onClick={() => {
-                  if (!moved.current) onRegionClick(r);
-                }}
-                className="cursor-pointer"
-              >
-                <motion.path
-                  d={r.path}
-                  fill={TERRAIN_COLORS[r.terrain]}
-                  fillOpacity={0.85}
-                  stroke={built ? "#3ddc84" : "rgba(255,255,255,0.18)"}
-                  strokeWidth={built ? 3 : 1.5}
-                  initial={{ opacity: 0, scale: 0.85 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: idx * 0.03, duration: 0.4 }}
-                  style={{ transformBox: "fill-box", transformOrigin: "center" }}
-                  whileHover={{ fillOpacity: 1 }}
-                />
-                <text x={r.cx} y={r.cy - 4} textAnchor="middle" className="pointer-events-none select-none" fontSize={13} fontWeight={600} fill="#eafff5">
-                  {r.name}
-                </text>
-                <text x={r.cx} y={r.cy + 14} textAnchor="middle" className="pointer-events-none select-none" fontSize={10} fill="rgba(234,255,245,0.7)">
-                  {r.terrain}
-                </text>
-                {built && (
-                  <motion.text
-                    x={r.cx}
-                    y={r.cy + 42}
-                    textAnchor="middle"
-                    className="pointer-events-none select-none"
-                    fontSize={28}
-                    initial={{ scale: 0, y: r.cy + 20, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 320, damping: 16 }}
-                    style={{ transformBox: "fill-box", transformOrigin: "center" }}
-                  >
-                    {built.icon}
-                  </motion.text>
-                )}
+              <g key={region.id}>
+                <IsoTile region={region} gx={gx} gy={gy} built={!!built} onSelect={handleSelect} />
+                <g transform={`translate(${c.x.toFixed(1)} ${c.y.toFixed(1)})`} className="pointer-events-none">
+                  <AnimatePresence mode="wait">
+                    {built && <Building key={built.id} infraId={built.id} icon={built.icon} />}
+                  </AnimatePresence>
+                </g>
               </g>
             );
           })}
+
+          {/* drifting clouds + shadows on top, very subtle */}
+          <Ambient />
         </g>
       </svg>
     </div>

@@ -156,6 +156,7 @@ function rowFromState(state: GameState, meta: SaveMeta) {
     mode: state.mode,
     character_type: state.characterType,
     city_name: state.cityName,
+    player_name: state.playerName ?? null,
     state, // full JSON
     carbon_gain: effectiveCarbonGain(state),
     carbon_amount: state.carbonPpm,
@@ -265,6 +266,24 @@ export async function listSavesByGuestCode(code: string): Promise<SaveEntry[]> {
     return data ? entriesFromRows(data) : [];
   } catch {
     return [];
+  }
+}
+
+/**
+ * Bulk-update the denormalized player_name on all of a user's cloud saves.
+ * Called when they rename themselves in account settings so existing
+ * leaderboard rows reflect the new name. Best-effort (no-op offline).
+ */
+export async function updatePlayerNameForUser(
+  userId: string,
+  name: string,
+): Promise<void> {
+  const sb = getSupabaseBrowser();
+  if (!sb || !userId) return;
+  try {
+    await sb.from("game_saves").update({ player_name: name }).eq("user_id", userId);
+  } catch {
+    /* ignore — name still updates on the next per-save persist */
   }
 }
 

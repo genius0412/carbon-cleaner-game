@@ -45,7 +45,36 @@ export function ChallengeModal({
     }
   }, [open, def?.id]);
 
-  if (!def || !content) return null;
+  if (!def) return null;
+
+  // Defensive fallback: every action should have challenge content, but if one
+  // is missing we still let the player perform it (full reward) rather than
+  // popping an empty modal that silently does nothing.
+  if (!content) {
+    return (
+      <Modal open={open} onClose={onClose} title={`${def.icon} ${def.name}`} wide>
+        <div className="space-y-4">
+          <p className="text-sm leading-relaxed text-fog/90">{def.description}</p>
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={onClose}>
+              Maybe later
+            </Button>
+            <Button
+              onClick={() => {
+                if (!completed.current) {
+                  completed.current = true;
+                  onComplete(1);
+                }
+                onClose();
+              }}
+            >
+              Do it →
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
 
   const won = score >= WIN_SCORE;
 

@@ -131,17 +131,24 @@ export function Scoreboard({
                     >
                       #{i + 1}
                     </span>
-                    <span className="font-semibold text-fog">{r.city_name}</span>
-                    {mine && (
-                      <span className="rounded-full bg-leaf/20 px-2 py-0.5 text-[10px] font-semibold text-leaf">
-                        You
-                      </span>
-                    )}
-                    {r.finished_at && (
-                      <span className="rounded-full bg-leaf/15 px-2 py-0.5 text-[10px] text-leaf">
-                        ✓ net-zero
-                      </span>
-                    )}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-fog">{r.city_name}</span>
+                        {mine && (
+                          <span className="rounded-full bg-leaf/20 px-2 py-0.5 text-[10px] font-semibold text-leaf">
+                            You
+                          </span>
+                        )}
+                        {r.finished_at && (
+                          <span className="rounded-full bg-leaf/15 px-2 py-0.5 text-[10px] text-leaf">
+                            ✓ net-zero
+                          </span>
+                        )}
+                      </div>
+                      {r.player_name && (
+                        <span className="text-xs text-mist">{r.player_name}</span>
+                      )}
+                    </div>
                   </div>
                   <span className="text-sm text-cyan">{r.carbon_gain.toFixed(4)} ppm/mo</span>
                 </div>

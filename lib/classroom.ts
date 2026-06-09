@@ -70,8 +70,22 @@ export interface SaveClass {
 export interface ScoreboardRow {
   game_save_id: string | null;
   city_name: string;
+  /** Player's display name (leaderboard subtitle); null when unset. */
+  player_name: string | null;
+  /** Role the player chose (mayor / student_older / student_younger). */
+  character_type: CharacterType | null;
   carbon_gain: number;
+  /** Current in-game date (e.g. "Mar 2034"); shows how far they've played. */
+  year_month: string | null;
+  /** Current atmospheric carbon (ppm) at last save. */
+  carbon_amount: number | null;
   finished_at: string | null;
+}
+
+/** Short label for a role, e.g. "Mayor". Falls back to the raw value. */
+export function roleLabel(type: CharacterType | null): string | null {
+  if (!type) return null;
+  return ALL_ROLES.find((r) => r.type === type)?.label ?? type;
 }
 
 export interface ClassScoreboard {
@@ -110,13 +124,17 @@ export async function fetchClassScoreboard(code: string): Promise<ClassScoreboar
     if (!cls) return null;
     const { data } = await sb
       .from("classroom_members")
-      .select("game_save_id, city_name, game_saves(carbon_gain, finished_at, city_name)")
+      .select("game_save_id, city_name, game_saves(carbon_gain, carbon_amount, year_month, finished_at, city_name, player_name, character_type)")
       .eq("classroom_id", cls.id);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mapped: ScoreboardRow[] = (data ?? []).map((m: any) => ({
       game_save_id: m.game_save_id ?? null,
       city_name: m.city_name ?? m.game_saves?.city_name ?? "Unknown",
+      player_name: m.game_saves?.player_name ?? null,
+      character_type: (m.game_saves?.character_type as CharacterType | null) ?? null,
       carbon_gain: m.game_saves?.carbon_gain ?? 999,
+      year_month: m.game_saves?.year_month ?? null,
+      carbon_amount: m.game_saves?.carbon_amount ?? null,
       finished_at: m.game_saves?.finished_at ?? null,
     }));
     return {
@@ -224,4 +242,27 @@ export async function joinClassByCode(
     className: cls.name ?? undefined,
     message: `Joined ${cls.name ?? "the class"}! ${cityName} is on the scoreboard.`,
   };
+}
+
+/**
+ * Remove a member from a class (teacher-only). Goes through the server route so
+ * the teacher check runs against the cookie session; RLS also enforces it.
+ * Returns an error message on failure, or null on success.
+ */
+export async function kickMember(
+  classroomId: string,
+  gameSaveId: string,
+): Promise<string | null> {
+  try {
+    const res = await fetch("/api/classroom/kick", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ classroomId, gameSaveId }),
+    });
+    if (res.ok) return null;
+    const payload = await res.json().catch(() => ({}));
+    return payload.error ?? "Couldn't remove that member. Please try again.";
+  } catch {
+    return "Couldn't reach the server. Please try again.";
+  }
 }

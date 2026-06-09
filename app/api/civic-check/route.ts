@@ -4,13 +4,33 @@ import { NextRequest, NextResponse } from "next/server";
  * Lenient civic-action proof check.
  * This is intentionally NOT a forgery detector. It loosely verifies that the
  * uploaded screenshot plausibly looks like an email/message about climate
- * change.
+ * change. Provider preference, first available wins:
  *
- * - If ANTHROPIC_API_KEY is set, it sends the image + a short rubric to a
- *   Claude vision call and accepts on a loose "looks like a climate email" yes.
- * - Otherwise it falls back to a simple keyword check over any provided OCR
- *   text / letter body. Designed to pass easily for genuine attempts.
+ *   1. GEMINI_API_KEY    → Google Gemini vision (primary)
+ *   2. ANTHROPIC_API_KEY → Claude vision (fallback)
+ *   3. neither set        → accept the upload as-is (no model to look at it)
+ *
+ * When a vision call is configured but fails, it falls back to a keyword check
+ * over any OCR text / letter body. The screenshot is always stored and shown in
+ * the final report regardless of which path runs.
  */
+
+// Shared rubric for every vision provider — lenient by design.
+const CHECK_PROMPT =
+  "This is a student's proof of civic action. Loosely and generously decide: does this image look like an email or message addressed to another person (e.g. a representative) that mentions climate change or the environment? This is NOT a forgery check — be lenient. Reply with exactly 'YES' or 'NO' then a short reason.";
+
+/** Parse a "YES/NO + reason" reply into a pass/fail result. */
+function parseVerdict(text: string): { passed: boolean; reason: string } {
+  const passed = /^\s*yes/i.test(text);
+  return {
+    passed,
+    // Strip the leading YES/NO plus any trailing punctuation (".", ",", ":", "-", etc.)
+    // so the reason doesn't render as e.g. ". This image shows…".
+    reason:
+      text.replace(/^\s*(yes|no)\b[\s.,:;!\-—–]*/i, "").trim() ||
+      (passed ? "Looks valid." : "Doesn't look like a climate email."),
+  };
+}
 
 const CLIMATE_TERMS = [
   "climate", "carbon", "emission", "warming", "greenhouse", "co2", "co₂",
@@ -32,6 +52,61 @@ function keywordCheck(text: string): { passed: boolean; reason: string } {
   };
 }
 
+/** Google Gemini vision check (primary). Returns null if unconfigured/errored. */
+async function geminiCheck(
+  imageBase64: string,
+  mediaType: string,
+): Promise<{ passed: boolean; reason: string } | null> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) {
+    console.warn("[civic-check] GEMINI_API_KEY not set — skipping Gemini.");
+    return null;
+  }
+  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-goog-api-key": key },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { inline_data: { mime_type: mediaType, data: imageBase64 } },
+                { text: CHECK_PROMPT },
+              ],
+            },
+          ],
+          generationConfig: { maxOutputTokens: 100, temperature: 0 },
+        }),
+      },
+    );
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.error(
+        `[civic-check] Gemini HTTP ${res.status} (model="${model}"): ${body.slice(0, 500)}`,
+      );
+      return null;
+    }
+    const data = await res.json();
+    const text: string =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    if (!text) {
+      console.error(
+        `[civic-check] Gemini returned no text. Raw: ${JSON.stringify(data).slice(0, 500)}`,
+      );
+      return null;
+    }
+    console.log(`[civic-check] Gemini OK (model="${model}"): ${text.trim().slice(0, 120)}`);
+    return parseVerdict(text);
+  } catch (err) {
+    console.error("[civic-check] Gemini request threw:", err);
+    return null;
+  }
+}
+
+/** Anthropic Claude vision check (fallback). Returns null if unconfigured/errored. */
 async function visionCheck(
   imageBase64: string,
   mediaType: string,
@@ -57,11 +132,7 @@ async function visionCheck(
                 type: "image",
                 source: { type: "base64", media_type: mediaType, data: imageBase64 },
               },
-              {
-                type: "text",
-                text:
-                  "This is a student's proof of civic action. Loosely and generously decide: does this image look like an email or message addressed to another person (e.g. a representative) that mentions climate change or the environment? This is NOT a forgery check — be lenient. Reply with exactly 'YES' or 'NO' then a short reason.",
-              },
+              { type: "text", text: CHECK_PROMPT },
             ],
           },
         ],
@@ -70,8 +141,7 @@ async function visionCheck(
     if (!res.ok) return null;
     const data = await res.json();
     const text: string = data?.content?.[0]?.text ?? "";
-    const passed = /^\s*yes/i.test(text);
-    return { passed, reason: text.replace(/^\s*(yes|no)\b[:\-\s]*/i, "").trim() || (passed ? "Looks valid." : "Doesn't look like a climate email.") };
+    return parseVerdict(text);
   } catch {
     return null;
   }
@@ -87,8 +157,24 @@ export async function POST(req: NextRequest) {
       letter?: string;
     };
 
-    // Try AI vision first (if configured + image provided)
+    const hasGemini = !!process.env.GEMINI_API_KEY;
+    const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
+
+    // No AI configured → accept the upload as-is. There's no model to look at
+    // the screenshot, and we don't want to block genuine attempts. The image is
+    // still stored and appears in the final report.
+    if (!hasGemini && !hasAnthropic) {
+      return NextResponse.json({
+        passed: true,
+        reason: "Proof received — thanks for taking real action!",
+        method: "accepted",
+      });
+    }
+
+    // Try vision: Gemini first (primary), then Claude (fallback).
     if (imageBase64 && mediaType) {
+      const g = await geminiCheck(imageBase64, mediaType);
+      if (g) return NextResponse.json({ ...g, method: "gemini" });
       const v = await visionCheck(imageBase64, mediaType);
       if (v) return NextResponse.json({ ...v, method: "vision" });
     }

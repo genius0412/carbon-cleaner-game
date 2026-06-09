@@ -5,8 +5,16 @@ import Link from "next/link";
 import { SiteNav, SiteFooter } from "@/components/SiteNav";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { getSupabaseBrowser } from "@/lib/supabase/client";
-import { classInviteLink, joinClassByCode, ALL_ROLES, sanitizeRoles } from "@/lib/classroom";
+import {
+  classInviteLink,
+  joinClassByCode,
+  ALL_ROLES,
+  sanitizeRoles,
+  fetchClassScoreboard,
+  kickMember,
+  roleLabel,
+  type ScoreboardRow,
+} from "@/lib/classroom";
 import { useAuth } from "@/lib/auth";
 import { useGameStore } from "@/lib/store";
 import { Scoreboard } from "@/components/game/Scoreboard";
@@ -56,8 +64,7 @@ export default function ClassroomPage() {
         <h1 className="font-display text-4xl font-semibold">Classroom</h1>
         <p className="mt-3 text-mist">
           Teachers create a class code; students join with their game; everyone
-          watches a live scoreboard. Finishers rank first by finish time, then
-          everyone still playing ranks by lowest carbon gain per month.
+          watches a live scoreboard.
         </p>
 
         <TeacherSection user={user} />
@@ -70,22 +77,44 @@ export default function ClassroomPage() {
 }
 
 /* ---------------- Teachers: create & manage class codes ---------------- */
-function TeacherSection({ user }: { user: { id: string; username: string | null } | null }) {
+function TeacherSection({
+  user,
+}: {
+  user: { id: string; username: string | null; displayName?: string | null } | null;
+}) {
   const [name, setName] = useState("");
   const [classes, setClasses] = useState<TeacherClass[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [justCreated, setJustCreated] = useState<string | null>(null);
+  // Track load state so we can tell "still loading" from "loaded, but empty"
+  // from "failed" — otherwise a silently-blank list looks like a missing class.
+  const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadClasses = useCallback(async () => {
-    const sb = getSupabaseBrowser();
-    if (!sb || !user) return;
-    const { data } = await sb
-      .from("classrooms")
-      .select("id, join_code, name, allowed_roles")
-      .eq("teacher_id", user.id)
-      .order("created_at", { ascending: false });
-    setClasses((data as TeacherClass[]) ?? []);
+    if (!user) return;
+    // Load via the server route (reads the cookie session) — the browser client
+    // returns opaque errors after OAuth, which left this list silently blank.
+    try {
+      const res = await fetch("/api/classroom/list");
+      const payload = await res.json();
+      setLoaded(true);
+      if (!res.ok) {
+        // Friendly on screen; full detail to the console for the developer.
+        // eslint-disable-next-line no-console
+        console.error("[classroom] couldn't load classes:", payload);
+        setLoadError("Couldn't load your classes. Please refresh and try again.");
+        return;
+      }
+      setLoadError(null);
+      setClasses((payload.classes as TeacherClass[]) ?? []);
+    } catch (e) {
+      setLoaded(true);
+      // eslint-disable-next-line no-console
+      console.error("[classroom] couldn't load classes:", e);
+      setLoadError("Couldn't reach the server. Please refresh and try again.");
+    }
   }, [user]);
 
   useEffect(() => {
@@ -142,7 +171,9 @@ function TeacherSection({ user }: { user: { id: string; username: string | null 
       <h2 className="font-display text-xl font-semibold text-leaf">For teachers</h2>
       <p className="mt-1 text-sm text-mist">
         Create a code and share it with your students. Signed in as{" "}
-        <strong className="text-fog">{user.username ?? "teacher"}</strong>.
+        <strong className="text-fog">
+          {user.displayName ?? user.username ?? "teacher"}
+        </strong>.
       </p>
 
       <div className="mt-4 flex flex-wrap gap-2">
@@ -173,6 +204,14 @@ function TeacherSection({ user }: { user: { id: string; username: string | null 
       )}
 
       {msg && <p className="mt-3 text-sm text-amber">{msg}</p>}
+      {loadError && <p className="mt-3 text-sm text-amber">{loadError}</p>}
+
+      {loaded && !loadError && classes.length === 0 && (
+        <p className="mt-5 text-sm text-mist">
+          You haven&apos;t created any classes yet. Make one above to get a code
+          to share.
+        </p>
+      )}
 
       {classes.length > 0 && (
         <div className="mt-5">
@@ -205,10 +244,40 @@ function TeacherClassRow({
   // means "no restriction" (students may pick any role).
   const [roles, setRoles] = useState<CharacterType[]>(sanitizeRoles(cls.allowed_roles));
   const [rolesBusy, setRolesBusy] = useState(false);
+  // Class roster (members) + the id currently being kicked.
+  const [members, setMembers] = useState<ScoreboardRow[] | null>(null);
+  const [kicking, setKicking] = useState<string | null>(null);
+
+  const loadMembers = useCallback(async () => {
+    const board = await fetchClassScoreboard(cls.join_code);
+    setMembers(board?.rows ?? []);
+  }, [cls.join_code]);
+
+  useEffect(() => {
+    loadMembers();
+  }, [loadMembers]);
 
   const flash = (msg: string) => {
     setNote(msg);
     setTimeout(() => setNote(null), 1800);
+  };
+
+  const kick = async (row: ScoreboardRow) => {
+    if (!row.game_save_id) return;
+    const who = row.player_name || row.city_name;
+    if (!window.confirm(`Remove ${who} from this class? Their game keeps running — it's just taken off this scoreboard.`)) {
+      return;
+    }
+    setKicking(row.game_save_id);
+    setErr(null);
+    const error = await kickMember(cls.id, row.game_save_id);
+    setKicking(null);
+    if (error) {
+      setErr(error);
+    } else {
+      flash(`Removed ${who}`);
+      loadMembers();
+    }
   };
 
   // What's effectively allowed right now: an empty stored set means "all".
@@ -392,6 +461,65 @@ function TeacherClassRow({
                 .map((t) => ALL_ROLES.find((r) => r.type === t)?.label ?? t)
                 .join(", ")}.`}
         </p>
+      </div>
+
+      {/* Roster: who's in this class, with a kick button per member. */}
+      <div className="mt-2.5 border-t border-white/8 pt-2.5">
+        <p className="text-[11px] uppercase tracking-widest text-mist">
+          Members{members ? ` (${members.length})` : ""}
+        </p>
+        {members === null ? (
+          <p className="mt-1 text-[11px] text-mist">Loading roster…</p>
+        ) : members.length === 0 ? (
+          <p className="mt-1 text-[11px] text-mist">
+            No one has joined yet. Share the code or invite link above.
+          </p>
+        ) : (
+          <ul className="mt-1.5 space-y-1.5">
+            {members.map((m, i) => (
+              <li
+                key={m.game_save_id ?? i}
+                className="flex items-center justify-between gap-2 rounded-lg bg-night/40 px-2.5 py-1.5"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-semibold text-fog">
+                    {m.city_name}
+                    {roleLabel(m.character_type) && (
+                      <span className="ml-1.5 rounded-full bg-white/8 px-1.5 py-0.5 text-[10px] text-cyan">
+                        {roleLabel(m.character_type)}
+                      </span>
+                    )}
+                    {m.finished_at && (
+                      <span className="ml-1.5 rounded-full bg-leaf/15 px-1.5 py-0.5 text-[10px] text-leaf">
+                        ✓ net-zero
+                      </span>
+                    )}
+                  </p>
+                  <p className="truncate text-[11px] text-mist">
+                    {m.player_name || "Unnamed player"}
+                  </p>
+                  <p className="truncate text-[11px] text-cyan">
+                    {[
+                      m.year_month,
+                      m.carbon_amount != null ? `${Math.round(m.carbon_amount)} ppm` : null,
+                      m.carbon_gain < 900 ? `${m.carbon_gain.toFixed(4)} ppm/mo` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ") || "No progress yet"}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="danger"
+                  disabled={kicking === m.game_save_id || !m.game_save_id}
+                  onClick={() => kick(m)}
+                >
+                  {kicking === m.game_save_id ? "Removing…" : "Kick"}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {note && <p className="mt-1 text-[11px] text-leaf">{note}</p>}
