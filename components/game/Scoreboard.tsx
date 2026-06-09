@@ -15,7 +15,7 @@ import {
  * everyone still playing ranks by lowest carbon gain per month.
  *
  * With `fixed`, the code is locked to `initialCode` and the lookup runs
- * immediately with no input field — used in-game where the scoreboard is tied
+ * immediately with no input field, used in-game where the scoreboard is tied
  * to a specific class the player already belongs to. Pass `myId` (the player's
  * game save id) to highlight which row is theirs.
  */

@@ -15,9 +15,9 @@ import { NextRequest, NextResponse } from "next/server";
  * the final report regardless of which path runs.
  */
 
-// Shared rubric for every vision provider — lenient by design.
+// Shared rubric for every vision provider, lenient by design.
 const CHECK_PROMPT =
-  "This is a student's proof of civic action. Loosely and generously decide: does this image look like an email or message addressed to another person (e.g. a representative) that mentions climate change or the environment? This is NOT a forgery check — be lenient. Reply with exactly 'YES' or 'NO' then a short reason.";
+  "This is a student's proof of civic action. Loosely and generously decide: does this image look like an email or message addressed to another person (e.g. a representative) that mentions climate change or the environment? This is NOT a forgery check, be lenient. Reply with exactly 'YES' or 'NO' then a short reason.";
 
 /** Parse a "YES/NO + reason" reply into a pass/fail result. */
 function parseVerdict(text: string): { passed: boolean; reason: string } {
@@ -27,7 +27,7 @@ function parseVerdict(text: string): { passed: boolean; reason: string } {
     // Strip the leading YES/NO plus any trailing punctuation (".", ",", ":", "-", etc.)
     // so the reason doesn't render as e.g. ". This image shows…".
     reason:
-      text.replace(/^\s*(yes|no)\b[\s.,:;!\-—–]*/i, "").trim() ||
+      text.replace(/^\s*(yes|no)\b[\s.,:;!\-, –]*/i, "").trim() ||
       (passed ? "Looks valid." : "Doesn't look like a climate email."),
   };
 }
@@ -59,7 +59,7 @@ async function geminiCheck(
 ): Promise<{ passed: boolean; reason: string } | null> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) {
-    console.warn("[civic-check] GEMINI_API_KEY not set — skipping Gemini.");
+    console.warn("[civic-check] GEMINI_API_KEY not set, skipping Gemini.");
     return null;
   }
   const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
     if (!hasGemini && !hasAnthropic) {
       return NextResponse.json({
         passed: true,
-        reason: "Proof received — thanks for taking real action!",
+        reason: "Proof received, thanks for taking real action!",
         method: "accepted",
       });
     }

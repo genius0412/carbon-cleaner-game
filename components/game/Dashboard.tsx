@@ -179,7 +179,7 @@ export function Dashboard({ onExit }: { onExit?: () => void }) {
             exit={{ opacity: 0, height: 0 }}
           >
             <span className="text-amber">
-              Guest resume code: <strong className="font-mono">{meta.guestCode}</strong> — copy &amp; save it to restore later.
+              Guest resume code: <strong className="font-mono">{meta.guestCode}</strong>, copy &amp; save it to restore later.
             </span>
             <div className="flex gap-2">
               <Button size="sm" variant="amber" onClick={() => navigator.clipboard?.writeText(meta.guestCode!)}>Copy</Button>
@@ -213,7 +213,7 @@ export function Dashboard({ onExit }: { onExit?: () => void }) {
             🗺️ Build on the map
           </Button>
 
-          {/* Grassroots actions are always available to students — no budget or
+          {/* Grassroots actions are always available to students, no budget or
               storyline gate. This is the heart of what a student can do. */}
           {isStudent && (
             <Button variant="secondary" onClick={() => setPanel("student")}>
@@ -271,7 +271,7 @@ export function Dashboard({ onExit }: { onExit?: () => void }) {
             <PlayerNameEditor />
             <p className="mt-1">{paused || openPanels > 0 ? "⏸ Paused" : `▶ Running ${speed}x`}</p>
             <p className="mt-1">Built: {game.builtInfra.length} / {game.regions.length} regions</p>
-            {/* Research & bills are mayor-only features — hide them for students. */}
+            {/* Research & bills are mayor-only features, hide them for students. */}
             {!isStudent && (
               <>
                 <p>Research done: {game.completedResearch.length}</p>
@@ -288,7 +288,7 @@ export function Dashboard({ onExit }: { onExit?: () => void }) {
             <ul className="mt-1 space-y-1">
               {[...game.log].reverse().slice(0, 12).map((l, i) => (
                 <li key={i} className="text-mist">
-                  <span className="text-cyan">{l.yearMonth}</span> — {l.label}
+                  <span className="text-cyan">{l.yearMonth}</span>, {l.label}
                 </li>
               ))}
             </ul>

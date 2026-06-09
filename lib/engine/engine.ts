@@ -264,7 +264,7 @@ export function tickMonth(prev: GameState): GameState {
     }
   }
 
-  // 3) carbon update — recompute base gain, then apply effective gain to ppm
+  // 3) carbon update, recompute base gain, then apply effective gain to ppm
   state.carbonGainPerMonth = recomputeCarbonGain(state);
   const effGain = effectiveCarbonGain(state);
   state.carbonPpm = Math.max(0, state.carbonPpm + effGain);
@@ -433,7 +433,7 @@ export function foundResearch(prev: GameState, researchId: string): ActionResult
   if (prev.activeResearch.some((a) => a.defId === researchId))
     return { state: prev, ok: false, message: "Already in progress." };
   if (prev.support < GAME.supportParalysisBelow)
-    return { state: prev, ok: false, message: "Support too low — research has stalled." };
+    return { state: prev, ok: false, message: "Support too low, research has stalled." };
   if (prev.budget < def.foundingCost)
     return { state: prev, ok: false, message: "Not enough budget to found this corporation." };
 
@@ -534,7 +534,7 @@ export function plantTrees(
   return {
     state,
     ok: true,
-    message: `${totalTrees} ${def.name} trees planted. They'll keep pulling carbon down for decades — a slow but beloved offset.`,
+    message: `${totalTrees} ${def.name} trees planted. They'll keep pulling carbon down for decades, a slow but beloved offset.`,
   };
 }
 
@@ -551,7 +551,7 @@ export function applyCivicBoost(prev: GameState, letter: string): GameState {
         yearMonth: formatYearMonth(prev),
         type: "civic",
         label: "Submitted real-world civic action",
-        detail: "Verified email to a representative — major momentum boost.",
+        detail: "Verified email to a representative, major momentum boost.",
       },
     ],
   };
@@ -646,7 +646,7 @@ export function studentActionStatus(
 
 /**
  * Take a grassroots student action (advocacy, school project, fundraiser, …).
- * `scale` (0..1) is how well the player did the action's challenge — it scales
+ * `scale` (0..1) is how well the player did the action's challenge, it scales
  * the rewards (carbon/support/budget), never the cost. Defaults to full.
  */
 export function performStudentAction(
@@ -680,7 +680,7 @@ export function performStudentAction(
       return {
         state: prev,
         ok: false,
-        message: `Give it time — you can do this again in ${wait} month${wait > 1 ? "s" : ""}.`,
+        message: `Give it time, you can do this again in ${wait} month${wait > 1 ? "s" : ""}.`,
       };
   }
 

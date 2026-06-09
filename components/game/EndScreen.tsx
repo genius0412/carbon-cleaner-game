@@ -53,7 +53,7 @@ export function EndScreen({ game }: { game: GameState }) {
         <p className="mt-2 text-mist">
           {won
             ? `${game.cityName} reached carbon net-zero in ${formatYearMonth(game)}. You led your county to a livable future.`
-            : `${game.cityName} didn't reach net-zero in time. The fight continues — try again with what you've learned.`}
+            : `${game.cityName} didn't reach net-zero in time. The fight continues, try again with what you've learned.`}
         </p>
 
         <div className="mt-5 grid grid-cols-2 gap-2 text-sm">

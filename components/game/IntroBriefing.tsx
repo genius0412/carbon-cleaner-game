@@ -34,7 +34,7 @@ const SCENES: Scene[] = [
     title: "Your mission, until 2100",
     accent: "leaf",
     body: [
-      "Bend the curve. Get the county's monthly carbon gain down to zero — net-zero — before the century ends.",
+      "Bend the curve. Get the county's monthly carbon gain down to zero, net-zero, before the century ends.",
       "Build clean infrastructure across the map, fund breakthrough research, pass bold laws, and plant living carbon sinks. Every region is a choice.",
     ],
   },
@@ -44,7 +44,7 @@ const SCENES: Scene[] = [
     title: "You can't do it alone",
     accent: "cyan",
     body: [
-      "Every decision spends two currencies: money, and the public's trust. Push too hard and support collapses — and a county that won't follow you can't be saved.",
+      "Every decision spends two currencies: money, and the public's trust. Push too hard and support collapses, and a county that won't follow you can't be saved.",
       "Your advisors and your citizens will speak up along the way. Listen to them. The people are not a gauge to manage; they're how you win.",
     ],
   },

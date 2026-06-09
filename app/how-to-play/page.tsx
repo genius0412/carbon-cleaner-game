@@ -2,7 +2,7 @@ import { SiteNav, SiteFooter } from "@/components/SiteNav";
 import { Card } from "@/components/ui/Card";
 import Link from "next/link";
 
-export const metadata = { title: "How to Play — Carbon Cleaner" };
+export const metadata = { title: "How to Play, Carbon Cleaner" };
 
 const gauges = [
   { name: "Year / Month", desc: "The clock runs Jan 2025 → Dec 2100. At 1x, one in-game month passes per real minute." },
@@ -36,11 +36,11 @@ export default function HowToPlayPage() {
         <h2 className="mt-12 font-display text-2xl font-semibold text-leaf">Controls</h2>
         <Card className="mt-4">
           <ul className="space-y-2 text-sm text-fog/90">
-            <li><strong>Pause / Play</strong> — stop or resume the clock.</li>
-            <li><strong>Speed</strong> — 1x, 1.5x, or 2.5x.</li>
-            <li><strong>Skip Forward</strong> — jump ahead one full year.</li>
-            <li><strong>Auto-pause</strong> — time freezes automatically whenever you open an action panel, and resumes when you close it.</li>
-            <li><strong>The map</strong> — drag to pan, scroll or use the buttons to zoom. Click any region to act. One infrastructure per region.</li>
+            <li><strong>Pause / Play</strong>, stop or resume the clock.</li>
+            <li><strong>Speed</strong>, 1x, 1.5x, or 2.5x.</li>
+            <li><strong>Skip Forward</strong>, jump ahead one full year.</li>
+            <li><strong>Auto-pause</strong>, time freezes automatically whenever you open an action panel, and resumes when you close it.</li>
+            <li><strong>The map</strong>, drag to pan, scroll or use the buttons to zoom. Click any region to act. One infrastructure per region.</li>
           </ul>
         </Card>
 
@@ -52,7 +52,7 @@ export default function HowToPlayPage() {
           </Card>
           <Card>
             <h3 className="font-display font-semibold text-fog">🎓 Older Student</h3>
-            <p className="mt-1 text-sm text-mist">Smaller budget, local actions only. Progress mainly through advocacy — write your own letter from real data and submit proof for a big boost.</p>
+            <p className="mt-1 text-sm text-mist">Smaller budget, local actions only. Progress mainly through advocacy, write your own letter from real data and submit proof for a big boost.</p>
           </Card>
           <Card>
             <h3 className="font-display font-semibold text-fog">📚 Younger Student</h3>
@@ -74,7 +74,7 @@ export default function HowToPlayPage() {
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           {["Dashboard", "Map & regions", "Civic action"].map((s) => (
             <div key={s} className="flex aspect-video items-center justify-center rounded-xl border border-dashed border-amber/40 bg-amber/5 text-xs text-amber">
-              [FILL IN — {s} screenshot/GIF]
+              [FILL IN, {s} screenshot/GIF]
             </div>
           ))}
         </div>

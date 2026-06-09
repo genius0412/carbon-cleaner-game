@@ -37,7 +37,7 @@ export default function Home() {
         </h1>
         <p className="mt-6 max-w-2xl text-balance text-lg leading-relaxed text-mist">
           Carbon Cleaner is a climate-strategy game where you govern a fictional
-          U.S. county — building clean infrastructure, funding research, passing
+          U.S. county, building clean infrastructure, funding research, passing
           bills, and rallying public support to scrub carbon from the sky before
           time runs out.
         </p>
@@ -57,13 +57,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why it exists — climate context, global + local */}
+      {/* Why it exists, climate context, global + local */}
       <section className="z-10 mx-auto w-full max-w-6xl px-6 pb-16">
         <h2 className="mb-2 text-center font-display text-2xl font-semibold sm:text-3xl">
           Why Carbon Cleaner exists
         </h2>
         <p className="mx-auto mb-8 max-w-2xl text-center text-sm text-mist">
-          Climate change is the defining challenge of our generation — global in
+          Climate change is the defining challenge of our generation, global in
           scale, but felt in every local community. The real numbers below tell
           the story. (Amber chips mark figures awaiting cited sources.)
         </p>
@@ -96,7 +96,7 @@ export default function Home() {
             </h3>
             <ul className="mt-3 space-y-2.5 text-sm text-mist">
               <li>
-                Transportation drives about <DataChip id={5} /> of U.S. emissions —
+                Transportation drives about <DataChip id={5} /> of U.S. emissions,
                 a lever local leaders actually control.
               </li>
               <li>

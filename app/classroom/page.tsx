@@ -42,13 +42,13 @@ function friendlyClassError(error: {
     return "Your Supabase database is missing INSERT permission on the classrooms table. Re-run the schema GRANTs (see README/schema.sql).";
   }
   if (code === "42P01" || /does not exist/i.test(msg)) {
-    return "The classrooms table doesn't exist in your database yet — run schema.sql in Supabase.";
+    return "The classrooms table doesn't exist in your database yet, run schema.sql in Supabase.";
   }
   if (/row-level security/i.test(msg)) {
     return "Blocked by row-level security on classrooms. Re-run the classroom policies from schema.sql in Supabase.";
   }
   if (code === "PGRST301" || /jwt|not authenticated/i.test(msg)) {
-    return "Your session wasn't recognized — please log in again.";
+    return "Your session wasn't recognized, please log in again.";
   }
   // Fall back to the raw reason so nothing is hidden.
   return msg ? `Couldn't create class: ${msg}` : "Couldn't create a class code. Please try again.";
@@ -88,13 +88,13 @@ function TeacherSection({
   const [busy, setBusy] = useState(false);
   const [justCreated, setJustCreated] = useState<string | null>(null);
   // Track load state so we can tell "still loading" from "loaded, but empty"
-  // from "failed" — otherwise a silently-blank list looks like a missing class.
+  // from "failed", otherwise a silently-blank list looks like a missing class.
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadClasses = useCallback(async () => {
     if (!user) return;
-    // Load via the server route (reads the cookie session) — the browser client
+    // Load via the server route (reads the cookie session), the browser client
     // returns opaque errors after OAuth, which left this list silently blank.
     try {
       const res = await fetch("/api/classroom/list");
@@ -179,7 +179,7 @@ function TeacherSection({
       <div className="mt-4 flex flex-wrap gap-2">
         <input
           className="flex-1 rounded-lg border border-white/12 bg-night/60 px-3 py-2 text-sm outline-none focus:border-leaf/50"
-          placeholder="Class name (e.g. Period 3 — World History)"
+          placeholder="Class name (e.g. Period 3, World History)"
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && createClass()}
@@ -265,7 +265,7 @@ function TeacherClassRow({
   const kick = async (row: ScoreboardRow) => {
     if (!row.game_save_id) return;
     const who = row.player_name || row.city_name;
-    if (!window.confirm(`Remove ${who} from this class? Their game keeps running — it's just taken off this scoreboard.`)) {
+    if (!window.confirm(`Remove ${who} from this class? Their game keeps running, it's just taken off this scoreboard.`)) {
       return;
     }
     setKicking(row.game_save_id);
@@ -456,7 +456,7 @@ function TeacherClassRow({
         </div>
         <p className="mt-1 text-[11px] text-mist">
           {roles.length === 0
-            ? "No restriction — students can pick any role."
+            ? "No restriction, students can pick any role."
             : `Students may only play: ${roles
                 .map((t) => ALL_ROLES.find((r) => r.type === t)?.label ?? t)
                 .join(", ")}.`}

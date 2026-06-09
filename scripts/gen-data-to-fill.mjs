@@ -36,14 +36,14 @@ blanks.sort((a, b) => a.id - b.id);
 
 const tag = (id) => `#${String(id).padStart(3, "0")}`;
 const lines = [];
-lines.push("# DATA_TO_FILL — Carbon Cleaner");
+lines.push("# DATA_TO_FILL, Carbon Cleaner");
 lines.push("");
 lines.push(
   "Every **real-world** number in the game is a numbered DATA BLANK. Until you fill it in, the UI shows an amber `[FILL IN #NNN]` pill. To fill one in, open `lib/config/dataBlanks.ts`, set the blank's `value` and `source`, and it will render the real number everywhere and appear on the `/sources` page automatically.",
 );
 lines.push("");
 lines.push(
-  "> Game-balance constants (budgets, support %, timelines, etc.) are NOT blanks — they live in `lib/config/gameConstants.ts` and are pre-set.",
+  "> Game-balance constants (budgets, support %, timelines, etc.) are NOT blanks, they live in `lib/config/gameConstants.ts` and are pre-set.",
 );
 lines.push("");
 const done = blanks.filter((b) => b.filled).length;
@@ -53,7 +53,7 @@ lines.push("## Checklist");
 lines.push("");
 for (const b of blanks) {
   lines.push(
-    `- [${b.filled ? "x" : " "}] ${tag(b.id)} — ${b.label} (${b.unit}) — used in: ${b.location} — SOURCE: ${b.source || "____"}`,
+    `- [${b.filled ? "x" : " "}] ${tag(b.id)}, ${b.label} (${b.unit}), used in: ${b.location}, SOURCE: ${b.source || "____"}`,
   );
 }
 lines.push("");

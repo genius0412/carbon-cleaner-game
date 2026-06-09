@@ -2,7 +2,7 @@
 -- Fix: "permission denied" when creating a classroom.
 -- Run this in the Supabase Dashboard → SQL Editor. It is idempotent (safe to
 -- run more than once). It ensures the classrooms table, its row-level-security
--- policies, AND the table-level GRANTs all exist — schema drift in any of these
+-- policies, AND the table-level GRANTs all exist, schema drift in any of these
 -- causes a 42501 "permission denied" on insert.
 -- ============================================================================
 

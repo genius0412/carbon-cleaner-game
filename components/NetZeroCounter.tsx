@@ -6,7 +6,7 @@ import { listLocalSaves } from "@/lib/saves";
 
 /**
  * Live global counter: "X players have reached net-zero". This is a UNIVERSAL
- * number — it reflects the public.global_stats view (the same for everyone),
+ * number, it reflects the public.global_stats view (the same for everyone),
  * never the viewer's own games. A slow/stalled Supabase call keeps the last
  * known cloud value rather than personalizing it. The local count is only used
  * as a last resort when there's no backend configured at all (dev/offline),

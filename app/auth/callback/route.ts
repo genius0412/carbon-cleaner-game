@@ -22,6 +22,6 @@ export async function GET(request: Request) {
     }
   }
 
-  // Something went wrong — bounce back to login with a flag.
+  // Something went wrong, bounce back to login with a flag.
   return NextResponse.redirect(`${origin}/login?error=oauth`);
 }

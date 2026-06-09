@@ -2,10 +2,10 @@ import { SiteNav, SiteFooter } from "@/components/SiteNav";
 import { Card } from "@/components/ui/Card";
 import { allBlanks, aggregatedSources, blankTag } from "@/lib/config/dataBlanks";
 
-export const metadata = { title: "Sources & Bibliography — Carbon Cleaner" };
+export const metadata = { title: "Sources & Bibliography, Carbon Cleaner" };
 
 /**
- * Sources page — auto-aggregated from the `source` fields in dataBlanks.ts.
+ * Sources page, auto-aggregated from the `source` fields in dataBlanks.ts.
  * As the human fills in each blank's citation (MLA-style), it appears here
  * automatically, NoodleTools-friendly.
  */

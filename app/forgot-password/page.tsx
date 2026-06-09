@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
     const id = identifier.trim();
     let email = id;
 
-    // allow entering a username — resolve it to the account email
+    // allow entering a username, resolve it to the account email
     if (!id.includes("@")) {
       try {
         const { data } = await sb.rpc("email_for_identifier", { identifier: id });

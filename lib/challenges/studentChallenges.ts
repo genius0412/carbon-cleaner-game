@@ -5,7 +5,7 @@
  * scene: a storyline intro, a hands-on challenge, and an outcome. How well the
  * player does scales the reward (see scoreToScale).
  *
- * Five reusable challenge mechanics — quiz, sort, tap, order, pick — reused
+ * Five reusable challenge mechanics, quiz, sort, tap, order, pick, reused
  * across actions, with entirely distinct content + narrative. Every action in
  * STUDENT_ACTIONS must have an entry here, or its "Do it" button opens an empty
  * modal (the ChallengeModal renders nothing without content).
@@ -54,7 +54,7 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
   // ---------------------------------------------------------------- awareness
   social_campaign: {
     intro:
-      "Your phone's in your hand and the whole town scrolls past every evening. One good post could move thousands — but the feed is brutal. What you say matters.",
+      "Your phone's in your hand and the whole town scrolls past every evening. One good post could move thousands, but the feed is brutal. What you say matters.",
     task: "Pick the post most likely to actually change minds",
     challenge: {
       kind: "pick",
@@ -66,13 +66,13 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
         },
         {
           label:
-            "“Our town can cut emissions 30% with rooftop solar — here's the plan, and how YOU can help 👇”",
+            "“Our town can cut emissions 30% with rooftop solar, here's the plan, and how YOU can help 👇”",
           detail: "Hopeful, specific, and gives people a concrete action. This is how movements grow.",
           quality: 1,
         },
         {
           label: "“Climate change is real. Please care. Thanks.”",
-          detail: "True, but vague and forgettable — no hook, no action.",
+          detail: "True, but vague and forgettable, no hook, no action.",
           quality: 0.5,
         },
         {
@@ -82,13 +82,13 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
         },
       ],
     },
-    win: "Your post takes off — shares, comments, new volunteers. The algorithm finally did something good.",
-    partial: "It got a few likes. Not viral, but a start — you're learning what lands.",
+    win: "Your post takes off, shares, comments, new volunteers. The algorithm finally did something good.",
+    partial: "It got a few likes. Not viral, but a start, you're learning what lands.",
   },
 
   meatless_monday: {
     intro:
-      "The cafeteria manager gives you one shot: design the launch-day plate for Meatless Monday. Make it genuinely low-carbon — and tasty enough that kids don't riot.",
+      "The cafeteria manager gives you one shot: design the launch-day plate for Meatless Monday. Make it genuinely low-carbon, and tasty enough that kids don't riot.",
     task: "Choose the lowest-carbon lunch that students will still eat",
     challenge: {
       kind: "pick",
@@ -100,7 +100,7 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
         },
         {
           label: "🧆 Spiced chickpea & veggie bowl with flatbread",
-          detail: "Legumes are protein-rich and very low-carbon — filling and crowd-pleasing.",
+          detail: "Legumes are protein-rich and very low-carbon, filling and crowd-pleasing.",
           quality: 1,
         },
         {
@@ -110,19 +110,19 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
         },
         {
           label: "🐟 Grilled fish tacos",
-          detail: "Lower than beef, but it isn't plant-based — and trawling has its own footprint.",
+          detail: "Lower than beef, but it isn't plant-based, and trawling has its own footprint.",
           quality: 0.4,
         },
       ],
     },
     win: "The chickpea bowls sell out. Even the skeptics admit it slapped. Meatless Monday is here to stay.",
-    partial: "Lunch went okay — a few empty trays, a few complaints. You'll tweak the menu next week.",
+    partial: "Lunch went okay, a few empty trays, a few complaints. You'll tweak the menu next week.",
   },
 
   // ------------------------------------------------------------------- school
   recycling_drive: {
     intro:
-      "Launch day. Three big bins, a pile of the school's trash, and a crowd watching. If people see it sorted right, the habit sticks. Get it wrong and the whole load is 'contaminated' — landfill.",
+      "Launch day. Three big bins, a pile of the school's trash, and a crowd watching. If people see it sorted right, the habit sticks. Get it wrong and the whole load is 'contaminated', landfill.",
     task: "Sort each item into the right bin",
     challenge: {
       kind: "sort",
@@ -141,7 +141,7 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
         { label: "🍬 Candy wrapper", bucket: "landfill" },
       ],
     },
-    win: "Spotless bins, zero contamination. The custodians are impressed — the program's a keeper.",
+    win: "Spotless bins, zero contamination. The custodians are impressed, the program's a keeper.",
     partial: "A few items in the wrong bin, but the drive mostly worked. People got the idea.",
   },
 
@@ -165,14 +165,14 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
         { label: "🌐 Server / network closet", bucket: "keep" },
       ],
     },
-    win: "You flip a dozen switches and tape up a checklist. The next power bill is going to sting — in a good way.",
+    win: "You flip a dozen switches and tape up a checklist. The next power bill is going to sting, in a good way.",
     partial: "You caught the big offenders, missed a couple. Still real savings overnight.",
   },
 
   // ----------------------------------------------------------------- ordering
   climate_club: {
     intro:
-      "You've got a room booked, a poster, and exactly zero members yet. Founding a club that lasts is all about sequence — do it in the right order and it builds its own momentum.",
+      "You've got a room booked, a poster, and exactly zero members yet. Founding a club that lasts is all about sequence, do it in the right order and it builds its own momentum.",
     task: "Put the launch steps in the smartest order",
     challenge: {
       kind: "order",
@@ -185,12 +185,12 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
       ],
     },
     win: "Officially chartered, with a sponsor and a buzzing first project. The club runs itself now.",
-    partial: "The club exists — a bit chaotic, but it exists. You'll find your rhythm.",
+    partial: "The club exists, a bit chaotic, but it exists. You'll find your rhythm.",
   },
 
   green_team: {
     intro:
-      "The club's behind you and the Green Team is ready to commit to one flagship project every term. Pick the one that delivers real, repeatable cuts — not just a feel-good photo op.",
+      "The club's behind you and the Green Team is ready to commit to one flagship project every term. Pick the one that delivers real, repeatable cuts, not just a feel-good photo op.",
     task: "Choose the Green Team's flagship project",
     challenge: {
       kind: "pick",
@@ -202,7 +202,7 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
         },
         {
           label: "♻️ A standing audit-and-fix crew: lights, heating, waste, every term",
-          detail: "Boring on camera, huge over time — repeatable savings that compound term after term. Exactly what a standing team is for.",
+          detail: "Boring on camera, huge over time, repeatable savings that compound term after term. Exactly what a standing team is for.",
           quality: 1,
         },
         {
@@ -217,13 +217,13 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
         },
       ],
     },
-    win: "The audit crew becomes an institution — every term they find new savings, and projects that used to fizzle now actually ship.",
+    win: "The audit crew becomes an institution, every term they find new savings, and projects that used to fizzle now actually ship.",
     partial: "The team's running, if a little unfocused. You'll steer it toward the work that lasts.",
   },
 
   climate_summit: {
     intro:
-      "Your club is convening students from across the district for one big day. A summit becomes a movement only if it's sequenced right — energy up front, commitments locked before everyone goes home.",
+      "Your club is convening students from across the district for one big day. A summit becomes a movement only if it's sequenced right, energy up front, commitments locked before everyone goes home.",
     task: "Order the summit day for lasting impact",
     challenge: {
       kind: "order",
@@ -235,7 +235,7 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
         "Set the follow-up dates before anyone leaves",
       ],
     },
-    win: "Hundreds of students left with a plan, a pledge, and a date to report back. That's not a moment — it's a network.",
+    win: "Hundreds of students left with a plan, a pledge, and a date to report back. That's not a moment, it's a network.",
     partial: "A buzzing day, but a few schools drifted off without committing. Still, the movement just got bigger.",
   },
 
@@ -260,7 +260,7 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
   // --------------------------------------------------------------------- taps
   petition: {
     intro:
-      "Pen, clipboard, and a Saturday at the market. Every signature is one real conversation. The council won't ignore a thick stack — so go get them before the market closes.",
+      "Pen, clipboard, and a Saturday at the market. Every signature is one real conversation. The council won't ignore a thick stack, so go get them before the market closes.",
     task: "Collect as many signatures as you can",
     challenge: {
       kind: "tap",
@@ -270,12 +270,12 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
       unit: "signatures",
     },
     win: "Pages and pages of names. You drop the stack on the council clerk's desk with a smile.",
-    partial: "A respectable list — not the landslide you hoped for, but enough to be heard.",
+    partial: "A respectable list, not the landslide you hoped for, but enough to be heard.",
   },
 
   community_cleanup: {
     intro:
-      "The creek path is buried in litter. You've rallied a crew and the bags are ready. Beat the afternoon rain — grab as much as you can before it pours.",
+      "The creek path is buried in litter. You've rallied a crew and the bags are ready. Beat the afternoon rain, grab as much as you can before it pours.",
     task: "Pick up as much litter as you can",
     challenge: {
       kind: "tap",
@@ -284,14 +284,14 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
       tapLabel: "🧤 Grab a piece of litter",
       unit: "pieces",
     },
-    win: "The path is transformed — bags lined up, neighbors clapping, ground cover going in. Photos for days.",
+    win: "The path is transformed, bags lined up, neighbors clapping, ground cover going in. Photos for days.",
     partial: "A real dent in the mess before the rain hit. The park already looks better.",
   },
 
   // -------------------------------------------------------------------- quiz
   school_presentation: {
     intro:
-      "Whole-school assembly. Hundreds of faces, some bored, some hostile. You finish your slides and open the floor — now the tricky questions come. Nail them and the room is yours.",
+      "Whole-school assembly. Hundreds of faces, some bored, some hostile. You finish your slides and open the floor, now the tricky questions come. Nail them and the room is yours.",
     task: "Answer the audience's questions",
     challenge: {
       kind: "quiz",
@@ -305,7 +305,7 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
             "Litter in the ocean",
           ],
           answer: 1,
-          explain: "Greenhouse gases trap heat — that's the core mechanism.",
+          explain: "Greenhouse gases trap heat, that's the core mechanism.",
         },
         {
           q: "“What's one of the biggest sources of emissions?”",
@@ -322,7 +322,7 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
           q: "“Can anything we do at school even matter?”",
           options: [
             "No, only governments matter",
-            "Yes — habits, advocacy and local pressure add up and spread",
+            "Yes, habits, advocacy and local pressure add up and spread",
             "Only if we plant a million trees",
             "No, it's too late",
           ],
@@ -331,13 +331,13 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
         },
       ],
     },
-    win: "You field every question cold. The applause is real — and a line of new recruits forms after.",
+    win: "You field every question cold. The applause is real, and a line of new recruits forms after.",
     partial: "You stumbled on one, recovered on the rest. The room mostly left convinced.",
   },
 
   green_fundraiser: {
     intro:
-      "Bake sale committee, final planning meeting. You want to raise the most money with the smallest footprint — and the choices you make here decide both.",
+      "Bake sale committee, final planning meeting. You want to raise the most money with the smallest footprint, and the choices you make here decide both.",
     task: "Make the smart fundraising calls",
     challenge: {
       kind: "quiz",

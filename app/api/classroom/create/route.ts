@@ -12,7 +12,7 @@ function makeClassCode(): string {
 
 /**
  * Create a classroom as the signed-in teacher. Runs server-side so the user's
- * session is read straight from the request cookies — the browser client has
+ * session is read straight from the request cookies, the browser client has
  * been failing to attach the auth token, which made the RLS check (auth.uid() =
  * teacher_id) fail. Here auth.uid() is resolved from the cookie session.
  */
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ class: data });
     }
     if (error && /duplicate|unique/i.test(error.message)) {
-      continue; // collision — try another code
+      continue; // collision, try another code
     }
     if (error) {
       return NextResponse.json(

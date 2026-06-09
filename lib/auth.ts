@@ -36,7 +36,7 @@ export function useAuth() {
     let active = true;
 
     // Enrich the username from the profiles table. IMPORTANT: this must run
-    // OUTSIDE the onAuthStateChange callback — that callback executes inside
+    // OUTSIDE the onAuthStateChange callback, that callback executes inside
     // supabase-js's auth lock, and calling another Supabase method from within
     // it deadlocks (the symptom: "Checking session…" then a false logged-out
     // state on client-side navigation). We defer it with setTimeout so the lock
@@ -61,11 +61,11 @@ export function useAuth() {
           );
         }
       } catch {
-        /* ignore — fields stay at their session defaults */
+        /* ignore, fields stay at their session defaults */
       }
     };
 
-    // Synchronous, no Supabase calls — safe to run inside the auth lock.
+    // Synchronous, no Supabase calls, safe to run inside the auth lock.
     const applySession = (session: Session | null) => {
       if (!active) return;
       const u = session?.user;
@@ -98,7 +98,7 @@ export function useAuth() {
         providers,
       });
       setLoading(false);
-      // Defer the profiles query until after the lock is released — it fills in
+      // Defer the profiles query until after the lock is released, it fills in
       // the username/display name and the authoritative confirmed flag.
       setTimeout(() => enrichProfile(u.id), 0);
     };

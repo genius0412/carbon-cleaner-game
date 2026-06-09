@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * sound.ts — tiny synthesized sound-effects engine (Web Audio API).
+ * sound.ts, tiny synthesized sound-effects engine (Web Audio API).
  * No audio files: every effect is generated from oscillators, so it's instant
  * and zero-weight. Honors a persisted mute toggle and the browser autoplay
  * policy (the context resumes on the first user gesture).

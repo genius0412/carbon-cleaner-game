@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * store.ts — the live game store (Zustand).
+ * store.ts, the live game store (Zustand).
  * Holds the running simulation, the real-time clock loop, pause state, speed,
  * auto-pause (a modal/panel is open), and wires actions through the pure
  * engine. Debounced autosave persists to Supabase/localStorage.
@@ -357,7 +357,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         lastFeedback: {
           title: "Civic action verified",
           message:
-            "Your real-world letter was accepted. Stakeholders are listening — momentum surges toward your climate goals.",
+            "Your real-world letter was accepted. Stakeholders are listening, momentum surges toward your climate goals.",
           ok: true,
         },
       });
@@ -386,7 +386,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       set({ saving: true });
       // persistSave writes localStorage synchronously, then does a best-effort
       // cloud upsert. Don't let a slow/stalled cloud write hang the indicator
-      // (or the "Save & exit" button) — the local save is already done.
+      // (or the "Save & exit" button), the local save is already done.
       const persist = (async () => {
         try {
           const newMeta = await persistSave(game, meta);

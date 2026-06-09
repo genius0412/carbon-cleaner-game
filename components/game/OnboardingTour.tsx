@@ -36,12 +36,12 @@ export function OnboardingTour({
     () => [
       {
         title: "Welcome, change-maker",
-        body: `Your mission: guide ${cityName} to net-zero before the year 2100. Here's a quick tour — you can skip it anytime.`,
+        body: `Your mission: guide ${cityName} to net-zero before the year 2100. Here's a quick tour, you can skip it anytime.`,
       },
       {
         selector: '[data-tour="clock"]',
         title: "Time is already flowing",
-        body: "The clock runs on its own. Every month, your decisions shift the climate — watch the date climb.",
+        body: "The clock runs on its own. Every month, your decisions shift the climate, watch the date climb.",
       },
       {
         selector: '[data-tour="gauges"]',
@@ -51,12 +51,12 @@ export function OnboardingTour({
       {
         selector: '[data-tour="map"]',
         title: "Build on the map",
-        body: "Click any region to build clean energy and infrastructure. Terrain matters — match projects to the land.",
+        body: "Click any region to build clean energy and infrastructure. Terrain matters, match projects to the land.",
       },
       {
         selector: '[data-tour="actions"]',
         title: "Take action",
-        body: "Plant trees, launch campaigns, pass bills, join a class — and more unlocks as your story unfolds.",
+        body: "Plant trees, launch campaigns, pass bills, join a class, and more unlocks as your story unfolds.",
       },
       {
         selector: '[data-tour="controls"]',

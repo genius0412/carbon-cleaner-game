@@ -7,7 +7,7 @@
  *
  * Design rules:
  *  - "build" is always available; everything else is introduced through story.
- *  - Civic action is summoned by the citizenry via a beat — not available from
+ *  - Civic action is summoned by the citizenry via a beat, not available from
  *    the start. It is only ever ASKED for ONCE (you don't spam your rep), but if
  *    the player defers it the Dashboard keeps a "Write a letter" button until
  *    it's done. Civic beats are suppressed once the letter has actually been sent.
@@ -42,7 +42,7 @@ const civicDone = (s: GameState) => !!s.civic?.boostApplied;
 
 export const STORY_BEATS: StoryBeat[] = [
   // ====================================================================
-  // ACT I — ARRIVAL
+  // ACT I, ARRIVAL
   // ====================================================================
   {
     id: "arrival",
@@ -54,7 +54,7 @@ export const STORY_BEATS: StoryBeat[] = [
     lines: [
       "The transition team's gone and the building's finally quiet. It's just us and the work now, Mayor.",
       "Here's the situation, plainly: Verdana's carbon count is climbing every single month. The atmosphere's at 430 parts per million and we're adding to it.",
-      "The scientists are unanimous — if we cross 600 ppm, it's over. Failed harvests, a flooded harbor, summers nobody can work through.",
+      "The scientists are unanimous, if we cross 600 ppm, it's over. Failed harvests, a flooded harbor, summers nobody can work through.",
       "But we have time, and we have a county full of people who want a future. Open the map. Pick a region. Let's put steel in the ground. Or rather, trees in the ground.",
     ],
     trigger: (s) => s.year === 2025 && s.month >= 2,
@@ -68,8 +68,8 @@ export const STORY_BEATS: StoryBeat[] = [
     avatar: "🔬",
     title: "How we win this",
     lines: [
-      "Mayor, before you spend a dollar — understand the one number that matters: Carbon Gain per Month. Right now it's positive. We're emitting.",
-      "Every project you build pushes that number down. Get it to zero or below — net-zero — and we've won, even if it's not yet 2100.",
+      "Mayor, before you spend a dollar, understand the one number that matters: Carbon Gain per Month. Right now it's positive. We're emitting.",
+      "Every project you build pushes that number down. Get it to zero or below, net-zero, and we've won, even if it's not yet 2100.",
       "And terrain matters. Solar loves the open plains; wind and geothermal want the mountains; algae and scrubbers belong on the coast and in the city. Build where the land works for you and you'll get more out of every project.",
     ],
     trigger: (s) => s.year === 2025 && s.month >= 3,
@@ -77,7 +77,7 @@ export const STORY_BEATS: StoryBeat[] = [
   },
 
   // ====================================================================
-  // ACT II — GROWTH: unlock trees, then research
+  // ACT II, GROWTH: unlock trees, then research
   // ====================================================================
   {
     id: "first_build",
@@ -87,9 +87,9 @@ export const STORY_BEATS: StoryBeat[] = [
     avatar: "🔬",
     title: "The first cut",
     lines: [
-      "I just watched the emissions telemetry move the right direction for the first time. It's small — but it's real, and it's yours.",
+      "I just watched the emissions telemetry move the right direction for the first time. It's small, but it's real, and it's yours.",
       "Here's something the public will love: trees. They pull carbon out of the air for free, for decades, and people adore a greener county.",
-      "I've authorized the Greening Program. You can now plant in batches from the actions panel — different species pull down different amounts. It's slow, but it's the cheapest carbon you'll ever buy.",
+      "I've authorized the Greening Program. You can now plant in batches from the actions panel, different species pull down different amounts. It's slow, but it's the cheapest carbon you'll ever buy.",
     ],
     trigger: (s) => s.builtInfra.length >= 1,
     unlocks: ["trees"],
@@ -103,9 +103,9 @@ export const STORY_BEATS: StoryBeat[] = [
     avatar: "🔬",
     title: "We need to invent our way out",
     lines: [
-      "Off-the-shelf tech alone won't get us to zero. We need breakthroughs — and that means founding Research Corporations.",
+      "Off-the-shelf tech alone won't get us to zero. We need breakthroughs, and that means founding Research Corporations.",
       "Two things happen when a corporation finishes its work. First, it UNLOCKS powerful new infrastructure: scrubbers that pull carbon straight from the sky, geothermal heat, autonomous transit, carbon-negative concrete.",
-      "Second — and this is the part people miss — completed research makes the infrastructure you ALREADY built more efficient. Research a Smart Grid and every solar panel and EV depot you own quietly starts producing more. Your past investments keep paying off.",
+      "Second, and this is the part people miss, completed research makes the infrastructure you ALREADY built more efficient. Research a Smart Grid and every solar panel and EV depot you own quietly starts producing more. Your past investments keep paying off.",
       "Founding a corporation costs money up front plus a monthly operating budget, and the work takes years. Start early. The sooner you fund it, the sooner the whole county compounds.",
     ],
     trigger: (s) => s.builtInfra.length >= 2 || (s.year === 2025 && s.month >= 6),
@@ -121,7 +121,7 @@ export const STORY_BEATS: StoryBeat[] = [
     avatar: "🧭",
     title: "The labs are humming",
     lines: [
-      "Word's out that you founded a research corporation. The papers are calling it a bet on the future — which it is.",
+      "Word's out that you founded a research corporation. The papers are calling it a bet on the future, which it is.",
       "Keep an eye on the operating costs each month, but don't lose your nerve. The payoff lands when the project completes, and it's worth it.",
     ],
     trigger: (s) => s.activeResearch.length >= 1,
@@ -134,10 +134,10 @@ export const STORY_BEATS: StoryBeat[] = [
     speaker: "Dr. Imani Soto",
     role: "Lead Climate Scientist",
     avatar: "🔬",
-    title: "Breakthrough — and a force multiplier",
+    title: "Breakthrough, and a force multiplier",
     lines: [
       "It's done! The new technology is unlocked and ready to deploy on the map.",
-      "But look closer at your existing sites — their output just jumped. That's the efficiency dividend I promised. Every related project you've already built is now doing more with the same footprint.",
+      "But look closer at your existing sites, their output just jumped. That's the efficiency dividend I promised. Every related project you've already built is now doing more with the same footprint.",
       "This is how a county actually reaches zero: not one silver bullet, but layers of progress reinforcing each other.",
     ],
     trigger: (s) => s.completedResearch.length >= 1,
@@ -146,7 +146,7 @@ export const STORY_BEATS: StoryBeat[] = [
   },
 
   // ====================================================================
-  // ACT III — POLITICS: unlock bills
+  // ACT III, POLITICS: unlock bills
   // ====================================================================
   {
     id: "unlock_bills",
@@ -154,10 +154,10 @@ export const STORY_BEATS: StoryBeat[] = [
     speaker: "Councilor Dawn Pham",
     role: "County Council Chair",
     avatar: "⚖️",
-    title: "Steel isn't enough — we need law",
+    title: "Steel isn't enough, we need law",
     lines: [
       "Mayor, you've proven you can build. Now let's talk about the things concrete can't fix: how people live, drive, and do business.",
-      "The Council is ready to move legislation with you — plastic bans, a carbon tax, emission caps. Bills cost no budget, and some even raise revenue.",
+      "The Council is ready to move legislation with you, plastic bans, a carbon tax, emission caps. Bills cost no budget, and some even raise revenue.",
       "But here's the catch: laws need the public behind you. We can't pass anything if support falls below 50%. Push too many unpopular bills at once and you'll stall out entirely.",
       "I've opened the legislative docket. Spend your political capital wisely.",
     ],
@@ -176,15 +176,15 @@ export const STORY_BEATS: StoryBeat[] = [
     title: "We're losing the room",
     lines: [
       "Public support just slipped below 40%. I need you to feel how dangerous that is.",
-      "Under 50% and the Council won't pass a thing. Under 30% and residents start actively dragging on our progress — strikes, lawsuits, slow-walks.",
-      "Ease off the mandates for a while. Plant trees, put up visible solar, deliver wins people can see. Goodwill is a resource like any other — go rebuild it.",
+      "Under 50% and the Council won't pass a thing. Under 30% and residents start actively dragging on our progress, strikes, lawsuits, slow-walks.",
+      "Ease off the mandates for a while. Plant trees, put up visible solar, deliver wins people can see. Goodwill is a resource like any other, go rebuild it.",
     ],
     trigger: (s) => s.support < 40,
     cta: "Rebuild trust",
   },
 
   // ====================================================================
-  // ACT IV — CIVIC ACTION (asked ONCE — never spam your rep)
+  // ACT IV, CIVIC ACTION (asked ONCE, never spam your rep)
   // ====================================================================
   {
     id: "civic_call_mayor",
@@ -194,9 +194,9 @@ export const STORY_BEATS: StoryBeat[] = [
     avatar: "✊",
     title: "The people are organizing",
     lines: [
-      "Mayor — families across the county are packing our meetings. They don't just want you to act locally; they want Verdana's voice carried up the chain.",
+      "Mayor, families across the county are packing our meetings. They don't just want you to act locally; they want Verdana's voice carried up the chain.",
       "There's something only a real person can do that no press release ever will: put your name on a letter to your representative and actually send it.",
-      "Do it once, and mean it. We'll help you draft it from the data. One genuine letter from a community that's clearly doing the work — that moves people in power.",
+      "Do it once, and mean it. We'll help you draft it from the data. One genuine letter from a community that's clearly doing the work, that moves people in power.",
     ],
     trigger: (s) => !civicDone(s) && (s.year >= 2027 || s.completedResearch.length >= 1),
     modes: ["mayor"],
@@ -211,9 +211,9 @@ export const STORY_BEATS: StoryBeat[] = [
     avatar: "🎓",
     title: "Your voice is the lever",
     lines: [
-      "You don't control a county budget — but you hold something just as powerful, and it's yours alone: your voice.",
+      "You don't control a county budget, but you hold something just as powerful, and it's yours alone: your voice.",
       "We're going to write to a real representative about climate change. Use the facts, make it honest, make it yours.",
-      "And you only need to send it once. A single sincere letter, actually delivered, carries more weight than a hundred forwarded ones. Quality over noise — that's how you're heard.",
+      "And you only need to send it once. A single sincere letter, actually delivered, carries more weight than a hundred forwarded ones. Quality over noise, that's how you're heard.",
     ],
     trigger: (s) => isStudent(s) && !civicDone(s) && s.month >= 3,
     modes: ["student"],
@@ -228,7 +228,7 @@ export const STORY_BEATS: StoryBeat[] = [
     avatar: "✊",
     title: "It landed",
     lines: [
-      "Your letter went out — and it's already rippling. People are sharing it, showing up, signing on.",
+      "Your letter went out, and it's already rippling. People are sharing it, showing up, signing on.",
       "That's all we'll ask of you on this. One real message, sent with conviction. Don't dilute it by flooding the office; you've done the thing that matters.",
       "Now go finish what you started. The momentum is at your back.",
     ],
@@ -237,7 +237,7 @@ export const STORY_BEATS: StoryBeat[] = [
   },
 
   // ====================================================================
-  // ACT V — THE LONG HAUL: warnings + milestones
+  // ACT V, THE LONG HAUL: warnings + milestones
   // ====================================================================
   {
     id: "carbon_460",
@@ -248,7 +248,7 @@ export const STORY_BEATS: StoryBeat[] = [
     title: "Crossing 460 ppm",
     lines: [
       "We've passed 460 ppm. The air over Verdana is measurably warmer than the day you took office, and you can feel it in the summers now.",
-      "Slowing the gain isn't enough anymore — I need it negative. That means the heavy hitters: scrubbers, cap-and-trade, the big research-tier infrastructure.",
+      "Slowing the gain isn't enough anymore, I need it negative. That means the heavy hitters: scrubbers, cap-and-trade, the big research-tier infrastructure.",
       "If you haven't founded the Carbon Capture Authority yet, do it. Direct air capture is the only thing that takes the count down instead of just slowing the climb.",
     ],
     trigger: (s) => s.carbonPpm >= 460,
@@ -263,7 +263,7 @@ export const STORY_BEATS: StoryBeat[] = [
     title: "Halfway there",
     lines: [
       "It's the middle of the century, Mayor. Half your mandate spent.",
-      "Take a breath and look at what Verdana's become under you — the panels on the rooftops, the turbines on the ridge, the kids who've never known a smoggy sky.",
+      "Take a breath and look at what Verdana's become under you, the panels on the rooftops, the turbines on the ridge, the kids who've never known a smoggy sky.",
       "But sentiment won't finish the job. Check your gain number against zero, and let's plan the back half like the future depends on it. Because it does.",
     ],
     trigger: (s) => s.year >= 2050,
@@ -277,7 +277,7 @@ export const STORY_BEATS: StoryBeat[] = [
     avatar: "🧭",
     title: "Red zone",
     lines: [
-      "540 ppm. I won't dress it up — at this trajectory we hit 600 and lose everything we've built.",
+      "540 ppm. I won't dress it up, at this trajectory we hit 600 and lose everything we've built.",
       "This is the moment for everything you've got. Max out the strongest bills support will allow. Cover every viable region with scrubber-class infrastructure.",
       "We do not get a second county. Go.",
     ],
@@ -292,8 +292,8 @@ export const STORY_BEATS: StoryBeat[] = [
     avatar: "🔬",
     title: "We can see the finish line",
     lines: [
-      "Mayor — monthly carbon gain is almost flat. We are one, maybe two good decisions from net-zero.",
-      "Whatever's left in the tank — one more region, one more bill, one more efficiency breakthrough landing — now is when it counts.",
+      "Mayor, monthly carbon gain is almost flat. We are one, maybe two good decisions from net-zero.",
+      "Whatever's left in the tank, one more region, one more bill, one more efficiency breakthrough landing, now is when it counts.",
       "A century from now, people will point to this moment and this county. Finish it.",
     ],
     trigger: (s) => s.carbonGainPerMonth > 0 && s.carbonGainPerMonth < 0.008,

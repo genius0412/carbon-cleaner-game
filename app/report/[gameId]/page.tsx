@@ -26,7 +26,7 @@ export default function ReportPage({
     (async () => {
       // Prefer the live in-memory game when this report is for the game that's
       // currently loaded. Client-side navigation (the "View report" link) keeps
-      // the store mounted, so this reflects the very latest state — including a
+      // the store mounted, so this reflects the very latest state, including a
       // just-won game whose cloud save may not have flushed yet. (Re-reading the
       // persisted save here is what caused the stale "did not reach net-zero".)
       const { game: liveGame, meta: liveMeta } = useGameStore.getState();
@@ -141,7 +141,7 @@ export default function ReportPage({
             <ul className="mt-3 space-y-1.5 text-sm">
               {state.log.map((l, i) => (
                 <li key={i} className="text-fog/90">
-                  <span className="text-cyan">{l.yearMonth}</span> — <strong>{l.label}</strong>{" "}
+                  <span className="text-cyan">{l.yearMonth}</span>, <strong>{l.label}</strong>{" "}
                   <span className="text-mist">{l.detail}</span>
                 </li>
               ))}

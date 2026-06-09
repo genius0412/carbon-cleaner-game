@@ -24,7 +24,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     carbonDelta: -0.003,
     supportDelta: 2,
     feedback:
-      "LEDs use a fraction of the energy of old sodium lamps — an easy win residents notice on their utility bills. Modest carbon savings, and people like brighter, cheaper streets.",
+      "LEDs use a fraction of the energy of old sodium lamps, an easy win residents notice on their utility bills. Modest carbon savings, and people like brighter, cheaper streets.",
     favoredTerrain: ["urban"],
     requiresResearch: null,
     boostedBy: ["smart_grid"],
@@ -72,7 +72,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     carbonDelta: -0.007,
     supportDelta: 3,
     feedback:
-      "On-site solar shrinks the county's reliance on fossil power and shields budgets from price spikes. Visible panels signal real action — voters approve.",
+      "On-site solar shrinks the county's reliance on fossil power and shields budgets from price spikes. Visible panels signal real action, voters approve.",
     favoredTerrain: ["plains", "urban"],
     requiresResearch: null,
     boostedBy: ["smart_grid"],
@@ -88,7 +88,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     carbonDelta: -0.0015,
     supportDelta: 5,
     feedback:
-      "Trees pull carbon from the air slowly but steadily, cool neighborhoods, and are wildly popular. The offset is gradual — pair it with faster measures.",
+      "Trees pull carbon from the air slowly but steadily, cool neighborhoods, and are wildly popular. The offset is gradual, pair it with faster measures.",
     favoredTerrain: ["forest", "plains", "farmland"],
     requiresResearch: null,
     boostedBy: [],
@@ -99,7 +99,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     id: "green_building",
     name: "Green Building Code for New Construction",
     description:
-      "Require high-efficiency standards on all new builds — pays off over decades.",
+      "Require high-efficiency standards on all new builds, pays off over decades.",
     cost: 110_000,
     carbonDelta: -0.003,
     supportDelta: -2,
@@ -122,7 +122,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     carbonDelta: -0.007,
     supportDelta: 1,
     feedback:
-      "Public fleets drive predictable routes — perfect for EVs. Eliminating their diesel is a clean, visible commitment that nudges residents toward EVs too.",
+      "Public fleets drive predictable routes, perfect for EVs. Eliminating their diesel is a clean, visible commitment that nudges residents toward EVs too.",
     favoredTerrain: ["urban"],
     requiresResearch: "ev_institute",
     boostedBy: ["smart_grid"],
@@ -133,7 +133,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     id: "smart_grid",
     name: "Smart Grid Energy Management",
     description:
-      "Sensors and software that balance load and slash transmission losses — boosts your other clean power.",
+      "Sensors and software that balance load and slash transmission losses, boosts your other clean power.",
     cost: 820_000,
     carbonDelta: -0.006,
     supportDelta: 2,
@@ -154,7 +154,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     carbonDelta: -0.014,
     supportDelta: 0,
     feedback:
-      "Direct air capture removes carbon that's already up there — the only tool that can take the count down, not just slow it. Energy-hungry and pricey, so power it cleanly.",
+      "Direct air capture removes carbon that's already up there, the only tool that can take the count down, not just slow it. Energy-hungry and pricey, so power it cleanly.",
     favoredTerrain: ["coast", "urban"],
     requiresResearch: "capture_authority",
     boostedBy: ["smart_grid"],
@@ -186,7 +186,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     carbonDelta: -0.01,
     supportDelta: 1,
     feedback:
-      "Geothermal replaces gas furnaces with steady underground heat — huge winter savings. Mountain geology makes drilling far more productive here.",
+      "Geothermal replaces gas furnaces with steady underground heat, huge winter savings. Mountain geology makes drilling far more productive here.",
     favoredTerrain: ["mountains"],
     requiresResearch: "geothermal_institute",
     boostedBy: [],
@@ -218,7 +218,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     carbonDelta: -0.008,
     supportDelta: 1,
     feedback:
-      "Vertical turbines work in gusty, turbulent air that traditional blades can't use — ideal on ridgelines. Distributed power means fewer losses.",
+      "Vertical turbines work in gusty, turbulent air that traditional blades can't use, ideal on ridgelines. Distributed power means fewer losses.",
     favoredTerrain: ["mountains", "coast"],
     requiresResearch: "microenergy_group",
     boostedBy: ["smart_grid"],
@@ -327,7 +327,7 @@ export const BILLS: BillDef[] = [
     carbonDelta: -0.003,
     supportImpact: -8,
     feedback:
-      "Less plastic means less petroleum extracted and burned — and cleaner waterways. Some shoppers resist the change, so expect pushback.",
+      "Less plastic means less petroleum extracted and burned, and cleaner waterways. Some shoppers resist the change, so expect pushback.",
     dataBlanks: [40],
   },
   {
@@ -339,7 +339,7 @@ export const BILLS: BillDef[] = [
     supportImpact: -12,
     budgetDelta: 600_000,
     feedback:
-      "Pricing carbon makes polluting expensive and clean choices profitable — and it refills your budget. Businesses fight it hard, so support takes a real hit.",
+      "Pricing carbon makes polluting expensive and clean choices profitable, and it refills your budget. Businesses fight it hard, so support takes a real hit.",
     dataBlanks: [41],
   },
   {
@@ -350,7 +350,7 @@ export const BILLS: BillDef[] = [
     carbonDelta: -0.0035,
     supportImpact: -7,
     feedback:
-      "Audits reveal cheap fixes — insulation, sealing — that cut household emissions for years. Homeowners dislike mandates at sale time.",
+      "Audits reveal cheap fixes, insulation, sealing, that cut household emissions for years. Homeowners dislike mandates at sale time.",
     dataBlanks: [42],
   },
   {
@@ -384,7 +384,7 @@ export const BILLS: BillDef[] = [
     supportImpact: -15,
     requiresResearch: "ev_institute",
     feedback:
-      "A firm deadline gives industry certainty and locks in decades of avoided tailpipe emissions. It's bold — and the support cost reflects that.",
+      "A firm deadline gives industry certainty and locks in decades of avoided tailpipe emissions. It's bold, and the support cost reflects that.",
     dataBlanks: [],
   },
   {
@@ -396,7 +396,7 @@ export const BILLS: BillDef[] = [
     supportImpact: -5,
     slowRecovery: true,
     feedback:
-      "Density lets people walk, bike, and ride instead of drive — one of the deepest long-run cuts. Early resistance fades as walkable neighborhoods prove popular.",
+      "Density lets people walk, bike, and ride instead of drive, one of the deepest long-run cuts. Early resistance fades as walkable neighborhoods prove popular.",
     dataBlanks: [],
   },
   {

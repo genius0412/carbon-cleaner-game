@@ -68,7 +68,7 @@ export default function AccountPage() {
                 </p>
               )}
               <p className="mt-1 text-sm text-mist">
-                Email: <strong className="text-fog">{user.email ?? "—"}</strong>
+                Email: <strong className="text-fog">{user.email ?? ", "}</strong>
               </p>
             </Card>
           </>

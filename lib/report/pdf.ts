@@ -72,7 +72,7 @@ export async function generateReportPdf(state: GameState, proofUrl: string | nul
   // Title
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
-  doc.text("Carbon Cleaner — Final Report", margin, y);
+  doc.text("Carbon Cleaner, Final Report", margin, y);
   y += 26;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(12);
@@ -99,7 +99,7 @@ export async function generateReportPdf(state: GameState, proofUrl: string | nul
   // Timeline
   heading("Timeline of Key Actions");
   if (state.log.length === 0) body("No actions recorded.");
-  else state.log.forEach((l) => body(`${l.yearMonth} — ${l.label}. ${l.detail}`));
+  else state.log.forEach((l) => body(`${l.yearMonth}, ${l.label}. ${l.detail}`));
   y += 6;
 
   // Civic letter

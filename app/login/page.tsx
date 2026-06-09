@@ -66,7 +66,7 @@ export default function LoginPage() {
     setBusy(false);
     if (error) {
       if (/email not confirmed/i.test(error.message)) {
-        setMsg("Please confirm your email first — check your inbox for the link.");
+        setMsg("Please confirm your email first, check your inbox for the link.");
       } else if (/invalid login credentials/i.test(error.message)) {
         setMsg("Incorrect username/email or password.");
       } else {

@@ -3,7 +3,7 @@ import { getSupabaseServer } from "@/lib/supabase/server";
 
 /**
  * List the classes owned by the signed-in teacher. Runs server-side so the
- * session is read from cookies — the browser client has been unreliable at
+ * session is read from cookies, the browser client has been unreliable at
  * attaching the auth token after OAuth (it returns opaque empty errors), which
  * made the in-page class list come back blank. Mirrors create/update/kick.
  */

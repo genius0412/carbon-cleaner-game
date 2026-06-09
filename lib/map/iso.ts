@@ -2,7 +2,7 @@
  * iso.ts
  * Framework-agnostic isometric math for the city-builder map. The 15 regions
  * live on a 5x3 grid (gx 0..4, gy 0..2) projected with a standard 2:1 iso
- * transform into the SVG's 1000x700 viewBox. Pure functions only — no React.
+ * transform into the SVG's 1000x700 viewBox. Pure functions only, no React.
  */
 
 import type { Terrain } from "@/lib/engine/types";

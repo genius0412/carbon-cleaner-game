@@ -81,7 +81,7 @@ export function CityNamer({ onConfirm }: { onConfirm: (name: string) => void }) 
     <div className="mx-auto max-w-xl text-center">
       <h1 className="font-display text-4xl font-semibold">Name your city</h1>
       <p className="mt-3 text-mist">
-        Spin the two wheels to name your city. You get {SPIN_LIMIT} spins — no
+        Spin the two wheels to name your city. You get {SPIN_LIMIT} spins, no
         typing, let fate (and good word lists) decide.
       </p>
 

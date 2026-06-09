@@ -20,7 +20,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# env — ignore ALL env files (they hold secrets) except the example template
+# env, ignore ALL env files (they hold secrets) except the example template
 .env
 .env.*
 !.env.example

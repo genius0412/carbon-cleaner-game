@@ -20,7 +20,7 @@ export async function getSupabaseServer() {
             cookieStore.set(name, value, options),
           );
         } catch {
-          // called from a Server Component — safe to ignore
+          // called from a Server Component, safe to ignore
         }
       },
     },

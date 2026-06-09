@@ -192,7 +192,7 @@ export async function joinClassByCode(
   }
 
   // A game can belong to only one class. If this save already has a membership,
-  // either it's this same class (report success, no re-insert — there's no
+  // either it's this same class (report success, no re-insert, there's no
   // UPDATE policy so an upsert would be rejected by RLS) or it's a different
   // class (refuse: one class per game).
   const { data: memberships } = await sb
@@ -211,11 +211,11 @@ export async function joinClassByCode(
       ok: false,
       className: cls.name ?? undefined,
       message:
-        "This game is already in a class. A game can only join one class — start a new game to join a different one.",
+        "This game is already in a class. A game can only join one class, start a new game to join a different one.",
     };
   }
 
-  // Plain INSERT (covered by the insert policy) — never the UPDATE path.
+  // Plain INSERT (covered by the insert policy), never the UPDATE path.
   const { error } = await sb
     .from("classroom_members")
     .insert({ classroom_id: cls.id, game_save_id: saveId, city_name: cityName });

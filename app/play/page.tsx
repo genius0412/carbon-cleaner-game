@@ -57,7 +57,7 @@ export default function PlayPage() {
 
   // Derive the starting phase from the store so a remount (mobile tab eviction
   // / bfcache restore, the Supabase auth-lock recovery, dev Fast Refresh) drops
-  // the player back INTO their live game instead of kicking them to the menu —
+  // the player back INTO their live game instead of kicking them to the menu,
   // the game itself lives in the store and survives the remount.
   const [phase, setPhase] = useState<Phase>(() =>
     useGameStore.getState().game?.status === "playing" ? "playing" : "menu",
@@ -113,7 +113,7 @@ export default function PlayPage() {
         setFeedback({
           title: "Class not joined yet",
           message:
-            "Couldn't link your game to the class — open “Join a class” from the game menu to try again.",
+            "Couldn't link your game to the class, open “Join a class” from the game menu to try again.",
           ok: false,
         });
         return;
@@ -131,7 +131,7 @@ export default function PlayPage() {
     // Local saves are mirrored copies that may belong to a signed-in account.
     // Only surface ones the *current* viewer owns: when logged out (guest),
     // that's guest saves only (no userId); when logged in, that's your own
-    // saves plus guest saves — never another account's leftovers.
+    // saves plus guest saves, never another account's leftovers.
     const local = listLocalSaves().filter((e) =>
       user ? !e.meta.userId || e.meta.userId === user.id : !e.meta.userId,
     );
@@ -337,7 +337,7 @@ export default function PlayPage() {
             </h1>
             <p className="mt-3 text-sm text-mist">
               If your teacher gave you a class code, enter it now to put your city
-              on the class scoreboard. No code? No problem — you can join a class
+              on the class scoreboard. No code? No problem, you can join a class
               at any time from the game menu.
             </p>
             <Card className="mt-5 space-y-3">

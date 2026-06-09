@@ -4,7 +4,7 @@
  * paths laid out on a 1000x700 viewBox. Terrain drives infrastructure
  * efficiency modifiers (see engine.applyTerrain).
  *
- * Art is intentionally flat/friendly — not realistic geography.
+ * Art is intentionally flat/friendly, not realistic geography.
  */
 
 import type { Region, Terrain } from "./types";

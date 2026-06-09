@@ -23,7 +23,7 @@ update public.profiles
 -- Recreate the new-user trigger so it also seeds the display name. OAuth users
 -- (Google) arrive with no username but a name/full_name in metadata; password
 -- signups send a username (and we default their display name to it). Only
--- password signups are pre-confirmed — OAuth users get the one-time prompt.
+-- password signups are pre-confirmed, OAuth users get the one-time prompt.
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql

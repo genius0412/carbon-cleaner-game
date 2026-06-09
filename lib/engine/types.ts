@@ -117,7 +117,7 @@ export interface StudentActionDef {
   icon: string;
   category: StudentActionCategory;
   description: string;
-  /** Budget spent on materials (often 0 — students mostly spend effort). */
+  /** Budget spent on materials (often 0, students mostly spend effort). */
   cost: number;
   /** Budget raised (fundraisers). */
   budgetDelta?: number;

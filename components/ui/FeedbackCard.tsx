@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "./Button";
 
 /**
- * FeedbackCard — the mission-briefing card shown after each purchase/bill.
+ * FeedbackCard, the mission-briefing card shown after each purchase/bill.
  * Affirms the climate benefit + names the tradeoff. Time stays paused while
  * it's visible (caller controls the pause).
  */

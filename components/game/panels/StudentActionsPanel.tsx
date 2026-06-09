@@ -49,7 +49,7 @@ export function StudentActionsPanel({
     <Modal open={open} onClose={onClose} title="Take Action" wide>
       <p className="-mt-2 mb-4 text-sm text-mist">
         You don't need a city budget to make a difference. Organize, advocate,
-        and change habits — every action builds public support and chips away at
+        and change habits, every action builds public support and chips away at
         emissions. Repeat your favourites (they get a little less effective each
         time) and run fundraisers to bankroll trees and local builds.
       </p>

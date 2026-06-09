@@ -1,5 +1,5 @@
 -- ============================================================================
--- Carbon Cleaner — Supabase schema + Row Level Security
+-- Carbon Cleaner, Supabase schema + Row Level Security
 -- Run this in the Supabase SQL editor (or via the CLI) on a fresh project.
 -- ============================================================================
 
@@ -45,7 +45,7 @@ create unique index if not exists profiles_username_lower_idx
 -- yet), which reserves the username at signup time. The username comes from the
 -- signUp metadata ({ data: { username } }); the display name defaults to it (or,
 -- for OAuth users with no username, to the provider's name). Only password
--- signups (which send a username) are pre-confirmed — OAuth users get prompted.
+-- signups (which send a username) are pre-confirmed, OAuth users get prompted.
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -288,7 +288,7 @@ create policy "civic_uploads_insert" on public.civic_uploads
   for insert with check (true);
 
 -- ============================================================================
--- global_stats — a view exposing the "reached net-zero" count for the Home page
+-- global_stats, a view exposing the "reached net-zero" count for the Home page
 -- ============================================================================
 -- Counts games that actually reached net-zero (a win): finished, with carbon
 -- gain at or below zero. (carbon_gain stores effectiveCarbonGain at save time.)
@@ -316,7 +316,7 @@ create policy "civic_proof_select" on storage.objects
   for select using (bucket_id = 'civic-proof');
 
 -- ============================================================================
--- GRANTS — the Supabase API roles (anon / authenticated) need base table
+-- GRANTS, the Supabase API roles (anon / authenticated) need base table
 -- privileges in addition to the RLS policies above. Without these you'll get
 -- "permission denied for table ...". RLS still enforces the row-level rules;
 -- these grants just let the roles attempt the operations at all.

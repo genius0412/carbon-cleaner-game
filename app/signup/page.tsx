@@ -64,7 +64,7 @@ export default function SignupPage() {
         return;
       }
     } catch {
-      /* ignore — handled below */
+      /* ignore, handled below */
     }
 
     // 2) create the auth user (profile is created by the DB trigger)
@@ -89,7 +89,7 @@ export default function SignupPage() {
     }
 
     // With "Confirm email" ON, an existing email returns a user with no
-    // identities (anti-enumeration) — treat that as "already exists".
+    // identities (anti-enumeration), treat that as "already exists".
     if (data.user && data.user.identities && data.user.identities.length === 0) {
       setMsg("An account with this email already exists. Try logging in.");
       return;

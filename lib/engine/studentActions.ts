@@ -1,7 +1,7 @@
 /**
  * studentActions.ts
  * Grassroots actions a real student could plausibly take. These give students
- * a broad, interactive menu of things to do beyond the civic letter — each one
+ * a broad, interactive menu of things to do beyond the civic letter, each one
  * a recognizable real-world activity with a modest, balanced game effect.
  *
  * Balance intent: no single action wins the game. Reaching net-zero as a
@@ -28,7 +28,7 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     cooldownMonths: 3,
     diminishing: 0.6,
     feedback:
-      "Your posts spread fast — more neighbours are paying attention and backing the cause.",
+      "Your posts spread fast, more neighbours are paying attention and backing the cause.",
   },
   {
     id: "petition",
@@ -44,7 +44,7 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     cooldownMonths: 6,
     diminishing: 0.5,
     feedback:
-      "Hundreds of signatures land on the council's desk — public pressure is building.",
+      "Hundreds of signatures land on the council's desk, public pressure is building.",
   },
   {
     id: "school_presentation",
@@ -59,7 +59,7 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     repeatable: true,
     cooldownMonths: 4,
     diminishing: 0.6,
-    feedback: "The assembly is buzzing — your peers want to get involved.",
+    feedback: "The assembly is buzzing, your peers want to get involved.",
   },
 
   // ---- School: organize lasting changes on campus ----
@@ -69,7 +69,7 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     icon: "🌍",
     category: "school",
     description:
-      "Start an after-school club that keeps organizing projects all year. A lasting base that makes every other action more effective — and unlocks bigger initiatives.",
+      "Start an after-school club that keeps organizing projects all year. A lasting base that makes every other action more effective, and unlocks bigger initiatives.",
     cost: 5_000,
     carbonDelta: -0.002,
     supportDelta: 5,
@@ -79,7 +79,7 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     // A standing organization makes every future action land harder.
     synergyBoost: 0.25,
     feedback:
-      "Your climate club is official — a steady engine that makes everything that comes next more effective.",
+      "Your climate club is official, a steady engine that makes everything that comes next more effective.",
   },
   {
     id: "green_team",
@@ -87,7 +87,7 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     icon: "🌱",
     category: "school",
     description:
-      "With the club behind you, stand up a Green Team that runs campus sustainability projects every term — bigger and more reliable than one-off events.",
+      "With the club behind you, stand up a Green Team that runs campus sustainability projects every term, bigger and more reliable than one-off events.",
     cost: 0,
     carbonDelta: -0.004,
     supportDelta: 3,
@@ -96,7 +96,7 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     diminishing: 0.7,
     requires: ["climate_club"],
     feedback:
-      "The Green Team is rolling — projects that used to fizzle now actually ship.",
+      "The Green Team is rolling, projects that used to fizzle now actually ship.",
   },
   {
     id: "recycling_drive",
@@ -112,7 +112,7 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     cooldownMonths: 3,
     diminishing: 0.7,
     feedback:
-      "Bins are overflowing with sorted recyclables — that's real waste diverted.",
+      "Bins are overflowing with sorted recyclables, that's real waste diverted.",
   },
   {
     id: "energy_audit",
@@ -128,7 +128,7 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     cooldownMonths: 6,
     diminishing: 0.5,
     feedback:
-      "Lights off, vampires unplugged — the meter is already spinning slower.",
+      "Lights off, vampires unplugged, the meter is already spinning slower.",
   },
 
   // ---- Lifestyle: model lower-carbon habits ----
@@ -138,14 +138,14 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     icon: "🥗",
     category: "lifestyle",
     description:
-      "Campaign for one plant-based day a week in the cafeteria — a surprisingly big emissions cut.",
+      "Campaign for one plant-based day a week in the cafeteria, a surprisingly big emissions cut.",
     cost: 0,
     carbonDelta: -0.002,
     supportDelta: 2,
     repeatable: true,
     cooldownMonths: 4,
     diminishing: 0.6,
-    feedback: "The cafeteria's plant-based day is a hit — and a real footprint cut.",
+    feedback: "The cafeteria's plant-based day is a hit, and a real footprint cut.",
   },
   {
     id: "bike_week",
@@ -153,14 +153,14 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     icon: "🚲",
     category: "lifestyle",
     description:
-      "Rally students to bike, walk, or carpool instead of being driven — fewer tailpipes each morning.",
+      "Rally students to bike, walk, or carpool instead of being driven, fewer tailpipes each morning.",
     cost: 0,
     carbonDelta: -0.0018,
     supportDelta: 3,
     repeatable: true,
     cooldownMonths: 4,
     diminishing: 0.6,
-    feedback: "The bike racks are packed — quieter, cleaner mornings all week.",
+    feedback: "The bike racks are packed, quieter, cleaner mornings all week.",
   },
 
   // ---- Community: get out into the neighbourhood ----
@@ -178,7 +178,7 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     cooldownMonths: 3,
     diminishing: 0.7,
     feedback:
-      "A cleaner park and a crowd of new volunteers — goodwill is contagious.",
+      "A cleaner park and a crowd of new volunteers, goodwill is contagious.",
   },
   {
     id: "climate_summit",
@@ -186,7 +186,7 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     icon: "🏟️",
     category: "community",
     description:
-      "Use your club's network to convene students from across the district for a day of action and pledges — a movement, not a moment.",
+      "Use your club's network to convene students from across the district for a day of action and pledges, a movement, not a moment.",
     cost: 3_000,
     carbonDelta: -0.003,
     supportDelta: 8,
@@ -195,7 +195,7 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     diminishing: 0.6,
     requires: ["climate_club"],
     feedback:
-      "Hundreds of students showed up and signed on — the movement just leveled up.",
+      "Hundreds of students showed up and signed on, the movement just leveled up.",
   },
 
   // ---- Fundraising: turn enthusiasm into a budget for bigger projects ----
@@ -205,7 +205,7 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     icon: "💰",
     category: "fundraising",
     description:
-      "Host a bake sale or car wash to raise money — fund tree planting and small local builds.",
+      "Host a bake sale or car wash to raise money, fund tree planting and small local builds.",
     cost: 0,
     budgetDelta: 15_000,
     carbonDelta: 0,
@@ -213,7 +213,7 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     repeatable: true,
     cooldownMonths: 4,
     diminishing: 0.7,
-    feedback: "The fundraiser was a success — fresh funds for your next project.",
+    feedback: "The fundraiser was a success, fresh funds for your next project.",
   },
 ];
 

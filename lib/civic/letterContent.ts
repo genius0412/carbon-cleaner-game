@@ -7,7 +7,7 @@
  *   real contact details are DATA BLANK #060.
  * - SENTENCE_BLOCKS: pre-written blocks for the younger (drag-and-drop) flow.
  * - FACT_POOL: climate facts/statistics for the older (compose) flow. The
- *   actual numbers are DATA BLANK #061 — the framing sentences are ours.
+ *   actual numbers are DATA BLANK #061, the framing sentences are ours.
  */
 
 export interface Representative {
@@ -22,27 +22,27 @@ export interface RepEntry {
   reps: Representative[];
 }
 
-/** Stub directory — match is case-insensitive substring on town. */
+/** Stub directory, match is case-insensitive substring on town. */
 export const REP_DIRECTORY: RepEntry[] = [
   {
     town: "Example Town",
     reps: [
       {
         office: "City Council Member",
-        name: "[FILL IN #060 — name]",
-        email: "[FILL IN #060 — email]",
+        name: "[FILL IN #060, name]",
+        email: "[FILL IN #060, email]",
         address: "Dear Council Member [Last Name],",
       },
       {
         office: "State Representative",
-        name: "[FILL IN #060 — name]",
-        email: "[FILL IN #060 — email]",
+        name: "[FILL IN #060, name]",
+        email: "[FILL IN #060, email]",
         address: "Dear Representative [Last Name],",
       },
       {
         office: "Mayor's Office",
-        name: "[FILL IN #060 — name]",
-        email: "[FILL IN #060 — email]",
+        name: "[FILL IN #060, name]",
+        email: "[FILL IN #060, email]",
         address: "Dear Mayor [Last Name],",
       },
     ],
@@ -53,14 +53,14 @@ export const REP_DIRECTORY: RepEntry[] = [
 export const GENERIC_REPS: Representative[] = [
   {
     office: "Your City Council Member",
-    name: "[FILL IN #060 — look up at your city's website]",
-    email: "[FILL IN #060 — official email]",
+    name: "[FILL IN #060, look up at your city's website]",
+    email: "[FILL IN #060, official email]",
     address: "Dear Council Member [Last Name],",
   },
   {
     office: "Your State Representative",
-    name: "[FILL IN #060 — find via your state legislature site]",
-    email: "[FILL IN #060 — official email]",
+    name: "[FILL IN #060, find via your state legislature site]",
+    email: "[FILL IN #060, official email]",
     address: "Dear Representative [Last Name],",
   },
 ];
@@ -103,7 +103,7 @@ export const FACT_POOL: ClimateFact[] = [
   { id: "fp1", text: "Atmospheric CO₂ has risen to roughly {{blank}} ppm, a level not seen in human history." },
   { id: "fp2", text: "Global average temperatures have already climbed about {{blank}} above pre-industrial levels." },
   { id: "fp3", text: "Transportation accounts for nearly {{blank}} of emissions in the United States, making local transit choices powerful." },
-  { id: "fp4", text: "The average American emits about {{blank}} of CO₂ each year — far above the global average." },
+  { id: "fp4", text: "The average American emits about {{blank}} of CO₂ each year, far above the global average." },
   { id: "fp5", text: "Sea levels have risen about {{blank}} since 1900, threatening coastal communities like ours." },
   { id: "fp6", text: "Each year, extreme heat affects {{blank}} communities, straining health systems and budgets." },
 ];

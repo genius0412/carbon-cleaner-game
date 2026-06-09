@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * saves.ts — persistence abstraction.
+ * saves.ts, persistence abstraction.
  * Persists game state to Supabase when configured; always mirrors to
  * localStorage so the game works fully offline. Guest saves use an opaque
  * resume code.
@@ -135,7 +135,7 @@ export function deleteLocalSave(key: string) {
   if (typeof window === "undefined") return;
   const map = readLocalSaves();
   // The deduped play menu shows the cloud copy of a synced game, whose `key` is
-  // the cloud id — but the local mirror is stored under its localId. Match on
+  // the cloud id, but the local mirror is stored under its localId. Match on
   // the map key OR either meta id so deletion works whichever id we're handed,
   // otherwise the local mirror survives and the game reappears on refresh.
   let changed = false;
@@ -293,7 +293,7 @@ export async function updatePlayerNameForUser(
   try {
     await sb.from("game_saves").update({ player_name: name }).eq("user_id", userId);
   } catch {
-    /* ignore — name still updates on the next per-save persist */
+    /* ignore, name still updates on the next per-save persist */
   }
 }
 

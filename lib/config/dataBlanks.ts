@@ -3,7 +3,7 @@
  * ------------------------------------------------------------------
  * The DATA-BLANK registry. EVERY number shown to the player as a real
  * fact, realistic cost, or real climate impact is registered here as a
- * numbered blank — never invented inline.
+ * numbered blank, never invented inline.
  *
  * In the UI these render as a <DataChip id={n} /> amber pill reading
  * [FILL IN #NNN] until the human supplies the real, cited value.

@@ -40,7 +40,7 @@ export function DisplayNameGate() {
     }
     const sb = getSupabaseBrowser();
     if (!sb) {
-      // No backend — nothing to persist; just dismiss.
+      // No backend, nothing to persist; just dismiss.
       setDone(true);
       return;
     }

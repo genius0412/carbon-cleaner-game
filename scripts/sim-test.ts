@@ -1,5 +1,5 @@
 /**
- * Headless engine smoke test — verifies a Mayor can reach net-zero with a
+ * Headless engine smoke test, verifies a Mayor can reach net-zero with a
  * sensible strategy played out over time, and that core invariants hold.
  * Run: npx tsx scripts/sim-test.ts
  */

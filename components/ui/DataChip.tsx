@@ -55,7 +55,7 @@ export function DataChip({ id, suffix }: { id: number; suffix?: string }) {
             <span className="mt-1 block text-mist">Source: {blank.source}</span>
           ) : (
             <span className="mt-1 block text-mist">
-              Real value & citation needed — see DATA_TO_FILL.md
+              Real value & citation needed, see DATA_TO_FILL.md
             </span>
           )}
         </span>

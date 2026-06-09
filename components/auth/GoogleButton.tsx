@@ -41,7 +41,7 @@ export function GoogleButton({
       setBusy(false);
       onError?.(error.message);
     }
-    // On success the browser is redirecting to Google — leave `busy` on.
+    // On success the browser is redirecting to Google, leave `busy` on.
   };
 
   return (

@@ -3,7 +3,7 @@ import { getSupabaseServer } from "@/lib/supabase/server";
 import { sanitizeRoles } from "@/lib/roles";
 
 /**
- * Update a classroom the signed-in teacher owns — its name and/or the roles
+ * Update a classroom the signed-in teacher owns, its name and/or the roles
  * students may pick. Runs server-side so the user's session is read from cookies
  * (the browser client has been unreliable at attaching the auth token). RLS
  * still enforces teacher ownership.

@@ -24,7 +24,7 @@ export function BillsPanel({ open, onClose }: { open: boolean; onClose: () => vo
       </p>
       {blocked && (
         <div className="mb-4 rounded-xl bg-danger/15 p-3 text-sm text-danger">
-          Public support is below {GAME.supportBillsBlockedBelow}% — no legislation
+          Public support is below {GAME.supportBillsBlockedBelow}%, no legislation
           can pass right now. Build goodwill first.
         </div>
       )}

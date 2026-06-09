@@ -3,7 +3,7 @@
  * ------------------------------------------------------------------
  * ALL tunable GAME CONSTANTS live here. These are deliberately
  * fictional / balance numbers (NOT real-world data). Tweak freely to
- * rebalance the game. Real-world facts/costs are NEVER here — those
+ * rebalance the game. Real-world facts/costs are NEVER here, those
  * are DATA BLANKS (see lib/config/dataBlanks.ts).
  * ------------------------------------------------------------------
  */

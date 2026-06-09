@@ -6,7 +6,7 @@
  * authored in a local frame whose origin (0,0) is the ground anchor (the point
  * the structure sits on); +x is right, +y is down/screen. Boxes use a 2:1 iso
  * footprint (ry = rx/2) and lift by `h` pixels. Colors: top lightest, left mid,
- * right darkest — derived from a single base color so the set stays consistent.
+ * right darkest, derived from a single base color so the set stays consistent.
  */
 
 import type { ReactNode } from "react";

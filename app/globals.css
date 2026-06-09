@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ----------------------------------------------------------------
-   Carbon Cleaner — "futuristic eco" design tokens
+   Carbon Cleaner, "futuristic eco" design tokens
    deep charcoal base · eco-green + cyan/teal accents · amber warnings
    ---------------------------------------------------------------- */
 @theme {
@@ -54,7 +54,7 @@ h1, h2, h3, .font-display {
   letter-spacing: -0.01em;
 }
 
-/* Tailwind v4's Preflight resets buttons to cursor:default — restore the
+/* Tailwind v4's Preflight resets buttons to cursor:default, restore the
    pointer for every interactive element. :where() keeps these at zero
    specificity so any explicit Tailwind cursor-* utility (e.g. cursor-help,
    cursor-not-allowed) still overrides them. */
@@ -141,7 +141,7 @@ h1, h2, h3, .font-display {
 }
 
 /* ----------------------------------------------------------------
-   Isometric map — ambient / passive animation keyframes.
+   Isometric map, ambient / passive animation keyframes.
    All continuous loops live here (CSS, GPU transforms) so frequent
    game-clock re-renders never re-run animation in JS. The
    prefers-reduced-motion block above neutralizes every one of these.
@@ -168,7 +168,7 @@ h1, h2, h3, .font-display {
 }
 .water-shimmer { animation: water-shimmer 3.6s ease-in-out infinite; }
 
-/* rising steam / heat plume — fades and lifts */
+/* rising steam / heat plume, fades and lifts */
 @keyframes steam-rise {
   0% { transform: translateY(0) scale(1); opacity: 0; }
   25% { opacity: 0.7; }
