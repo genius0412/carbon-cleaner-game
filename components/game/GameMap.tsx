@@ -139,9 +139,25 @@ export function GameMap({
     >
       {/* zoom + recenter controls */}
       <div className="absolute right-3 top-3 z-10 flex flex-col items-end gap-1.5">
-        <div className="flex flex-col gap-1.5">
-          <Button size="sm" variant="ghost" onClick={() => zoomByButton(0.3)}>＋</Button>
-          <Button size="sm" variant="ghost" onClick={() => zoomByButton(-0.3)}>－</Button>
+        <div className="flex flex-col gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            className="h-11 w-11 !p-0 text-2xl font-bold"
+            title="Zoom in"
+            onClick={() => zoomByButton(0.3)}
+          >
+            ＋
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            className="h-11 w-11 !p-0 text-2xl font-bold"
+            title="Zoom out"
+            onClick={() => zoomByButton(-0.3)}
+          >
+            －
+          </Button>
         </div>
         <Button size="md" variant="secondary" onClick={recenter} title="Return to the map">
           🗺️ Return to map

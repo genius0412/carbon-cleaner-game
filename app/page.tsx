@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SiteNav, SiteFooter } from "@/components/SiteNav";
 import { NetZeroCounter } from "@/components/NetZeroCounter";
+import { Leaderboard } from "@/components/Leaderboard";
 import { Card } from "@/components/ui/Card";
 import { DataChip } from "@/components/ui/DataChip";
 
@@ -56,6 +57,9 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      {/* Leaderboard: top net-zero finishers */}
+      <Leaderboard />
 
       {/* Why it exists, climate context, global + local */}
       <section className="z-10 mx-auto w-full max-w-6xl px-6 pb-16">
