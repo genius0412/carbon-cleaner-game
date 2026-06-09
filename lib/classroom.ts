@@ -7,20 +7,11 @@
 
 import { getSupabaseBrowser } from "./supabase/client";
 import type { CharacterType } from "./engine/types";
+// Pure role helpers live in a non-"use client" module so server routes can use
+// them too (see lib/roles.ts). Re-exported here for existing client imports.
+import { ALL_ROLES, sanitizeRoles, roleLabel } from "./roles";
 
-/** Every role a class could allow, with a short label for the settings UI. */
-export const ALL_ROLES: { type: CharacterType; label: string }[] = [
-  { type: "mayor", label: "Mayor" },
-  { type: "student_older", label: "Student (14–18)" },
-  { type: "student_younger", label: "Student (9–14)" },
-];
-
-/** Keep only valid role strings (guards against junk from the DB or a client). */
-export function sanitizeRoles(roles: unknown): CharacterType[] {
-  if (!Array.isArray(roles)) return [];
-  const valid = ALL_ROLES.map((r) => r.type);
-  return valid.filter((t) => roles.includes(t));
-}
+export { ALL_ROLES, sanitizeRoles, roleLabel };
 
 /**
  * Roles a class permits, by join code. Returns null when the class places no
@@ -80,12 +71,6 @@ export interface ScoreboardRow {
   /** Current atmospheric carbon (ppm) at last save. */
   carbon_amount: number | null;
   finished_at: string | null;
-}
-
-/** Short label for a role, e.g. "Mayor". Falls back to the raw value. */
-export function roleLabel(type: CharacterType | null): string | null {
-  if (!type) return null;
-  return ALL_ROLES.find((r) => r.type === type)?.label ?? type;
 }
 
 export interface ClassScoreboard {

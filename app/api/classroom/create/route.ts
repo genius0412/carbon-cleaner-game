@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
-import { sanitizeRoles } from "@/lib/classroom";
+import { sanitizeRoles } from "@/lib/roles";
 
 /** Short, readable class code (no ambiguous characters). */
 function makeClassCode(): string {

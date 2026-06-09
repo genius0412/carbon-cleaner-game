@@ -43,7 +43,7 @@ export function CivicAction({ open, onClose }: { open: boolean; onClose: () => v
       <p className="-mt-2 mb-4 text-sm text-mist">
         This is the heart of Carbon Cleaner: turn what you've learned into real
         action. Look up your representative, write a letter, then (optionally)
-        send it for real and upload proof for a major progress boost.
+        send it and upload proof for a major progress boost.
       </p>
 
       {/* 1. Representative lookup */}
@@ -87,9 +87,9 @@ export function CivicAction({ open, onClose }: { open: boolean; onClose: () => v
 
       {/* 3. Proof upload + lenient check */}
       <Card className="mt-4">
-        <h3 className="font-display text-sm font-semibold text-cyan">3 · Take real action (optional, big boost)</h3>
+        <h3 className="font-display text-sm font-semibold text-cyan">3 · Take real action (optional)</h3>
         <p className="mt-2 text-sm text-mist">
-          Send your letter to your representative for real, then upload a
+          Send your letter to your representative and upload a
           screenshot of the email you sent to earn a big boost. <span className="text-danger">Your screenshot
           will appear in your final report.</span>
         </p>
