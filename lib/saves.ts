@@ -134,8 +134,18 @@ export function getLocalSave(key: string): { state: GameState; meta: SaveMeta } 
 export function deleteLocalSave(key: string) {
   if (typeof window === "undefined") return;
   const map = readLocalSaves();
-  delete map[key];
-  writeLocalSaves(map);
+  // The deduped play menu shows the cloud copy of a synced game, whose `key` is
+  // the cloud id — but the local mirror is stored under its localId. Match on
+  // the map key OR either meta id so deletion works whichever id we're handed,
+  // otherwise the local mirror survives and the game reappears on refresh.
+  let changed = false;
+  for (const [k, v] of Object.entries(map)) {
+    if (k === key || v.meta.id === key || v.meta.localId === key) {
+      delete map[k];
+      changed = true;
+    }
+  }
+  if (changed) writeLocalSaves(map);
   // clear the legacy pointer if it referenced this save
   const legacy = loadLocal();
   if (legacy && (legacy.meta.localId === key || legacy.meta.id === key)) {
@@ -156,6 +166,7 @@ function rowFromState(state: GameState, meta: SaveMeta) {
     mode: state.mode,
     character_type: state.characterType,
     city_name: state.cityName,
+    player_name: state.playerName ?? null,
     state, // full JSON
     carbon_gain: effectiveCarbonGain(state),
     carbon_amount: state.carbonPpm,
@@ -265,6 +276,24 @@ export async function listSavesByGuestCode(code: string): Promise<SaveEntry[]> {
     return data ? entriesFromRows(data) : [];
   } catch {
     return [];
+  }
+}
+
+/**
+ * Bulk-update the denormalized player_name on all of a user's cloud saves.
+ * Called when they rename themselves in account settings so existing
+ * leaderboard rows reflect the new name. Best-effort (no-op offline).
+ */
+export async function updatePlayerNameForUser(
+  userId: string,
+  name: string,
+): Promise<void> {
+  const sb = getSupabaseBrowser();
+  if (!sb || !userId) return;
+  try {
+    await sb.from("game_saves").update({ player_name: name }).eq("user_id", userId);
+  } catch {
+    /* ignore — name still updates on the next per-save persist */
   }
 }
 

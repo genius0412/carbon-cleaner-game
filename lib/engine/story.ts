@@ -7,9 +7,10 @@
  *
  * Design rules:
  *  - "build" is always available; everything else is introduced through story.
- *  - Civic action is summoned by the citizenry — never a permanent button — and
- *    is only ever asked for ONCE (you don't spam your representative). Civic
- *    beats are suppressed once the player has actually sent their letter.
+ *  - Civic action is summoned by the citizenry via a beat — not available from
+ *    the start. It is only ever ASKED for ONCE (you don't spam your rep), but if
+ *    the player defers it the Dashboard keeps a "Write a letter" button until
+ *    it's done. Civic beats are suppressed once the letter has actually been sent.
  *
  * Pure + data-only so it stays testable and UI-agnostic.
  */
@@ -108,6 +109,7 @@ export const STORY_BEATS: StoryBeat[] = [
       "Founding a corporation costs money up front plus a monthly operating budget, and the work takes years. Start early. The sooner you fund it, the sooner the whole county compounds.",
     ],
     trigger: (s) => s.builtInfra.length >= 2 || (s.year === 2025 && s.month >= 6),
+    modes: ["mayor"], // research is a mayor-only feature
     unlocks: ["research"],
     cta: "Unlock Research",
   },
@@ -123,6 +125,7 @@ export const STORY_BEATS: StoryBeat[] = [
       "Keep an eye on the operating costs each month, but don't lose your nerve. The payoff lands when the project completes, and it's worth it.",
     ],
     trigger: (s) => s.activeResearch.length >= 1,
+    modes: ["mayor"],
     cta: "Onward",
   },
   {
@@ -138,6 +141,7 @@ export const STORY_BEATS: StoryBeat[] = [
       "This is how a county actually reaches zero: not one silver bullet, but layers of progress reinforcing each other.",
     ],
     trigger: (s) => s.completedResearch.length >= 1,
+    modes: ["mayor"],
     cta: "Excellent",
   },
 
@@ -159,6 +163,7 @@ export const STORY_BEATS: StoryBeat[] = [
     ],
     trigger: (s) =>
       s.completedResearch.length >= 1 || s.builtInfra.length >= 4 || s.year >= 2028,
+    modes: ["mayor"], // legislation is a mayor-only feature
     unlocks: ["bills"],
     cta: "Unlock Legislation",
   },

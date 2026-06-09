@@ -45,8 +45,8 @@ export function OnboardingTour({
       },
       {
         selector: '[data-tour="gauges"]',
-        title: "Your three vital signs",
-        body: "Carbon — push it down to net-zero. Support — keep people on your side. Budget — what you can spend.",
+        title: "Your four vital signs",
+        body: "Carbon Gain: How much carbon you are gaining per month. Make it go down to zero. Carbon: Current carbon levels. Cannot reach the cap. Support: Keep people on your side to continue making changes. Budget: How much you can spend.",
       },
       {
         selector: '[data-tour="map"]',

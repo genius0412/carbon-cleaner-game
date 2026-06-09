@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
+import { sanitizeRoles } from "@/lib/roles";
 
 /** Short, readable class code (no ambiguous characters). */
 function makeClassCode(): string {
@@ -34,9 +35,17 @@ export async function POST(request: Request) {
   }
 
   let name = "Untitled Class";
+  // null = no restriction (any role); an array = only those roles are allowed.
+  let allowed_roles: string[] | null = null;
   try {
     const body = await request.json();
     if (typeof body?.name === "string" && body.name.trim()) name = body.name.trim();
+    if (body?.allowedRoles !== undefined) {
+      const roles = sanitizeRoles(body.allowedRoles);
+      // An empty selection means "no restriction" rather than "no roles" (which
+      // would lock students out of every role).
+      allowed_roles = roles.length > 0 ? roles : null;
+    }
   } catch {
     /* empty body is fine */
   }
@@ -46,8 +55,8 @@ export async function POST(request: Request) {
     const join_code = makeClassCode();
     const { data, error } = await sb
       .from("classrooms")
-      .insert({ join_code, name, teacher_id: user.id })
-      .select("id, join_code, name")
+      .insert({ join_code, name, teacher_id: user.id, allowed_roles })
+      .select("id, join_code, name, allowed_roles")
       .single();
 
     if (!error && data) {

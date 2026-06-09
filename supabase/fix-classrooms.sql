@@ -12,8 +12,12 @@ create table if not exists public.classrooms (
   join_code text unique not null,
   name text,
   teacher_id uuid references auth.users (id) on delete set null,
+  allowed_roles text[],
   created_at timestamptz default now()
 );
+
+-- Roles students may pick (NULL = no restriction). Added for older databases.
+alter table public.classrooms add column if not exists allowed_roles text[];
 
 alter table public.classrooms enable row level security;
 

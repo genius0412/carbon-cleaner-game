@@ -12,9 +12,19 @@ create extension if not exists "pgcrypto";
 create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   username text,
+  -- Friendly, editable display name (non-unique). Shown on leaderboards and to
+  -- teachers. Distinct from `username`, which stays the unique login handle.
+  display_name text,
+  -- False until the user has chosen/confirmed a display name. Drives the
+  -- one-time prompt for OAuth users (who arrive with no username).
+  display_name_confirmed boolean default false,
   role text default 'player',
   created_at timestamptz default now()
 );
+
+-- Add the columns to databases created before this feature existed.
+alter table public.profiles add column if not exists display_name text;
+alter table public.profiles add column if not exists display_name_confirmed boolean default false;
 
 alter table public.profiles enable row level security;
 
@@ -33,16 +43,32 @@ create unique index if not exists profiles_username_lower_idx
 -- Auto-create a profile row whenever a new auth user signs up. Runs as the
 -- definer so it works even before email confirmation (when there is no session
 -- yet), which reserves the username at signup time. The username comes from the
--- signUp metadata ({ data: { username } }).
+-- signUp metadata ({ data: { username } }); the display name defaults to it (or,
+-- for OAuth users with no username, to the provider's name). Only password
+-- signups (which send a username) are pre-confirmed — OAuth users get prompted.
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  meta jsonb := new.raw_user_meta_data;
+  uname text := nullif(meta->>'username', '');
 begin
-  insert into public.profiles (id, username, role)
-  values (new.id, nullif(new.raw_user_meta_data->>'username', ''), 'player')
+  insert into public.profiles (id, username, display_name, display_name_confirmed, role)
+  values (
+    new.id,
+    uname,
+    coalesce(
+      nullif(meta->>'display_name', ''),
+      uname,
+      nullif(meta->>'full_name', ''),
+      nullif(meta->>'name', '')
+    ),
+    uname is not null,
+    'player'
+  )
   on conflict (id) do nothing;
   return new;
 end;
@@ -103,6 +129,8 @@ create table if not exists public.game_saves (
   mode text not null,
   character_type text not null,
   city_name text not null,
+  -- Denormalized player display name for cheap leaderboard/roster reads.
+  player_name text,
   state jsonb not null,
   carbon_gain double precision,
   carbon_amount double precision,
@@ -113,6 +141,9 @@ create table if not exists public.game_saves (
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+-- Add the column to databases created before this feature existed.
+alter table public.game_saves add column if not exists player_name text;
 
 create index if not exists game_saves_guest_code_idx on public.game_saves (guest_code);
 create index if not exists game_saves_user_id_idx on public.game_saves (user_id);
@@ -159,8 +190,13 @@ create table if not exists public.classrooms (
   join_code text unique not null,
   name text,
   teacher_id uuid references auth.users (id) on delete set null,
+  -- Roles students in this class may pick. NULL = no restriction (any role).
+  allowed_roles text[],
   created_at timestamptz default now()
 );
+
+-- Add the column to databases created before this feature existed.
+alter table public.classrooms add column if not exists allowed_roles text[];
 
 alter table public.classrooms enable row level security;
 
@@ -190,6 +226,17 @@ create policy "classroom_members_select_all" on public.classroom_members
 drop policy if exists "classroom_members_insert" on public.classroom_members;
 create policy "classroom_members_insert" on public.classroom_members
   for insert with check (true);
+
+-- The class's teacher may remove (kick) members from their own classes.
+drop policy if exists "classroom_members_teacher_delete" on public.classroom_members;
+create policy "classroom_members_teacher_delete" on public.classroom_members
+  for delete using (
+    exists (
+      select 1 from public.classrooms c
+      where c.id = classroom_members.classroom_id
+        and c.teacher_id = auth.uid()
+    )
+  );
 
 -- Anti-cheat: a game may only join a class that already existed when the game
 -- was created. Blocks entering an old, already-progressed game into a new class.

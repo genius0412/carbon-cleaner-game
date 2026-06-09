@@ -15,25 +15,29 @@ interface RegionSeed {
   terrain: Terrain;
   cx: number;
   cy: number;
+  /** Isometric grid cell (col 0..4, row 0..2). 5x3 = 15 regions. */
+  gx: number;
+  gy: number;
 }
 
 // Hand-placed regions across the viewBox. Friendly invented place names.
+// gx/gy lay the regions onto a contiguous 5x3 isometric landmass.
 const SEEDS: RegionSeed[] = [
-  { id: "r1", name: "Frostpeak Range", terrain: "mountains", cx: 160, cy: 120 },
-  { id: "r2", name: "Cedar Hollow", terrain: "forest", cx: 360, cy: 110 },
-  { id: "r3", name: "Goldwheat Flats", terrain: "plains", cx: 560, cy: 120 },
-  { id: "r4", name: "Saltmarsh Bay", terrain: "coast", cx: 820, cy: 130 },
-  { id: "r5", name: "Ironforge District", terrain: "urban", cx: 250, cy: 300 },
-  { id: "r6", name: "Verdana City", terrain: "urban", cx: 480, cy: 300 },
-  { id: "r7", name: "Sunmeadow Acres", terrain: "farmland", cx: 690, cy: 300 },
-  { id: "r8", name: "Tidewater Harbor", terrain: "coast", cx: 880, cy: 320 },
-  { id: "r9", name: "Granite Bluffs", terrain: "mountains", cx: 140, cy: 470 },
-  { id: "r10", name: "Whisperwood", terrain: "forest", cx: 360, cy: 490 },
-  { id: "r11", name: "Riverbend Fields", terrain: "farmland", cx: 560, cy: 500 },
-  { id: "r12", name: "Coral Cove", terrain: "coast", cx: 800, cy: 510 },
-  { id: "r13", name: "Highland Mesa", terrain: "plains", cx: 250, cy: 620 },
-  { id: "r14", name: "Maplewick Town", terrain: "urban", cx: 480, cy: 620 },
-  { id: "r15", name: "Greenhaven Vale", terrain: "forest", cx: 700, cy: 620 },
+  { id: "r1", name: "Frostpeak Range", terrain: "mountains", cx: 160, cy: 120, gx: 0, gy: 0 },
+  { id: "r2", name: "Cedar Hollow", terrain: "forest", cx: 360, cy: 110, gx: 1, gy: 0 },
+  { id: "r3", name: "Goldwheat Flats", terrain: "plains", cx: 560, cy: 120, gx: 2, gy: 0 },
+  { id: "r4", name: "Saltmarsh Bay", terrain: "coast", cx: 820, cy: 130, gx: 3, gy: 0 },
+  { id: "r5", name: "Ironforge District", terrain: "urban", cx: 250, cy: 300, gx: 4, gy: 0 },
+  { id: "r6", name: "Verdana City", terrain: "urban", cx: 480, cy: 300, gx: 0, gy: 1 },
+  { id: "r7", name: "Sunmeadow Acres", terrain: "farmland", cx: 690, cy: 300, gx: 1, gy: 1 },
+  { id: "r8", name: "Tidewater Harbor", terrain: "coast", cx: 880, cy: 320, gx: 2, gy: 1 },
+  { id: "r9", name: "Granite Bluffs", terrain: "mountains", cx: 140, cy: 470, gx: 3, gy: 1 },
+  { id: "r10", name: "Whisperwood", terrain: "forest", cx: 360, cy: 490, gx: 4, gy: 1 },
+  { id: "r11", name: "Riverbend Fields", terrain: "farmland", cx: 560, cy: 500, gx: 0, gy: 2 },
+  { id: "r12", name: "Coral Cove", terrain: "coast", cx: 800, cy: 510, gx: 1, gy: 2 },
+  { id: "r13", name: "Highland Mesa", terrain: "plains", cx: 250, cy: 620, gx: 2, gy: 2 },
+  { id: "r14", name: "Maplewick Town", terrain: "urban", cx: 480, cy: 620, gx: 3, gy: 2 },
+  { id: "r15", name: "Greenhaven Vale", terrain: "forest", cx: 700, cy: 620, gx: 4, gy: 2 },
 ];
 
 /** Build a soft rounded-blob path centered at (cx, cy). */
@@ -67,6 +71,8 @@ export function buildRegions(): Region[] {
     cx: s.cx,
     cy: s.cy,
     path: blob(s.cx, s.cy),
+    gx: s.gx,
+    gy: s.gy,
     builtInfraId: null,
   }));
 }

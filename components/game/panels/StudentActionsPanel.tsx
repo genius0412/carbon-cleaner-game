@@ -114,18 +114,24 @@ function ActionCard({
   const tooPoor = def.cost > 0 && game.budget < def.cost;
   const disabled = !status.available || tooPoor;
 
-  const buttonLabel = status.doneOnce
-    ? "✓ Done"
-    : status.cooldownLeft > 0
-      ? `Available in ${status.cooldownLeft} mo`
-      : tooPoor
-        ? "Need funds"
-        : status.count > 0
-          ? "Do again"
-          : "Do it";
+  const buttonLabel = status.locked
+    ? "🔒 Locked"
+    : status.doneOnce
+      ? "✓ Done"
+      : status.cooldownLeft > 0
+        ? `Available in ${status.cooldownLeft} mo`
+        : tooPoor
+          ? "Need funds"
+          : status.count > 0
+            ? "Do again"
+            : "Do it";
 
   return (
-    <Card className="flex h-full flex-col gap-2 transition-transform duration-200 hover:-translate-y-0.5">
+    <Card
+      className={`flex h-full flex-col gap-2 transition-transform duration-200 hover:-translate-y-0.5 ${
+        status.locked ? "opacity-60" : ""
+      }`}
+    >
       <div className="flex items-start gap-2">
         <span className="text-xl leading-none">{def.icon}</span>
         <div className="min-w-0">
@@ -135,6 +141,9 @@ function ActionCard({
       </div>
 
       <div className="flex flex-wrap gap-1.5 text-[11px]">
+        {def.synergyBoost ? (
+          <Chip className="text-leaf">⚡ boosts every other action</Chip>
+        ) : null}
         {def.carbonDelta < 0 && (
           <Chip className="text-leaf">🌿 cuts emissions</Chip>
         )}
@@ -154,7 +163,18 @@ function ActionCard({
         ) : (
           <Chip className="text-mist/70">one-time</Chip>
         )}
+        {/* Active synergy from a foundational action already taken. */}
+        {!status.locked && status.synergyBonus > 0 && (
+          <Chip className="text-leaf">⚡ +{Math.round(status.synergyBonus * 100)}% boosted</Chip>
+        )}
       </div>
+
+      {/* Prerequisite hint when this action is still locked. */}
+      {status.locked && (
+        <p className="text-[11px] text-amber">
+          🔒 Requires: {status.missingRequirements.join(", ")}
+        </p>
+      )}
 
       <div className="mt-auto flex items-center justify-between gap-2 pt-1">
         <span className="text-[11px] text-mist">

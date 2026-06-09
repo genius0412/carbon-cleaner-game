@@ -73,6 +73,7 @@ export function GaugesBar({ game }: { game: GameState }) {
       {gauges.map((g) => (
         <motion.div
           key={g.key + g.pulse}
+          className="h-full"
           initial={{ scale: 1 }}
           animate={{ scale: [1, 1.025, 1] }}
           transition={{ duration: 0.4 }}

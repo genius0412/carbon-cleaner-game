@@ -58,7 +58,7 @@ export function GoogleButton({
   );
 }
 
-function GoogleIcon() {
+export function GoogleIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
       <path

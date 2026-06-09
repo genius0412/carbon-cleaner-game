@@ -69,15 +69,34 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     icon: "🌍",
     category: "school",
     description:
-      "Start an after-school club that keeps organizing projects all year. A lasting base for action.",
+      "Start an after-school club that keeps organizing projects all year. A lasting base that makes every other action more effective — and unlocks bigger initiatives.",
     cost: 5_000,
     carbonDelta: -0.002,
     supportDelta: 5,
     repeatable: false,
     cooldownMonths: 0,
     diminishing: 1,
+    // A standing organization makes every future action land harder.
+    synergyBoost: 0.25,
     feedback:
-      "Your climate club is official — a steady engine for everything that comes next.",
+      "Your climate club is official — a steady engine that makes everything that comes next more effective.",
+  },
+  {
+    id: "green_team",
+    name: "Launch a Green Team",
+    icon: "🌱",
+    category: "school",
+    description:
+      "With the club behind you, stand up a Green Team that runs campus sustainability projects every term — bigger and more reliable than one-off events.",
+    cost: 0,
+    carbonDelta: -0.004,
+    supportDelta: 3,
+    repeatable: true,
+    cooldownMonths: 3,
+    diminishing: 0.7,
+    requires: ["climate_club"],
+    feedback:
+      "The Green Team is rolling — projects that used to fizzle now actually ship.",
   },
   {
     id: "recycling_drive",
@@ -160,6 +179,23 @@ export const STUDENT_ACTIONS: StudentActionDef[] = [
     diminishing: 0.7,
     feedback:
       "A cleaner park and a crowd of new volunteers — goodwill is contagious.",
+  },
+  {
+    id: "climate_summit",
+    name: "Host a Youth Climate Summit",
+    icon: "🏟️",
+    category: "community",
+    description:
+      "Use your club's network to convene students from across the district for a day of action and pledges — a movement, not a moment.",
+    cost: 3_000,
+    carbonDelta: -0.003,
+    supportDelta: 8,
+    repeatable: true,
+    cooldownMonths: 8,
+    diminishing: 0.6,
+    requires: ["climate_club"],
+    feedback:
+      "Hundreds of students showed up and signed on — the movement just leveled up.",
   },
 
   // ---- Fundraising: turn enthusiasm into a budget for bigger projects ----

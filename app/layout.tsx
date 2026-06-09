@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { MotionProvider } from "@/components/MotionProvider";
+import { DisplayNameGate } from "@/components/auth/DisplayNameGate";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const grotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-grotesk" });
@@ -21,6 +22,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${grotesk.variable}`}>
       <body>
         <MotionProvider>{children}</MotionProvider>
+        <DisplayNameGate />
       </body>
     </html>
   );

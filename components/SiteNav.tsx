@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LeafLogo } from "@/components/ui/LeafLogo";
+import { AccountLink } from "@/components/auth/AccountLink";
 
 const links = [
   { href: "/about", label: "About" },
@@ -22,6 +23,7 @@ export function SiteNav() {
             {l.label}
           </Link>
         ))}
+        <AccountLink />
         <Link
           href="/play"
           className="rounded-full bg-leaf px-5 py-2 font-semibold text-night transition-transform hover:scale-105"

@@ -5,8 +5,10 @@
  * scene: a storyline intro, a hands-on challenge, and an outcome. How well the
  * player does scales the reward (see scoreToScale).
  *
- * Five reusable challenge mechanics — quiz, sort, tap, order, pick — each used
- * for two actions, with entirely distinct content + narrative.
+ * Five reusable challenge mechanics — quiz, sort, tap, order, pick — reused
+ * across actions, with entirely distinct content + narrative. Every action in
+ * STUDENT_ACTIONS must have an entry here, or its "Do it" button opens an empty
+ * modal (the ChallengeModal renders nothing without content).
  */
 
 export type Challenge =
@@ -184,6 +186,57 @@ export const STUDENT_CHALLENGES: Record<string, StudentChallenge> = {
     },
     win: "Officially chartered, with a sponsor and a buzzing first project. The club runs itself now.",
     partial: "The club exists — a bit chaotic, but it exists. You'll find your rhythm.",
+  },
+
+  green_team: {
+    intro:
+      "The club's behind you and the Green Team is ready to commit to one flagship project every term. Pick the one that delivers real, repeatable cuts — not just a feel-good photo op.",
+    task: "Choose the Green Team's flagship project",
+    challenge: {
+      kind: "pick",
+      options: [
+        {
+          label: "🌳 A one-off tree-planting photo day",
+          detail: "Nice picture, but a single afternoon a year barely moves the needle once you account for the term break.",
+          quality: 0.3,
+        },
+        {
+          label: "♻️ A standing audit-and-fix crew: lights, heating, waste, every term",
+          detail: "Boring on camera, huge over time — repeatable savings that compound term after term. Exactly what a standing team is for.",
+          quality: 1,
+        },
+        {
+          label: "👕 Sell branded Green Team merch",
+          detail: "Builds identity, but new plastic-y merch can cost more carbon than it saves. Mostly vibes.",
+          quality: 0.2,
+        },
+        {
+          label: "📣 A big awareness week, then nothing",
+          detail: "Awareness matters, but a one-week splash with no follow-through is the opposite of what a standing team should do.",
+          quality: 0.5,
+        },
+      ],
+    },
+    win: "The audit crew becomes an institution — every term they find new savings, and projects that used to fizzle now actually ship.",
+    partial: "The team's running, if a little unfocused. You'll steer it toward the work that lasts.",
+  },
+
+  climate_summit: {
+    intro:
+      "Your club is convening students from across the district for one big day. A summit becomes a movement only if it's sequenced right — energy up front, commitments locked before everyone goes home.",
+    task: "Order the summit day for lasting impact",
+    challenge: {
+      kind: "order",
+      steps: [
+        "Open with a rallying keynote to set the stakes",
+        "Run workshops so every school learns a concrete skill",
+        "Break into groups to draft real, local action plans",
+        "Have each school publicly pledge a commitment",
+        "Set the follow-up dates before anyone leaves",
+      ],
+    },
+    win: "Hundreds of students left with a plan, a pledge, and a date to report back. That's not a moment — it's a network.",
+    partial: "A buzzing day, but a few schools drifted off without committing. Still, the movement just got bigger.",
   },
 
   bike_week: {

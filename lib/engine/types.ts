@@ -29,6 +29,9 @@ export interface Region {
   cy: number;
   /** Path "d" for the region blob shape. */
   path: string;
+  /** Isometric grid cell (col, row) on the 5x3 city-builder map. */
+  gx: number;
+  gy: number;
   /** id of the InfrastructureDef built here, or null. */
   builtInfraId: string | null;
 }
@@ -128,6 +131,14 @@ export interface StudentActionDef {
   cooldownMonths: number;
   /** Each repeat multiplies effects by diminishing^count (1 = no decay). */
   diminishing: number;
+  /** Action ids that must be completed (count ≥ 1) before this one unlocks. */
+  requires?: string[];
+  /**
+   * Foundational boost: while this action has been done (count ≥ 1), the
+   * carbon/support/funds from every OTHER student action are multiplied by
+   * (1 + synergyBoost). Founding a club makes everything else more effective.
+   */
+  synergyBoost?: number;
   /** Flavor shown after taking the action. */
   feedback: string;
 }
@@ -145,6 +156,10 @@ export interface GameState {
   mode: "mayor" | "student";
   characterType: CharacterType;
   cityName: string;
+  /** Friendly display name for the player, shown on leaderboards and to
+   *  teachers. Settable in-game (guests included); seeded from a logged-in
+   *  user's account display name. Falls back to cityName when unset. */
+  playerName?: string;
   /** Real-world ISO timestamp when the game was created (anti-cheat: a game
    *  can only join a class that existed at or before this time). */
   createdAt?: string;

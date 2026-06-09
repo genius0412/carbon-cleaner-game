@@ -73,7 +73,7 @@ export default function SignupPage() {
     const { data, error } = await sb.auth.signUp({
       email: email.trim(),
       password,
-      options: { data: { username: uname }, emailRedirectTo },
+      options: { data: { username: uname, display_name: uname }, emailRedirectTo },
     });
     setBusy(false);
 

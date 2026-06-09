@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/Card";
 import { IntroBriefing } from "@/components/game/IntroBriefing";
 import { CharacterSelect } from "@/components/game/CharacterSelect";
 import { CityNamer } from "@/components/game/CityNamer";
+import { PlayerNamer } from "@/components/game/PlayerNamer";
 import { CityReveal } from "@/components/game/CityReveal";
 import { Dashboard } from "@/components/game/Dashboard";
 import {
@@ -21,11 +22,19 @@ import {
   type SaveEntry,
 } from "@/lib/saves";
 import { formatYearMonth } from "@/lib/engine/engine";
-import { joinClassByCode, normalizeClassCode } from "@/lib/classroom";
+import { joinClassByCode, normalizeClassCode, getClassAllowedRoles } from "@/lib/classroom";
 import { useAuth } from "@/lib/auth";
 import type { CharacterType } from "@/lib/engine/types";
 
-type Phase = "menu" | "joinclass" | "intro" | "character" | "city" | "launch" | "playing";
+type Phase =
+  | "menu"
+  | "joinclass"
+  | "intro"
+  | "character"
+  | "playername"
+  | "city"
+  | "launch"
+  | "playing";
 
 const CHAR_LABEL: Record<CharacterType, string> = {
   mayor: "Mayor",
@@ -46,14 +55,40 @@ export default function PlayPage() {
   const save = useGameStore((s) => s.save);
   const { user, loading: authLoading, signOut } = useAuth();
 
-  const [phase, setPhase] = useState<Phase>("menu");
+  // Derive the starting phase from the store so a remount (mobile tab eviction
+  // / bfcache restore, the Supabase auth-lock recovery, dev Fast Refresh) drops
+  // the player back INTO their live game instead of kicking them to the menu —
+  // the game itself lives in the store and survives the remount.
+  const [phase, setPhase] = useState<Phase>(() =>
+    useGameStore.getState().game?.status === "playing" ? "playing" : "menu",
+  );
   const [character, setCharacter] = useState<CharacterType>("mayor");
+  // Guest-entered display name (logged-in users use their account name instead).
+  const [playerName, setPlayerName] = useState("");
   const [asGuest, setAsGuest] = useState(true);
   const [saves, setSaves] = useState<SaveEntry[]>([]);
   // Class the new game should auto-join after it's created (from the join step
   // or a teacher's invite link).
   const [classCode, setClassCode] = useState("");
   const [pendingClassCode, setPendingClassCode] = useState<string | null>(null);
+  // Roles the joined class permits (null = no restriction / not in a class).
+  const [allowedRoles, setAllowedRoles] = useState<CharacterType[] | null>(null);
+
+  // When a class is chosen, fetch which roles it allows so the role picker can
+  // limit the options. No class (or no restriction) → offer every role.
+  useEffect(() => {
+    let active = true;
+    if (!pendingClassCode) {
+      setAllowedRoles(null);
+      return;
+    }
+    getClassAllowedRoles(pendingClassCode).then((roles) => {
+      if (active) setAllowedRoles(roles);
+    });
+    return () => {
+      active = false;
+    };
+  }, [pendingClassCode]);
 
   // Teacher invite link: /play?class=CODE → jump straight to the join step with
   // the code pre-filled so students don't have to type anything.
@@ -177,7 +212,7 @@ export default function PlayPage() {
                 <span className="h-2 w-2 rounded-full bg-leaf shadow-[0_0_8px] shadow-leaf" />
                 <span className="text-fog">
                   Logged in as{" "}
-                  <strong className="text-leaf">{user.username ?? user.email}</strong>
+                  <strong className="text-leaf">{user.displayName ?? user.username ?? user.email}</strong>
                 </span>
               </div>
             )}
@@ -274,6 +309,7 @@ export default function PlayPage() {
               {user ? (
                 <div className="flex justify-center gap-4 pt-1 text-xs text-mist">
                   <button onClick={signOut} className="hover:text-fog">Log out</button>
+                  <Link href="/account" className="hover:text-fog">Account</Link>
                   <Link href="/classroom" className="hover:text-fog">Classroom</Link>
                 </div>
               ) : (
@@ -364,7 +400,7 @@ export default function PlayPage() {
             {user && (
               <p className="mt-4 text-xs text-mist">
                 Signed in as{" "}
-                <strong className="text-leaf">{user.username ?? user.email}</strong>
+                <strong className="text-leaf">{user.displayName ?? user.username ?? user.email}</strong>
               </p>
             )}
 
@@ -381,8 +417,20 @@ export default function PlayPage() {
 
         {phase === "character" && (
           <CharacterSelect
+            allowedRoles={allowedRoles}
             onSelect={(t) => {
               setCharacter(t);
+              // Logged-in players carry their account name; guests name themselves.
+              setPhase(user ? "city" : "playername");
+            }}
+          />
+        )}
+
+        {phase === "playername" && (
+          <PlayerNamer
+            initial={playerName}
+            onConfirm={(n) => {
+              setPlayerName(n);
               setPhase("city");
             }}
           />
@@ -391,7 +439,12 @@ export default function PlayPage() {
         {phase === "city" && (
           <CityNamer
             onConfirm={(name) => {
-              newGame(character, name, { asGuest, userId: user?.id ?? null });
+              newGame(character, name, {
+                asGuest,
+                userId: user?.id ?? null,
+                playerName:
+                  user?.displayName ?? user?.username ?? (playerName.trim() || null),
+              });
               setPhase("launch");
               // Link the fresh game to the chosen class in the background.
               if (pendingClassCode) {
