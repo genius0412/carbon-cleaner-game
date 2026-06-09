@@ -57,6 +57,9 @@ export const GAME = {
     // (e.g. the $90k tree initiative).
     youngerStartingBudget: 60_000,
     olderStartingBudget: 200_000,
+    // Students govern a much smaller purse: 10% of the mayor's recurring grant,
+    // i.e. $100k per in-game year (disbursed monthly).
+    yearlyBudgetGrant: 100_000,
     // Big progress boost (reduction to carbon gain/mo) for submitting
     // verified real-world civic action proof.
     civicActionCarbonBoost: 0.012,

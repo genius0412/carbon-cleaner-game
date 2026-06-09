@@ -143,8 +143,8 @@ export function GameMap({
           <Button size="sm" variant="ghost" onClick={() => zoomByButton(0.3)}>＋</Button>
           <Button size="sm" variant="ghost" onClick={() => zoomByButton(-0.3)}>－</Button>
         </div>
-        <Button size="md" variant="secondary" onClick={recenter} title="Recenter the map">
-          🗺️ Recenter map
+        <Button size="md" variant="secondary" onClick={recenter} title="Return to the map">
+          🗺️ Return to map
         </Button>
       </div>
 

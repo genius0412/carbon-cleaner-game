@@ -21,7 +21,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     description:
       "Swap every municipal streetlight for efficient LEDs. Cuts grid demand across the county.",
     cost: 180_000,
-    carbonDelta: -0.003,
+    carbonDelta: -0.0015,
     supportDelta: 2,
     feedback:
       "LEDs use a fraction of the energy of old sodium lamps, an easy win residents notice on their utility bills. Modest carbon savings, and people like brighter, cheaper streets.",
@@ -53,7 +53,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     description:
       "Require businesses to sort recyclables, diverting waste from landfill methane.",
     cost: 140_000,
-    carbonDelta: -0.004,
+    carbonDelta: -0.002,
     supportDelta: -3,
     feedback:
       "Landfills release methane as waste rots; recycling keeps materials in use and emissions down. Businesses dislike new rules, so expect a small support dip.",
@@ -85,7 +85,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     description:
       "Launch a county greening program (see the Tree Planting panel to choose species).",
     cost: 90_000,
-    carbonDelta: -0.0015,
+    carbonDelta: -0.00075,
     supportDelta: 5,
     feedback:
       "Trees pull carbon from the air slowly but steadily, cool neighborhoods, and are wildly popular. The offset is gradual, pair it with faster measures.",

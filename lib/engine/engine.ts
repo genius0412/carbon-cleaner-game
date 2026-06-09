@@ -185,7 +185,9 @@ export function monthIndex(state: GameState): number {
  * in progress (paralysis raises those costs). Positive = gaining money.
  */
 export function monthlyNetBudget(state: GameState): number {
-  let net = GAME.yearlyBudgetGrant / 12;
+  const yearlyGrant =
+    state.mode === "student" ? GAME.student.yearlyBudgetGrant : GAME.yearlyBudgetGrant;
+  let net = yearlyGrant / 12;
   for (const ar of state.activeResearch) {
     const def = researchById(ar.defId);
     if (!def) continue;
@@ -246,8 +248,11 @@ export function tickMonth(prev: GameState): GameState {
   }
   state.activeResearch = stillActive;
 
-  // 1b) municipal budget grant, disbursed every month (1/12 of the yearly grant)
-  state.budget += GAME.yearlyBudgetGrant / 12;
+  // 1b) municipal budget grant, disbursed every month (1/12 of the yearly grant).
+  // Students govern a far smaller purse than the mayor.
+  const monthlyGrant =
+    (state.mode === "student" ? GAME.student.yearlyBudgetGrant : GAME.yearlyBudgetGrant) / 12;
+  state.budget += monthlyGrant;
 
   // 2) passive support recovery (only if no negative action this month)
   if (!state.tookNegativeActionThisMonth && state.support < GAME.passiveRecoveryCap) {
