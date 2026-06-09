@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
 import { loadLocal, getLocalSave } from "@/lib/saves";
+import { useGameStore } from "@/lib/store";
 import { formatYearMonth, effectiveCarbonGain } from "@/lib/engine/engine";
 import { aggregatedSources, allBlanks, blankTag } from "@/lib/config/dataBlanks";
 import type { GameState } from "@/lib/engine/types";
@@ -23,22 +24,39 @@ export default function ReportPage({
 
   useEffect(() => {
     (async () => {
+      // Prefer the live in-memory game when this report is for the game that's
+      // currently loaded. Client-side navigation (the "View report" link) keeps
+      // the store mounted, so this reflects the very latest state — including a
+      // just-won game whose cloud save may not have flushed yet. (Re-reading the
+      // persisted save here is what caused the stale "did not reach net-zero".)
+      const { game: liveGame, meta: liveMeta } = useGameStore.getState();
+      const isCurrent =
+        !!liveGame &&
+        (gameId === "local" || gameId === liveMeta.id || gameId === liveMeta.localId);
+      if (isCurrent) setState(liveGame);
+
       // local saves: "local" = most recent, "local-xxxx" = a specific game.
       if (gameId === "local" || gameId.startsWith("local-")) {
-        const local = gameId === "local" ? loadLocal() : getLocalSave(gameId);
-        if (local) setState(local.state);
+        if (!isCurrent) {
+          const local = gameId === "local" ? loadLocal() : getLocalSave(gameId);
+          if (local) setState(local.state);
+        }
         setLoading(false);
         return;
       }
       const sb = getSupabaseBrowser();
       if (sb) {
         try {
-          const { data } = await sb
-            .from("game_saves")
-            .select("state")
-            .eq("id", gameId)
-            .maybeSingle();
-          if (data?.state) setState(data.state as GameState);
+          // Only fall back to the persisted snapshot when we don't already have
+          // the live (fresher) state for this game.
+          if (!isCurrent) {
+            const { data } = await sb
+              .from("game_saves")
+              .select("state")
+              .eq("id", gameId)
+              .maybeSingle();
+            if (data?.state) setState(data.state as GameState);
+          }
           // proof image
           const { data: up } = await sb
             .from("civic_uploads")
@@ -58,7 +76,7 @@ export default function ReportPage({
           /* fall back to local */
         }
       }
-      if (!state) {
+      if (!isCurrent && !state) {
         const local = loadLocal();
         if (local) setState(local.state);
       }
