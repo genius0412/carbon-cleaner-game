@@ -336,7 +336,7 @@ export default function PlayPage() {
                   setPhase("intro");
                 }}
               >
-                Don&apos;t join a class
+                Play solo
               </Button>
             </Card>
 

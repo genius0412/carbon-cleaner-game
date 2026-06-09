@@ -19,16 +19,6 @@ interface Scene {
 
 const SCENES: Scene[] = [
   {
-    tag: "The year is 2025",
-    art: "🌆",
-    title: "Verdana County",
-    accent: "cyan",
-    body: [
-      "One hundred thousand people. Mountains in the north, farmland in the valley, a working harbor on the coast.",
-      "For a century it ran on coal smoke and gasoline — and it never had to think about the cost. Until now.",
-    ],
-  },
-  {
     tag: "The problem",
     art: "🌡️",
     title: "The air is changing",

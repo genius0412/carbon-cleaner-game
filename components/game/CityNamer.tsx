@@ -50,16 +50,21 @@ function Wheel({
 }
 
 export function CityNamer({ onConfirm }: { onConfirm: (name: string) => void }) {
+  const SPIN_LIMIT = 3;
   const [a, setA] = useState(WHEEL_A[0]);
   const [b, setB] = useState(WHEEL_B[0]);
   const [spinning, setSpinning] = useState(false);
   const [hasSpun, setHasSpun] = useState(false);
+  const [spins, setSpins] = useState(0);
+  const spinsLeft = SPIN_LIMIT - spins;
 
   const name = `${a}${b}`;
 
   const spin = () => {
+    if (spinning || spinsLeft <= 0) return;
     setSpinning(true);
     setHasSpun(true);
+    setSpins((s) => s + 1);
     let ticks = 0;
     const interval = setInterval(() => {
       setA(pick(WHEEL_A));
@@ -76,8 +81,8 @@ export function CityNamer({ onConfirm }: { onConfirm: (name: string) => void }) 
     <div className="mx-auto max-w-xl text-center">
       <h1 className="font-display text-4xl font-semibold">Name your city</h1>
       <p className="mt-3 text-mist">
-        Spin the two wheels until you find a name you love. No typing — let fate
-        (and good word lists) decide.
+        Spin the two wheels to name your city. You get {SPIN_LIMIT} spins — no
+        typing, let fate (and good word lists) decide.
       </p>
 
       <Card className="mt-8">
@@ -107,8 +112,12 @@ export function CityNamer({ onConfirm }: { onConfirm: (name: string) => void }) 
         </div>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Button variant="secondary" onClick={spin} disabled={spinning}>
-            {hasSpun ? "🎲 Spin again" : "🎲 Spin the wheels"}
+          <Button variant="secondary" onClick={spin} disabled={spinning || spinsLeft <= 0}>
+            {spinsLeft <= 0
+              ? "No spins left"
+              : hasSpun
+                ? `🎲 Spin again (${spinsLeft} left)`
+                : `🎲 Spin the wheels (${SPIN_LIMIT})`}
           </Button>
           <Button onClick={() => onConfirm(name)} disabled={spinning || !hasSpun}>
             {hasSpun ? `Found ${name} →` : "Spin to name your city"}
