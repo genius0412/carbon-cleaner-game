@@ -69,16 +69,6 @@ export default function HowToPlayPage() {
           </p>
         </Card>
 
-        {/* screenshot/GIF placeholders */}
-        <h2 className="mt-12 font-display text-2xl font-semibold text-leaf">Screenshots</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          {["Dashboard", "Map & regions", "Civic action"].map((s) => (
-            <div key={s} className="flex aspect-video items-center justify-center rounded-xl border border-dashed border-amber/40 bg-amber/5 text-xs text-amber">
-              [FILL IN, {s} screenshot/GIF]
-            </div>
-          ))}
-        </div>
-
         <div className="mt-12 text-center">
           <Link href="/play" className="rounded-full bg-leaf px-8 py-3 font-semibold text-night glow-leaf">
             Start Playing

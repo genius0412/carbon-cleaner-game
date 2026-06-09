@@ -3,11 +3,11 @@ import { Card } from "@/components/ui/Card";
 
 export const metadata = { title: "Our Team, Carbon Cleaner" };
 
-// [FILL IN] team members, replace placeholders with real names/roles/photos.
+// Photos live in /public/team/ (drop the image files there; see render below).
 const team = [
-  { name: "Dohun Kim", role: "Game Designer & Developer", blurb: "Amazing developer with a passion for clean code. Strategic game designer." },
-  { name: "Raymond Kwok", role: "Researcher", blurb: "Dedicated researcher exploring innovative solutions." },
-  { name: "Arnie Sreeram", role: "Game Designer & Developer", blurb: "Creative game designer with a keen eye for detail." },
+  { name: "Dohun Kim", role: "Game Designer & Developer", photo: "/team/dohun-kim.jpg", blurb: "Developer with a passion for clean code. Strategic game designer." },
+  { name: "Raymond Kwok", role: "Researcher", photo: "/team/raymond-kwok.jpg", blurb: "Dedicated researcher exploring innovative solutions." },
+  { name: "Arnie Sreeram", role: "Game Designer & Developer", photo: "/team/arnie-sreeram.jpg", blurb: "Creative game designer with a keen eye for detail." },
 ];
 
 export default function TeamPage() {
@@ -22,8 +22,9 @@ export default function TeamPage() {
         <div className="mt-10 grid gap-5 sm:grid-cols-1 lg:grid-cols-3">
           {team.map((m, i) => (
             <Card key={i} className="text-center">
-              <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full border border-amber/40 bg-amber/10 text-xs text-amber">
-                [FILL IN photo]
+              <div className="mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full border border-leaf/30 bg-white/5">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={m.photo} alt={m.name} className="h-full w-full object-cover" />
               </div>
               <h3 className="font-display text-lg font-semibold text-fog">{m.name}</h3>
               <p className="mt-1 text-sm text-leaf">{m.role}</p>

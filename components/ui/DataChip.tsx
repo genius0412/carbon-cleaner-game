@@ -38,7 +38,7 @@ export function DataChip({ id, suffix }: { id: number; suffix?: string }) {
         {filled ? (
           <>
             {blank.value}
-            {blank.unit ? ` ${blank.unit}` : ""}
+            {blank.unit ? `${blank.unit.startsWith("%") ? "" : " "}${blank.unit}` : ""}
             {suffix ?? ""}
           </>
         ) : (
