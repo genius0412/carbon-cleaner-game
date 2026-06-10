@@ -24,22 +24,39 @@ export function SiteNav() {
             {l.label}
           </Link>
         ))}
-        <a
-          href={FEEDBACK_FORM_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="transition-colors hover:text-fog"
-        >
-          Feedback ↗
-        </a>
-        <a
-          href={ISSUE_FORM_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="transition-colors hover:text-fog"
-        >
-          Report an issue ↗
-        </a>
+        {/* Feedback: condensed to one item that drops down on hover/focus. */}
+        <div className="group relative">
+          <button
+            type="button"
+            className="inline-flex items-center gap-1 transition-colors hover:text-fog group-hover:text-fog"
+          >
+            Feedback
+            <span aria-hidden className="text-[10px] transition-transform group-hover:rotate-180">
+              ▾
+            </span>
+          </button>
+          {/* pt-2 keeps an invisible bridge so the menu stays open while moving the cursor */}
+          <div className="invisible absolute right-0 top-full z-30 pt-2 opacity-0 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+            <div className="flex w-52 flex-col rounded-xl border border-white/10 bg-night/95 p-1.5 shadow-xl backdrop-blur">
+              <a
+                href={FEEDBACK_FORM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg px-3 py-2 transition-colors hover:bg-white/5 hover:text-fog"
+              >
+                General feedback ↗
+              </a>
+              <a
+                href={ISSUE_FORM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg px-3 py-2 transition-colors hover:bg-white/5 hover:text-fog"
+              >
+                Report an issue ↗
+              </a>
+            </div>
+          </div>
+        </div>
         <AuthNav />
         <Link
           href="/play"
