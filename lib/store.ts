@@ -164,6 +164,23 @@ export const useGameStore = create<GameStore>((set, get) => {
     return { ...game, electionWarningShownFor: electionYear };
   };
 
+  /**
+   * Mayor only: when a re-election was just won (flag set by the engine), show a
+   * celebratory popup once and clear the flag so it doesn't repeat.
+   */
+  const maybeElectionResult = (game: GameState): GameState => {
+    if (!game.reElectedYear) return game;
+    playSound("win");
+    set({
+      lastFeedback: {
+        title: "🎉 Re-elected!",
+        message: `The people of ${game.cityName} love your work — you won the ${game.reElectedYear} election with ${Math.round(game.support)}% approval. Four more years to finish the job.`,
+        ok: true,
+      },
+    });
+    return { ...game, reElectedYear: undefined };
+  };
+
   /** Fire a story beat if one is due and none is currently showing. */
   const maybeFireStory = (game: GameState) => {
     if (get().activeStory) return;
@@ -250,7 +267,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       const { game, paused, openPanels, activeStory } = get();
       if (!game || game.status !== "playing") return;
       if (paused || openPanels > 0 || activeStory) return;
-      const next = maybeElectionWarning(tickMonth(game));
+      const next = maybeElectionResult(maybeElectionWarning(tickMonth(game)));
       set({ game: next });
       if (next.status !== "playing") {
         endSound(next.status);
@@ -281,7 +298,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       for (let i = 0; i < wholeMonths && next.status === "playing"; i++) {
         next = tickMonth(next);
       }
-      next = maybeElectionWarning(next);
+      next = maybeElectionResult(maybeElectionWarning(next));
       p = next.status === "playing" ? p - wholeMonths : 0;
       set({ game: next, monthProgress: p });
 
@@ -323,7 +340,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     skipMonth: () => {
       const { game, activeStory } = get();
       if (!game || game.status !== "playing" || activeStory) return;
-      const next = maybeElectionWarning(tickMonth(game));
+      const next = maybeElectionResult(maybeElectionWarning(tickMonth(game)));
       set({
         game: next,
         monthProgress: 0,
@@ -341,7 +358,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       for (let i = 0; i < 12 && next.status === "playing"; i++) {
         next = tickMonth(next);
       }
-      next = maybeElectionWarning(next);
+      next = maybeElectionResult(maybeElectionWarning(next));
       set({
         game: next,
         monthProgress: 0,

@@ -348,6 +348,7 @@ export function tickMonth(prev: GameState): GameState {
       if (!state.finishedAt) state.finishedAt = new Date().toISOString();
       return state;
     }
+    state.reElectedYear = state.year;
     state.log.push({
       yearMonth: formatYearMonth(state),
       type: "election",

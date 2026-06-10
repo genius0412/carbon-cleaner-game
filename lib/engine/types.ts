@@ -225,6 +225,9 @@ export interface GameState {
   /** The upcoming election year we've already shown the low-approval warning
    *  for, so it fires at most once per term. */
   electionWarningShownFor?: number;
+  /** Transient flag: the year a re-election was just won. The store consumes
+   *  it to show a one-off "re-elected" popup, then clears it. */
+  reElectedYear?: number;
 
   // meta
   finishedAt?: string | null;
