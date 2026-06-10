@@ -25,7 +25,7 @@ const SCENES: Scene[] = [
     accent: "amber",
     body: [
       "Carbon dioxide is piling up in the sky and trapping heat. Worldwide it has climbed past 430 parts per million and keeps rising.",
-      "Here in our county, the count sits at 430 ppm and gains a little more every single month. Cross 600 and the harvests fail, the coast floods, and there is no coming back.",
+      "Here in our county, the count sits at 430 ppm and gains a little more every single month. Cross 450 and the harvests fail, the coast floods, and there is no coming back.",
     ],
   },
   {

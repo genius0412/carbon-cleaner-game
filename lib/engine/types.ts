@@ -45,7 +45,10 @@ export interface InfrastructureDef {
   carbonDelta: number; // ppm/mo, usually negative
   supportDelta: number; // immediate % change
   feedback: string;
-  /** terrains where this gets the efficiency bonus. */
+  /** terrains where this can be built at all (a solar farm has no business
+   *  in deep forest, algae tanks need a coastline). */
+  allowedTerrain: Terrain[];
+  /** terrains where this gets the efficiency bonus (subset of allowed). */
   favoredTerrain: Terrain[];
   /** research id required to unlock, or null if available from start. */
   requiresResearch: string | null;

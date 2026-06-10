@@ -59,11 +59,11 @@ export const STORY_BEATS: StoryBeat[] = [
     speaker: "Mara Vega",
     role: "Chief of Staff",
     avatar: "🧭",
-    title: "Day one in office",
+    title: "One month in office",
     lines: [
       "The transition team's gone and the building's finally quiet. It's just us and the work now, Mayor.",
       "Here's the situation, plainly: {county}'s carbon count is climbing every single month. The atmosphere's at 430 parts per million and we're adding to it.",
-      "The scientists are unanimous, if we cross 600 ppm, it's over. Failed harvests, a flooded harbor, summers nobody can work through.",
+      "The scientists are unanimous, if we cross 450 ppm, it's over. Failed harvests, a flooded harbor, summers nobody can work through.",
       "But we have time, and we have a county full of people who want a future. Open the map. Pick a region. Let's put steel in the ground. Or rather, trees in the ground.",
     ],
     trigger: (s) => monthsElapsed(s) >= 1,
@@ -249,18 +249,20 @@ export const STORY_BEATS: StoryBeat[] = [
   // ACT V, THE LONG HAUL: warnings + milestones
   // ====================================================================
   {
+    // id kept from the old 460 threshold so players who already saw this
+    // beat don't see it replay after the rebalance.
     id: "carbon_460",
     kind: "story",
     speaker: "Dr. Imani Soto",
     role: "Lead Climate Scientist",
     avatar: "🔬",
-    title: "Crossing 460 ppm",
+    title: "Crossing 435 ppm",
     lines: [
-      "We've passed 460 ppm. The air over {county} is measurably warmer than the day you took office, and you can feel it in the summers now.",
+      "We've passed 435 ppm. The air over {county} is measurably warmer than the day you took office, and you can feel it in the summers now.",
       "Slowing the gain isn't enough anymore, I need it negative. That means the heavy hitters: scrubbers, cap-and-trade, the big research-tier infrastructure.",
       "If you haven't founded the Carbon Capture Authority yet, do it. Direct air capture is the only thing that takes the count down instead of just slowing the climb.",
     ],
-    trigger: (s) => s.carbonPpm >= 460,
+    trigger: (s) => s.carbonPpm >= 435,
     cta: "Escalate",
   },
   {
@@ -279,6 +281,7 @@ export const STORY_BEATS: StoryBeat[] = [
     cta: "Plan the back half",
   },
   {
+    // id kept from the old 540 threshold (see carbon_460 above).
     id: "carbon_540",
     kind: "story",
     speaker: "Mara Vega",
@@ -286,11 +289,11 @@ export const STORY_BEATS: StoryBeat[] = [
     avatar: "🧭",
     title: "Red zone",
     lines: [
-      "540 ppm. I won't dress it up, at this trajectory we hit 600 and lose everything we've built.",
+      "445 ppm. I won't dress it up, at this trajectory we hit 450 and lose everything we've built.",
       "This is the moment for everything you've got. Max out the strongest bills support will allow. Cover every viable region with scrubber-class infrastructure.",
       "We do not get a second county. Go.",
     ],
-    trigger: (s) => s.carbonPpm >= 540,
+    trigger: (s) => s.carbonPpm >= 445,
     cta: "All in",
   },
   {

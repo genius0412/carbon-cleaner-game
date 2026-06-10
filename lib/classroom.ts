@@ -6,7 +6,7 @@
  */
 
 import { getSupabaseBrowser } from "./supabase/client";
-import type { CharacterType } from "./engine/types";
+import type { CharacterType, GameState } from "./engine/types";
 // Pure role helpers live in a non-"use client" module so server routes can use
 // them too (see lib/roles.ts). Re-exported here for existing client imports.
 import { ALL_ROLES, sanitizeRoles, roleLabel } from "./roles";
@@ -134,6 +134,31 @@ export async function fetchClassScoreboard(code: string): Promise<ClassScoreboar
     };
   } catch {
     return null;
+  }
+}
+
+/**
+ * Full saved game states for every member of a class, for the teacher's
+ * combined report / grading export. Skips members whose save is missing.
+ */
+export async function fetchClassStates(
+  classId: string,
+): Promise<{ saveId: string; state: GameState }[]> {
+  const sb = getSupabaseBrowser();
+  if (!sb || !classId) return [];
+  try {
+    const { data } = await sb
+      .from("classroom_members")
+      .select("game_save_id, game_saves(state)")
+      .eq("classroom_id", classId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (data ?? []).flatMap((m: any) =>
+      m.game_save_id && m.game_saves?.state
+        ? [{ saveId: m.game_save_id as string, state: m.game_saves.state }]
+        : [],
+    );
+  } catch {
+    return [];
   }
 }
 

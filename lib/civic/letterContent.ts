@@ -86,7 +86,7 @@ export const FACT_POOL: ClimateFact[] = [
   { id: "fp2", blankId: 2, text: "Global average temperatures have already climbed about {{blank}} above pre-industrial levels." },
   { id: "fp3", blankId: 5, text: "Transportation accounts for nearly {{blank}} of emissions in the United States, making local transit choices powerful." },
   { id: "fp4", blankId: 6, text: "The average American has a carbon footprint of about {{blank}}, far above the global average." },
-  { id: "fp5", blankId: 4, text: "Sea levels have risen about {{blank}} since 1900, threatening coastal communities like ours." },
+  { id: "fp5", blankId: 4, text: "Sea levels have risen about {{blank}} since 1900, putting millions of people in coastal communities at risk." },
   { id: "fp6", blankId: 7, text: "Each year, extreme heat puts about {{blank}} of the U.S. population at risk, straining health systems and budgets." },
   { id: "fp7", blankId: 61, text: "A typical U.S. household emits about {{blank}} of CO₂ each year, so local choices add up fast." },
 ];

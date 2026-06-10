@@ -435,9 +435,16 @@ function TapChallenge({
   }, [started, left, challenge.goal, onDone]);
 
   const tap = () => {
+    if (fired.current) return;
     if (!started) setStarted(true);
     countRef.current += 1;
     setCount(countRef.current);
+    // Hitting the goal ends the challenge right away; no need to ride out
+    // the rest of the clock once a full score is locked in.
+    if (countRef.current >= challenge.goal) {
+      fired.current = true;
+      onDone(1);
+    }
   };
 
   const pct = Math.min(100, (count / challenge.goal) * 100);

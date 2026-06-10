@@ -14,7 +14,7 @@ import type {
   Region,
   StudentActionDef,
 } from "./types";
-import { buildRegions } from "./regions";
+import { buildRegions, TERRAIN_LABELS } from "./regions";
 import {
   INFRASTRUCTURE,
   RESEARCH,
@@ -406,6 +406,12 @@ export function buildInfrastructure(
     return { state: prev, ok: false, message: "Unknown region or infrastructure." };
   if (region.builtInfraId)
     return { state: prev, ok: false, message: "This region already has infrastructure. One per region." };
+  if (!def.allowedTerrain.includes(region.terrain))
+    return {
+      state: prev,
+      ok: false,
+      message: `${def.name} won't work on ${TERRAIN_LABELS[region.terrain].toLowerCase()} terrain. Pick a region that suits it.`,
+    };
   if (def.requiresResearch && !prev.completedResearch.includes(def.requiresResearch))
     return { state: prev, ok: false, message: "Requires completed research first." };
 
@@ -460,6 +466,12 @@ export function replaceInfrastructure(
     return { state: prev, ok: false, message: "Nothing to replace here yet." };
   if (region.builtInfraId === infraId)
     return { state: prev, ok: false, message: "That's already built here." };
+  if (!def.allowedTerrain.includes(region.terrain))
+    return {
+      state: prev,
+      ok: false,
+      message: `${def.name} won't work on ${TERRAIN_LABELS[region.terrain].toLowerCase()} terrain. Pick a region that suits it.`,
+    };
   if (def.requiresResearch && !prev.completedResearch.includes(def.requiresResearch))
     return { state: prev, ok: false, message: "Requires completed research first." };
 

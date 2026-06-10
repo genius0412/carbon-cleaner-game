@@ -11,6 +11,7 @@ import {
   createInitialState,
   tickMonth,
   buildInfrastructure,
+  replaceInfrastructure,
   upgradeInfrastructure,
   foundResearch,
   passBill,
@@ -19,6 +20,7 @@ import {
   applyCivicBoost,
   studentActionStatus,
   effectiveCarbonGain,
+  effectiveInfraDelta,
 } from "../lib/engine/engine.ts";
 import { INFRASTRUCTURE, RESEARCH, BILLS, TREES } from "../lib/engine/content.ts";
 import { STUDENT_ACTIONS } from "../lib/engine/studentActions.ts";
@@ -88,13 +90,46 @@ function runMayor(): GameState {
         }
       }
     } else {
-      // 3b) everything built: deepen capture with upgrades
-      for (const b of state.builtInfra) {
-        const r = upgradeInfrastructure(state, b.regionId);
-        if (r.ok && state.budget - 0 > RESERVE) {
-          if (r.state.budget > RESERVE) {
-            state = r.state;
-            break;
+      // 3b) everything built: swap weak early builds for stronger unlocked
+      // tech the terrain allows (terrain now restricts what fits where), then
+      // deepen capture with upgrades.
+      let replaced = false;
+      for (const rg of state.regions) {
+        const built = state.builtInfra.find((b) => b.regionId === rg.id);
+        const curDef = built && INFRASTRUCTURE.find((i) => i.id === built.infraId);
+        if (!built || !curDef) continue;
+        const curEff = effectiveInfraDelta(
+          curDef, rg, state.completedResearch, built.level ?? 1,
+        );
+        const candidates = INFRASTRUCTURE.filter(
+          (i) =>
+            i.id !== curDef.id &&
+            i.allowedTerrain.includes(rg.terrain) &&
+            (!i.requiresResearch || state.completedResearch.includes(i.requiresResearch)) &&
+            (i.supportDelta >= 0 || state.support > 60),
+        ).sort((a, b) => a.carbonDelta - b.carbonDelta);
+        for (const cand of candidates) {
+          const candEff = effectiveInfraDelta(cand, rg, state.completedResearch, 1);
+          // deltas are negative: more negative = stronger
+          if (candEff < curEff && state.budget - cand.cost > RESERVE) {
+            const r = replaceInfrastructure(state, rg.id, cand.id);
+            if (r.ok) {
+              state = r.state;
+              replaced = true;
+            }
+          }
+          break; // only consider the strongest candidate per region
+        }
+        if (replaced) break; // at most one replacement per month
+      }
+      if (!replaced) {
+        for (const b of state.builtInfra) {
+          const r = upgradeInfrastructure(state, b.regionId);
+          if (r.ok && state.budget - 0 > RESERVE) {
+            if (r.state.budget > RESERVE) {
+              state = r.state;
+              break;
+            }
           }
         }
       }

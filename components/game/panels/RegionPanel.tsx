@@ -33,7 +33,12 @@ export function RegionPanel({
   if (!region || !game) return null;
 
   const builtDef = region.builtInfraId ? infraById(region.builtInfraId) : null;
-  const options = availableInfrastructure(game);
+  // Only offer what this terrain can actually host (no solar farms in the
+  // deep forest); anything already built here stays visible regardless.
+  const options = availableInfrastructure(game).filter(
+    (def) =>
+      def.allowedTerrain.includes(region.terrain) || region.builtInfraId === def.id,
+  );
   const hasBuilt = !!region.builtInfraId;
   const currentLevel = infraLevel(game, region.id);
 
@@ -48,7 +53,7 @@ export function RegionPanel({
             another to replace it.
           </>
         ) : (
-          <> · One infrastructure per region.</>
+          <> · One infrastructure per region. Only projects suited to this terrain are shown.</>
         )}
       </p>
 

@@ -25,6 +25,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     supportDelta: 2,
     feedback:
       "LEDs use a fraction of the energy of old sodium lamps, an easy win residents notice on their utility bills. Modest carbon savings, and people like brighter, cheaper streets.",
+    allowedTerrain: ["urban", "plains", "farmland", "coast"],
     favoredTerrain: ["urban"],
     requiresResearch: null,
     boostedBy: ["smart_grid"],
@@ -41,7 +42,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     supportDelta: -2,
     feedback:
       "Every rider who swaps a car commute for the bus removes tailpipe emissions. Some drivers grumble about lane changes, but transit is one of the highest-leverage local levers.",
-    favoredTerrain: ["urban", "plains"],
+    allowedTerrain: ["urban", "plains", "farmland", "coast"],
+    favoredTerrain: ["urban"],
     requiresResearch: null,
     boostedBy: ["transit_pods"],
     dataBlanks: [22],
@@ -57,6 +59,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     supportDelta: -3,
     feedback:
       "Landfills release methane as waste rots; recycling keeps materials in use and emissions down. Businesses dislike new rules, so expect a small support dip.",
+    allowedTerrain: ["urban", "plains", "farmland", "coast"],
     favoredTerrain: ["urban"],
     requiresResearch: null,
     boostedBy: [],
@@ -73,7 +76,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     supportDelta: 3,
     feedback:
       "On-site solar shrinks the county's reliance on fossil power and shields budgets from price spikes. Visible panels signal real action, voters approve.",
-    favoredTerrain: ["plains", "urban"],
+    allowedTerrain: ["plains", "urban", "farmland", "coast"],
+    favoredTerrain: ["plains", "farmland"],
     requiresResearch: null,
     boostedBy: ["smart_grid"],
     dataBlanks: [24],
@@ -89,7 +93,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     supportDelta: 5,
     feedback:
       "Trees pull carbon from the air slowly but steadily, cool neighborhoods, and are wildly popular. The offset is gradual, pair it with faster measures.",
-    favoredTerrain: ["forest", "plains", "farmland"],
+    allowedTerrain: ["forest", "plains", "farmland", "urban", "mountains"],
+    favoredTerrain: ["forest"],
     requiresResearch: null,
     boostedBy: [],
     dataBlanks: [25],
@@ -105,6 +110,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     supportDelta: -2,
     feedback:
       "Locking in efficiency at construction time avoids decades of waste. Developers push back on upfront costs, so the support hit is real but the long game is strong.",
+    allowedTerrain: ["urban", "coast"],
     favoredTerrain: ["urban"],
     requiresResearch: null,
     boostedBy: ["green_concrete"],
@@ -123,6 +129,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     supportDelta: 1,
     feedback:
       "Public fleets drive predictable routes, perfect for EVs. Eliminating their diesel is a clean, visible commitment that nudges residents toward EVs too.",
+    allowedTerrain: ["urban", "plains", "farmland", "coast"],
     favoredTerrain: ["urban"],
     requiresResearch: "ev_institute",
     boostedBy: ["smart_grid"],
@@ -139,6 +146,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     supportDelta: 2,
     feedback:
       "A smart grid wastes less of every clean kilowatt you generate. Research it and your existing solar and EV systems get more efficient automatically.",
+    allowedTerrain: ["urban", "plains", "coast"],
     favoredTerrain: ["urban"],
     requiresResearch: "smart_lab",
     boostedBy: [],
@@ -155,6 +163,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     supportDelta: 0,
     feedback:
       "Direct air capture removes carbon that's already up there, the only tool that can take the count down, not just slow it. Energy-hungry and pricey, so power it cleanly.",
+    allowedTerrain: ["coast", "urban", "plains", "farmland"],
     favoredTerrain: ["coast", "urban"],
     requiresResearch: "capture_authority",
     boostedBy: ["smart_grid"],
@@ -170,7 +179,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     carbonDelta: -0.00225,
     supportDelta: 2,
     feedback:
-      "Algae captures carbon far faster per acre than trees and yields useful biomass. Coastal and urban water access makes these sites hum.",
+      "Algae captures carbon far faster per acre than trees and yields useful biomass. These tanks need big saltwater intakes, so they only work on the coast.",
+    allowedTerrain: ["coast"],
     favoredTerrain: ["coast"],
     requiresResearch: "bioseq_center",
     boostedBy: [],
@@ -186,7 +196,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     carbonDelta: -0.0025,
     supportDelta: 1,
     feedback:
-      "Geothermal replaces gas furnaces with steady underground heat, huge winter savings. Mountain geology makes drilling far more productive here.",
+      "Geothermal replaces gas furnaces with steady underground heat, huge winter savings. Only mountain geology runs hot enough to drill.",
+    allowedTerrain: ["mountains"],
     favoredTerrain: ["mountains"],
     requiresResearch: "geothermal_institute",
     boostedBy: [],
@@ -203,6 +214,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     supportDelta: 3,
     feedback:
       "Shared autonomous EVs cut both emissions and traffic, and people love the convenience. They also make your bus network more effective.",
+    allowedTerrain: ["urban", "plains"],
     favoredTerrain: ["urban"],
     requiresResearch: "mobility_lab",
     boostedBy: ["smart_grid"],
@@ -219,6 +231,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     supportDelta: 1,
     feedback:
       "Vertical turbines work in gusty, turbulent air that traditional blades can't use, ideal on ridgelines. Distributed power means fewer losses.",
+    allowedTerrain: ["mountains", "coast", "plains", "farmland"],
     favoredTerrain: ["mountains", "coast"],
     requiresResearch: "microenergy_group",
     boostedBy: ["smart_grid"],
@@ -235,6 +248,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     supportDelta: 0,
     feedback:
       "Cement is one of the world's biggest emitters; carbon-negative mixes flip that. Every sidewalk and bridge becomes a tiny carbon sink, and it strengthens your building code.",
+    allowedTerrain: ["urban", "plains", "coast", "farmland"],
     favoredTerrain: ["urban"],
     requiresResearch: "green_materials",
     boostedBy: [],

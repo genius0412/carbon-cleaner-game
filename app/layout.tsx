@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const grotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-grotesk" });
 
 export const metadata: Metadata = {
-  title: "Carbon Cleaner, climate strategy for a cleaner tomorrow",
+  title: "Carbon Cleaner: climate strategy for a cleaner tomorrow",
   description:
     "A browser-based climate-strategy game. Lead a fictional U.S. county to net-zero by 2050, built as an AP World History civic-action project on climate change.",
 };

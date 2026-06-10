@@ -11,6 +11,7 @@ import {
   ALL_ROLES,
   sanitizeRoles,
   fetchClassScoreboard,
+  fetchClassStates,
   kickMember,
   roleLabel,
   type ScoreboardRow,
@@ -18,6 +19,8 @@ import {
 import { useAuth } from "@/lib/auth";
 import { useGameStore } from "@/lib/store";
 import { Scoreboard } from "@/components/game/Scoreboard";
+import { generateClassReportPdf, type ReportSections } from "@/lib/report/pdf";
+import { classGradingCsv } from "@/lib/report/csv";
 import type { CharacterType } from "@/lib/engine/types";
 
 interface TeacherClass {
@@ -82,6 +85,7 @@ function TeacherSection({
 }) {
   const [name, setName] = useState("");
   const [classes, setClasses] = useState<TeacherClass[]>([]);
+  const [search, setSearch] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [justCreated, setJustCreated] = useState<string | null>(null);
@@ -213,12 +217,41 @@ function TeacherSection({
 
       {classes.length > 0 && (
         <div className="mt-5">
-          <p className="text-xs uppercase tracking-widest text-mist">Your classes</p>
-          <ul className="mt-2 space-y-2">
-            {classes.map((c) => (
-              <TeacherClassRow key={c.id} cls={c} onRenamed={loadClasses} />
-            ))}
-          </ul>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs uppercase tracking-widest text-mist">Your classes</p>
+            {classes.length > 3 && (
+              <input
+                className="w-44 rounded-lg border border-white/12 bg-night/60 px-2.5 py-1 text-xs outline-none focus:border-leaf/50"
+                placeholder="Search classes…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            )}
+          </div>
+          {(() => {
+            const q = search.trim().toLowerCase();
+            const visible = q
+              ? classes.filter(
+                  (c) =>
+                    (c.name ?? "").toLowerCase().includes(q) ||
+                    c.join_code.toLowerCase().includes(q),
+                )
+              : classes;
+            if (visible.length === 0) {
+              return (
+                <p className="mt-3 text-sm text-mist">
+                  No class matches &ldquo;{search.trim()}&rdquo;.
+                </p>
+              );
+            }
+            return (
+              <ul className="mt-2 space-y-2">
+                {visible.map((c) => (
+                  <TeacherClassRow key={c.id} cls={c} onChanged={loadClasses} />
+                ))}
+              </ul>
+            );
+          })()}
         </div>
       )}
     </Card>
@@ -228,11 +261,14 @@ function TeacherSection({
 /* ---------------- One class row: rename, copy code, share link ---------- */
 function TeacherClassRow({
   cls,
-  onRenamed,
+  onChanged,
 }: {
   cls: TeacherClass;
-  onRenamed: () => void;
+  onChanged: () => void;
 }) {
+  // Rows start collapsed (just the name and code); clicking the header opens
+  // the settings, roster, and report tools.
+  const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(cls.name ?? "");
   const [busy, setBusy] = useState(false);
@@ -245,15 +281,25 @@ function TeacherClassRow({
   // Class roster (members) + the id currently being kicked.
   const [members, setMembers] = useState<ScoreboardRow[] | null>(null);
   const [kicking, setKicking] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  // Report tools: which sections go into the combined PDF. The in-game action
+  // timeline is off by default, it's gameplay noise for grading.
+  const [sections, setSections] = useState<ReportSections>({
+    stats: true,
+    timeline: false,
+    letter: true,
+  });
+  const [exporting, setExporting] = useState<"pdf" | "csv" | null>(null);
 
   const loadMembers = useCallback(async () => {
     const board = await fetchClassScoreboard(cls.join_code);
     setMembers(board?.rows ?? []);
   }, [cls.join_code]);
 
+  // Fetch the roster only once the row is opened; collapsed rows stay cheap.
   useEffect(() => {
-    loadMembers();
-  }, [loadMembers]);
+    if (expanded && members === null) loadMembers();
+  }, [expanded, members, loadMembers]);
 
   const flash = (msg: string) => {
     setNote(msg);
@@ -276,6 +322,78 @@ function TeacherClassRow({
       flash(`Removed ${who}`);
       loadMembers();
     }
+  };
+
+  const deleteClass = async () => {
+    const label = cls.name || "this class";
+    if (
+      !window.confirm(
+        `Delete ${label}? Your students' games aren't deleted, they just come off this class. This can't be undone.`,
+      )
+    ) {
+      return;
+    }
+    setDeleting(true);
+    setErr(null);
+    try {
+      const res = await fetch("/api/classroom/delete", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: cls.id }),
+      });
+      setDeleting(false);
+      if (res.ok) {
+        onChanged();
+      } else {
+        setErr(friendlyClassError(await res.json()));
+      }
+    } catch {
+      setDeleting(false);
+      setErr("Couldn't reach the server. Please try again.");
+    }
+  };
+
+  const exportPdf = async () => {
+    setExporting("pdf");
+    setErr(null);
+    try {
+      const entries = await fetchClassStates(cls.id);
+      if (entries.length === 0) {
+        setErr("No reports to export yet. Students appear here once they join.");
+      } else {
+        await generateClassReportPdf(
+          entries.map((e) => e.state),
+          sections,
+          cls.name || cls.join_code,
+        );
+      }
+    } catch {
+      setErr("Couldn't build the PDF. Please try again.");
+    }
+    setExporting(null);
+  };
+
+  const exportCsv = async () => {
+    setExporting("csv");
+    setErr(null);
+    try {
+      const entries = await fetchClassStates(cls.id);
+      if (entries.length === 0) {
+        setErr("Nothing to export yet. Students appear here once they join.");
+      } else {
+        const csv = classGradingCsv(entries.map((e) => e.state));
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${(cls.name || cls.join_code).replace(/\s+/g, "-")}-grading.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch {
+      setErr("Couldn't build the spreadsheet. Please try again.");
+    }
+    setExporting(null);
   };
 
   // What's effectively allowed right now: an empty stored set means "all".
@@ -311,7 +429,7 @@ function TeacherClassRow({
       setRolesBusy(false);
       if (res.ok) {
         flash(next.length === 0 ? "Any role allowed" : "Roles updated");
-        onRenamed();
+        onChanged();
       } else {
         setRoles(prev);
         setErr(friendlyClassError(await res.json()));
@@ -341,7 +459,7 @@ function TeacherClassRow({
       setBusy(false);
       if (res.ok) {
         setEditing(false);
-        onRenamed();
+        onChanged();
       } else {
         setErr(friendlyClassError(payload));
       }
@@ -386,139 +504,225 @@ function TeacherClassRow({
               </Button>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
+            <button
+              className="flex w-full min-w-0 items-center gap-2 text-left"
+              onClick={() => setExpanded((v) => !v)}
+              aria-expanded={expanded}
+            >
+              <span className="text-xs text-mist">{expanded ? "▾" : "▸"}</span>
               <p className="truncate text-sm font-semibold text-fog">
                 {cls.name || "Untitled Class"}
               </p>
               <span className="rounded-full bg-white/8 px-2 py-0.5 font-mono text-[11px] tracking-widest text-cyan">
                 {cls.join_code}
               </span>
-            </div>
+              {members !== null && (
+                <span className="text-[11px] text-mist">
+                  {members.length} member{members.length === 1 ? "" : "s"}
+                </span>
+              )}
+            </button>
           )}
         </div>
-
-        {!editing && (
-          <div className="flex shrink-0 gap-2">
-            <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
-              Rename
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                navigator.clipboard?.writeText(cls.join_code);
-                flash("Code copied");
-              }}
-            >
-              Copy code
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => {
-                navigator.clipboard?.writeText(classInviteLink(cls.join_code));
-                flash("Invite link copied");
-              }}
-            >
-              🔗 Share link
-            </Button>
-          </div>
-        )}
       </div>
 
-      {/* Role restriction: which roles students in this class may pick. */}
-      <div className="mt-2.5 border-t border-white/8 pt-2.5">
-        <p className="text-[11px] uppercase tracking-widest text-mist">
-          Roles students can choose
-        </p>
-        <div className="mt-1.5 flex flex-wrap gap-1.5">
-          {ALL_ROLES.map((r) => {
-            const on = effective.includes(r.type);
-            return (
-              <button
-                key={r.type}
-                onClick={() => toggleRole(r.type)}
-                disabled={rolesBusy}
-                aria-pressed={on}
-                className={`rounded-full border px-3 py-1 text-[11px] transition-colors disabled:opacity-60 ${
-                  on
-                    ? "border-leaf/40 bg-leaf/15 text-leaf"
-                    : "border-white/12 bg-night/40 text-mist hover:text-fog"
-                }`}
-              >
-                {on ? "✓ " : ""}
-                {r.label}
-              </button>
-            );
-          })}
+      {expanded && !editing && (
+        <div className="mt-2.5 flex flex-wrap gap-2">
+          <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
+            Rename
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              navigator.clipboard?.writeText(cls.join_code);
+              flash("Code copied");
+            }}
+          >
+            Copy code
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => {
+              navigator.clipboard?.writeText(classInviteLink(cls.join_code));
+              flash("Invite link copied");
+            }}
+          >
+            🔗 Share link
+          </Button>
+          <Button size="sm" variant="danger" disabled={deleting} onClick={deleteClass}>
+            {deleting ? "Deleting…" : "Delete class"}
+          </Button>
         </div>
-        <p className="mt-1 text-[11px] text-mist">
-          {roles.length === 0
-            ? "No restriction, students can pick any role."
-            : `Students may only play: ${roles
-                .map((t) => ALL_ROLES.find((r) => r.type === t)?.label ?? t)
-                .join(", ")}.`}
-        </p>
-      </div>
+      )}
 
-      {/* Roster: who's in this class, with a kick button per member. */}
-      <div className="mt-2.5 border-t border-white/8 pt-2.5">
-        <p className="text-[11px] uppercase tracking-widest text-mist">
-          Members{members ? ` (${members.length})` : ""}
-        </p>
-        {members === null ? (
-          <p className="mt-1 text-[11px] text-mist">Loading roster…</p>
-        ) : members.length === 0 ? (
-          <p className="mt-1 text-[11px] text-mist">
-            No one has joined yet. Share the code or invite link above.
-          </p>
-        ) : (
-          <ul className="mt-1.5 space-y-1.5">
-            {members.map((m, i) => (
-              <li
-                key={m.game_save_id ?? i}
-                className="flex items-center justify-between gap-2 rounded-lg bg-night/40 px-2.5 py-1.5"
+      {expanded && (
+        <>
+          {/* Role restriction: which roles students in this class may pick. */}
+          <div className="mt-2.5 border-t border-white/8 pt-2.5">
+            <p className="text-[11px] uppercase tracking-widest text-mist">
+              Roles students can choose
+            </p>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {ALL_ROLES.map((r) => {
+                const on = effective.includes(r.type);
+                return (
+                  <button
+                    key={r.type}
+                    onClick={() => toggleRole(r.type)}
+                    disabled={rolesBusy}
+                    aria-pressed={on}
+                    className={`rounded-full border px-3 py-1 text-[11px] transition-colors disabled:opacity-60 ${
+                      on
+                        ? "border-leaf/40 bg-leaf/15 text-leaf"
+                        : "border-white/12 bg-night/40 text-mist hover:text-fog"
+                    }`}
+                  >
+                    {on ? "✓ " : ""}
+                    {r.label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-1 text-[11px] text-mist">
+              {roles.length === 0
+                ? "No restriction, students can pick any role."
+                : `Students may only play: ${roles
+                    .map((t) => ALL_ROLES.find((r) => r.type === t)?.label ?? t)
+                    .join(", ")}.`}
+            </p>
+          </div>
+
+          {/* Roster: who's in this class, with report + kick per member. */}
+          <div className="mt-2.5 border-t border-white/8 pt-2.5">
+            <p className="text-[11px] uppercase tracking-widest text-mist">
+              Members{members ? ` (${members.length})` : ""}
+            </p>
+            {members === null ? (
+              <p className="mt-1 text-[11px] text-mist">Loading roster…</p>
+            ) : members.length === 0 ? (
+              <p className="mt-1 text-[11px] text-mist">
+                No one has joined yet. Share the code or invite link above.
+              </p>
+            ) : (
+              <ul className="mt-1.5 space-y-1.5">
+                {members.map((m, i) => (
+                  <li
+                    key={m.game_save_id ?? i}
+                    className="flex items-center justify-between gap-2 rounded-lg bg-night/40 px-2.5 py-1.5"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold text-fog">
+                        {m.city_name}
+                        {roleLabel(m.character_type) && (
+                          <span className="ml-1.5 rounded-full bg-white/8 px-1.5 py-0.5 text-[10px] text-cyan">
+                            {roleLabel(m.character_type)}
+                          </span>
+                        )}
+                        {m.finished_at && (
+                          <span className="ml-1.5 rounded-full bg-leaf/15 px-1.5 py-0.5 text-[10px] text-leaf">
+                            ✓ net-zero
+                          </span>
+                        )}
+                      </p>
+                      <p className="truncate text-[11px] text-mist">
+                        {m.player_name || "Unnamed player"}
+                      </p>
+                      <p className="truncate text-[11px] text-cyan">
+                        {[
+                          m.year_month,
+                          m.carbon_amount != null ? `${Math.round(m.carbon_amount)} ppm` : null,
+                          m.carbon_gain < 900 ? `${m.carbon_gain.toFixed(4)} ppm/mo` : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ") || "No progress yet"}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      {m.game_save_id && (
+                        <a
+                          href={`/report/${m.game_save_id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-full border border-white/12 px-2.5 py-1 text-[11px] text-cyan transition-colors hover:border-cyan/40"
+                        >
+                          📄 View report
+                        </a>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        disabled={kicking === m.game_save_id || !m.game_save_id}
+                        onClick={() => kick(m)}
+                      >
+                        {kicking === m.game_save_id ? "Removing…" : "Kick"}
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Reports & grading: combined PDF with selectable sections + CSV. */}
+          <div className="mt-2.5 border-t border-white/8 pt-2.5">
+            <p className="text-[11px] uppercase tracking-widest text-mist">
+              Reports &amp; grading
+            </p>
+            <p className="mt-1 text-[11px] text-mist">
+              The combined report puts every student in one PDF. Choose what each
+              report includes.
+            </p>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {(
+                [
+                  { key: "stats", label: "Final stats" },
+                  { key: "letter", label: "Civic letter" },
+                  { key: "timeline", label: "In-game actions" },
+                ] as const
+              ).map(({ key, label }) => {
+                const on = sections[key];
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setSections((s) => ({ ...s, [key]: !s[key] }))}
+                    aria-pressed={on}
+                    className={`rounded-full border px-3 py-1 text-[11px] transition-colors ${
+                      on
+                        ? "border-leaf/40 bg-leaf/15 text-leaf"
+                        : "border-white/12 bg-night/40 text-mist hover:text-fog"
+                    }`}
+                  >
+                    {on ? "✓ " : ""}
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={
+                  exporting !== null ||
+                  !(sections.stats || sections.letter || sections.timeline)
+                }
+                onClick={exportPdf}
               >
-                <div className="min-w-0">
-                  <p className="truncate text-xs font-semibold text-fog">
-                    {m.city_name}
-                    {roleLabel(m.character_type) && (
-                      <span className="ml-1.5 rounded-full bg-white/8 px-1.5 py-0.5 text-[10px] text-cyan">
-                        {roleLabel(m.character_type)}
-                      </span>
-                    )}
-                    {m.finished_at && (
-                      <span className="ml-1.5 rounded-full bg-leaf/15 px-1.5 py-0.5 text-[10px] text-leaf">
-                        ✓ net-zero
-                      </span>
-                    )}
-                  </p>
-                  <p className="truncate text-[11px] text-mist">
-                    {m.player_name || "Unnamed player"}
-                  </p>
-                  <p className="truncate text-[11px] text-cyan">
-                    {[
-                      m.year_month,
-                      m.carbon_amount != null ? `${Math.round(m.carbon_amount)} ppm` : null,
-                      m.carbon_gain < 900 ? `${m.carbon_gain.toFixed(4)} ppm/mo` : null,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ") || "No progress yet"}
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="danger"
-                  disabled={kicking === m.game_save_id || !m.game_save_id}
-                  onClick={() => kick(m)}
-                >
-                  {kicking === m.game_save_id ? "Removing…" : "Kick"}
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                {exporting === "pdf" ? "Building PDF…" : "⬇ Combined report (PDF)"}
+              </Button>
+              <Button size="sm" variant="ghost" disabled={exporting !== null} onClick={exportCsv}>
+                {exporting === "csv" ? "Building…" : "⬇ Grading sheet (CSV)"}
+              </Button>
+            </div>
+            <p className="mt-1 text-[11px] text-mist">
+              The grading sheet is a spreadsheet with just the essentials: player,
+              county, role, outcome, and whether the letter was sent.
+            </p>
+          </div>
+        </>
+      )}
 
       {note && <p className="mt-1 text-[11px] text-leaf">{note}</p>}
       {err && <p className="mt-1 text-[11px] text-amber">{err}</p>}

@@ -22,14 +22,16 @@ const CHECK_PROMPT =
 /** Parse a "YES/NO + reason" reply into a pass/fail result. */
 function parseVerdict(text: string): { passed: boolean; reason: string } {
   const passed = /^\s*yes/i.test(text);
-  return {
-    passed,
-    // Strip the leading YES/NO plus any trailing punctuation (".", ",", ":", "-", etc.)
-    // so the reason doesn't render as e.g. ". This image shows…".
-    reason:
-      text.replace(/^\s*(yes|no)\b[\s.,:;!\-, –]*/i, "").trim() ||
-      (passed ? "Looks valid." : "Doesn't look like a climate email."),
-  };
+  // Strip the leading YES/NO plus any trailing punctuation (".", ",", ":", "-", etc.)
+  // so the reason doesn't render as e.g. ". This image shows…".
+  const stripped = text.replace(/^\s*(yes|no)\b[\s.,:;!\-, –]*/i, "").trim();
+  // A reply cut off mid-sentence (the model ran out of output tokens) can
+  // leave a meaningless fragment like "The"; players get the canned reason
+  // instead of a corrupt one.
+  const fallback = passed
+    ? "Looks valid."
+    : "That doesn't look like an email about climate change. Make sure your screenshot shows the message you sent.";
+  return { passed, reason: stripped.length >= 12 ? stripped : fallback };
 }
 
 const CLIMATE_TERMS = [
@@ -78,7 +80,16 @@ async function geminiCheck(
               ],
             },
           ],
-          generationConfig: { maxOutputTokens: 100, temperature: 0 },
+          generationConfig: {
+            // Generous cap: on Gemini 2.5 models hidden "thinking" tokens
+            // count against this budget, and a starved reply comes back cut
+            // off mid-sentence ("NO. The").
+            maxOutputTokens: 1024,
+            temperature: 0,
+            // 2.5 models think by default; the verdict doesn't need it and it
+            // burns the token budget. Older models reject thinkingConfig.
+            ...(/2\.5/.test(model) ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
+          },
         }),
       },
     );
@@ -90,11 +101,20 @@ async function geminiCheck(
       return null;
     }
     const data = await res.json();
-    const text: string =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    // Join every text part, skipping "thought" parts (2.5 thinking models
+    // can split the visible answer across parts after a thought summary).
+    const parts: { text?: string; thought?: boolean }[] =
+      data?.candidates?.[0]?.content?.parts ?? [];
+    const text = parts
+      .filter((p) => typeof p.text === "string" && !p.thought)
+      .map((p) => p.text)
+      .join(" ")
+      .trim();
     if (!text) {
       console.error(
-        `[civic-check] Gemini returned no text. Raw: ${JSON.stringify(data).slice(0, 500)}`,
+        `[civic-check] Gemini returned no text (finishReason=${
+          data?.candidates?.[0]?.finishReason ?? "?"
+        }). Raw: ${JSON.stringify(data).slice(0, 500)}`,
       );
       return null;
     }

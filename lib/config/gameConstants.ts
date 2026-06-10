@@ -22,12 +22,12 @@ export const GAME = {
 
   // --- Carbon (ppm) ---
   startingCarbonPpm: 430,
-  failureCarbonPpm: 600,
+  failureCarbonPpm: 450,
   // The county starts emitting: positive carbon gain per month (ppm/mo).
   // This is a gameplay value, not a real measurement. The mayor answers for
   // the whole county's emissions (and has the tools to match); students fight
   // a smaller share they can plausibly move through grassroots action.
-  startingCarbonGainPerMonth: 0.065,
+  startingCarbonGainPerMonth: 0.07,
   // Net-zero is carbon gain per month <= this...
   netZeroThreshold: 0.0,
   // ...held for this many consecutive months to win. A single lucky month

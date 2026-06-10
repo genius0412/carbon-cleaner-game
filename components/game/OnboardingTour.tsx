@@ -46,7 +46,7 @@ export function OnboardingTour({
         part: 1,
         selector: '[data-tour="gauges"]',
         title: "Your four vital signs",
-        body: "Carbon Gain is the one to watch. Get it to zero and hold it for a year to win. Carbon is your running total, and if it hits 600 you lose. Support keeps your power to act, and Budget is what you can spend.",
+        body: "Carbon Gain is the one to watch. Get it to zero and hold it for a year to win. Carbon is your running total, and if it hits 450 you lose. Support keeps your power to act, and Budget is what you can spend.",
       },
       {
         part: 1,
