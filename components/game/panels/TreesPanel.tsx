@@ -7,6 +7,8 @@ import { DataChip } from "@/components/ui/DataChip";
 import { useGameStore } from "@/lib/store";
 import { useAutoPause } from "../useAutoPause";
 import { TREES } from "@/lib/engine/content";
+import { treesDelta } from "@/lib/engine/engine";
+import { gainCut } from "../impact";
 import { GAME } from "@/lib/config/gameConstants";
 
 export function TreesPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -19,9 +21,9 @@ export function TreesPanel({ open, onClose }: { open: boolean; onClose: () => vo
   return (
     <Modal open={open} onClose={onClose} title="Tree Planting" wide>
       <p className="-mt-2 mb-4 text-sm text-mist">
-        Plant trees in batches of {GAME.treesPerBatch}. Higher-efficiency species
-        cost more but capture more carbon. The real CO₂ figure per tree is a cited
-        value: <DataChip id={25} />.
+        Plant trees in batches of {GAME.treesPerBatch}. Pricier species pull
+        down more carbon. In the real world a single tree captures about{" "}
+        <DataChip id={25} /> a year.
       </p>
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -49,13 +51,16 @@ export function TreesPanel({ open, onClose }: { open: boolean; onClose: () => vo
               <div className="text-2xl">🌲</div>
               <h4 className="mt-2 font-display text-sm font-semibold text-fog">{t.name}</h4>
               <p className="mt-1 text-[11px] text-mist">
-                {t.co2PerYearPerTree} kg CO₂/yr each (gameplay default)
+                {t.co2PerYearPerTree} kg CO₂ a year per tree
               </p>
               <p className="mt-2 text-[11px] text-fog/80">
                 ${t.costPerBatch.toLocaleString()} / batch
               </p>
               <p className="text-[11px] text-leaf">
                 {batches} × = ${cost.toLocaleString()} ({batches * GAME.treesPerBatch} trees)
+              </p>
+              <p className="text-[11px] text-leaf">
+                🌿 This planting cuts carbon gain by {gainCut(treesDelta(t, batches))}
               </p>
               {planted && (
                 <p className="mt-1 text-[11px] text-cyan">

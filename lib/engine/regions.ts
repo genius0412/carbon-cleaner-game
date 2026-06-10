@@ -1,6 +1,6 @@
 /**
  * regions.ts
- * The cartoon SVG map of fictional state Verdana. Regions are simple blob
+ * The cartoon SVG map of the player's county. Regions are simple blob
  * paths laid out on a 1000x700 viewBox. Terrain drives infrastructure
  * efficiency modifiers (see engine.applyTerrain).
  *
@@ -28,7 +28,7 @@ const SEEDS: RegionSeed[] = [
   { id: "r3", name: "Goldwheat Flats", terrain: "plains", cx: 560, cy: 120, gx: 2, gy: 0 },
   { id: "r4", name: "Saltmarsh Bay", terrain: "coast", cx: 820, cy: 130, gx: 3, gy: 0 },
   { id: "r5", name: "Ironforge District", terrain: "urban", cx: 250, cy: 300, gx: 4, gy: 0 },
-  { id: "r6", name: "Verdana City", terrain: "urban", cx: 480, cy: 300, gx: 0, gy: 1 },
+  { id: "r6", name: "Capitol District", terrain: "urban", cx: 480, cy: 300, gx: 0, gy: 1 },
   { id: "r7", name: "Sunmeadow Acres", terrain: "farmland", cx: 690, cy: 300, gx: 1, gy: 1 },
   { id: "r8", name: "Tidewater Harbor", terrain: "coast", cx: 880, cy: 320, gx: 2, gy: 1 },
   { id: "r9", name: "Granite Bluffs", terrain: "mountains", cx: 140, cy: 470, gx: 3, gy: 1 },

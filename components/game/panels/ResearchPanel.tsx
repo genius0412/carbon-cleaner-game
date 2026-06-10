@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/Button";
 import { useGameStore } from "@/lib/store";
 import { useAutoPause } from "../useAutoPause";
 import { RESEARCH, infraById } from "@/lib/engine/content";
+import { researchBoostSummary } from "@/lib/engine/engine";
+import { gainCut } from "../impact";
+import { GAME } from "@/lib/config/gameConstants";
 
 export function ResearchPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
   useAutoPause(open);
@@ -25,13 +28,26 @@ export function ResearchPanel({ open, onClose }: { open: boolean; onClose: () =>
           const active = game.activeResearch.find((a) => a.defId === r.id);
           const affordable = game.budget >= r.foundingCost;
           const unlocks = infraById(r.unlocksInfraId);
+          const boost = researchBoostSummary(game, r.id);
           return (
             <div key={r.id} className="glass flex flex-col rounded-xl p-4">
               <h4 className="font-display text-sm font-semibold text-fog">{r.name}</h4>
               <p className="mt-1 flex-1 text-xs text-mist">{r.description}</p>
               <p className="mt-2 text-[11px] text-cyan">
                 Unlocks: {unlocks?.icon} {unlocks?.name}
+                {unlocks && (
+                  <span className="text-mist">
+                    {" "}· cuts gain up to{" "}
+                    {gainCut(unlocks.carbonDelta * GAME.terrainBonus)} per site
+                  </span>
+                )}
               </p>
+              {!done && boost.count > 0 && (
+                <p className="mt-1 text-[11px] text-leaf">
+                  ⚡ Also boosts {boost.count} existing site{boost.count > 1 ? "s" : ""}:
+                  an extra {gainCut(boost.addedReductionPerMonth)} cut
+                </p>
+              )}
               <div className="mt-2 space-y-0.5 text-[11px] text-fog/80">
                 <p>Founding: ${r.foundingCost.toLocaleString()}</p>
                 <p>Monthly: ${r.monthlyCost.toLocaleString()}/mo · {r.timelineMonths} months</p>

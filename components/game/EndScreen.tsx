@@ -24,7 +24,7 @@ export function EndScreen({ game }: { game: GameState }) {
   const blurb = won
     ? `${game.cityName} reached carbon net-zero in ${formatYearMonth(game)}. You led your county to a livable future.`
     : votedOut
-      ? `${game.cityName}'s voters didn't re-elect you — approval fell below ${GAME.election.minSupport}% at the ${formatYearMonth(game)} election. Build public support alongside your climate work next time.`
+      ? `${game.cityName} voted you out. Approval was under ${GAME.election.minSupport}% at the ${formatYearMonth(game)} election. Next time, win the public over while you do the climate work.`
       : `${game.cityName} didn't reach net-zero in time. The fight continues, try again with what you've learned.`;
 
   return (

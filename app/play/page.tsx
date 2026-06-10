@@ -67,6 +67,8 @@ export default function PlayPage() {
   const [playerName, setPlayerName] = useState("");
   const [asGuest, setAsGuest] = useState(true);
   const [saves, setSaves] = useState<SaveEntry[]>([]);
+  // True when a cloud save couldn't be deleted (it will reappear in the list).
+  const [deleteFailed, setDeleteFailed] = useState(false);
   // Class the new game should auto-join after it's created (from the join step
   // or a teacher's invite link).
   const [classCode, setClassCode] = useState("");
@@ -166,8 +168,19 @@ export default function PlayPage() {
   }, [game, phase]);
 
   const handleDelete = async (entry: SaveEntry) => {
-    if (entry.meta.id) await deleteCloudSave(entry.meta.id);
+    setDeleteFailed(false);
+    const cloudOk = entry.meta.id ? await deleteCloudSave(entry.meta.id) : true;
     deleteLocalSave(entry.key);
+    // If this was the game currently held in memory, clear it too so the
+    // "Resume current game" button doesn't offer a deleted save.
+    const { game: liveGame, meta: liveMeta, reset } = useGameStore.getState();
+    const isLive =
+      !!liveGame &&
+      [liveMeta.id, liveMeta.localId].some(
+        (id) => id && (id === entry.key || id === entry.meta.id || id === entry.meta.localId),
+      );
+    if (isLive) reset();
+    if (!cloudOk) setDeleteFailed(true);
     refreshSaves();
   };
 
@@ -229,6 +242,11 @@ export default function PlayPage() {
               {saves.length > 0 && (
                 <div className="space-y-2 text-left">
                   <p className="text-xs uppercase tracking-widest text-mist">Your games</p>
+                  {deleteFailed && (
+                    <p className="text-[11px] text-amber">
+                      Couldn&apos;t delete that game. Please try again.
+                    </p>
+                  )}
                   {saves.map((s) => {
                     const st = s.state;
                     const statusLabel =
@@ -336,7 +354,7 @@ export default function PlayPage() {
               Join a class?
             </h1>
             <p className="mt-3 text-sm text-mist">
-              If your teacher gave you a class code, enter it now to put your city
+              If your teacher gave you a class code, enter it now to put your county
               on the class scoreboard. No code? No problem, you can join a class
               at any time from the game menu.
             </p>

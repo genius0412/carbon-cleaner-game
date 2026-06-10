@@ -70,7 +70,7 @@ export function CharacterSelect({
       >
         {restricted
           ? "Your teacher locked some roles for this class. Pick one of the available roles below."
-          : "Each role experiences Verdana differently. Pick the one that fits you."}
+          : "Each role experiences the county differently. Pick the one that fits you."}
       </motion.p>
       <div className="mt-10 grid gap-5 md:grid-cols-3">
         {roles.map((r, i) => {

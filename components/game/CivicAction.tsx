@@ -5,7 +5,6 @@ import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DataChip } from "@/components/ui/DataChip";
-import { useToast } from "@/components/ui/Toast";
 import { useGameStore } from "@/lib/store";
 import { useAutoPause } from "./useAutoPause";
 import {
@@ -16,6 +15,8 @@ import {
   type Representative,
 } from "@/lib/civic/letterContent";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
+import { gainCut } from "./impact";
+import { GAME } from "@/lib/config/gameConstants";
 
 export function CivicAction({ open, onClose }: { open: boolean; onClose: () => void }) {
   useAutoPause(open);
@@ -23,7 +24,6 @@ export function CivicAction({ open, onClose }: { open: boolean; onClose: () => v
   const setCivic = useGameStore((s) => s.setCivic);
   const doCivicBoost = useGameStore((s) => s.doCivicBoost);
   const meta = useGameStore((s) => s.meta);
-  const toast = useToast();
 
   const [town, setTown] = useState(game?.civic?.representativeTown ?? "");
   const [reps, setReps] = useState<Representative[]>([]);
@@ -41,9 +41,14 @@ export function CivicAction({ open, onClose }: { open: boolean; onClose: () => v
   return (
     <Modal open={open} onClose={onClose} title="Civic Action, Contact a Representative" wide>
       <p className="-mt-2 mb-4 text-sm text-mist">
-        This is the heart of Carbon Cleaner: turn what you've learned into real
-        action. Look up your representative, write a letter, then (optionally)
-        send it and upload proof for a major progress boost.
+        This part of the game is real. Look up your representative and write
+        them a letter about climate change. If you actually send it and upload
+        proof, your county gets a big push forward.{" "}
+        <span className="text-leaf">
+          🌿 A verified letter cuts carbon gain by{" "}
+          {gainCut(GAME.student.civicActionCarbonBoost)} and adds +
+          {GAME.student.civicActionSupportBoost}% support.
+        </span>
       </p>
 
       {/* 1. Representative lookup */}
@@ -106,8 +111,7 @@ export function CivicAction({ open, onClose }: { open: boolean; onClose: () => v
             gameSaveId={meta.id}
             onPassed={() => {
               doCivicBoost(game.civic?.letter ?? "");
-              toast("Civic action verified, boost applied!", "success");
-              // auto-close once approved; small delay lets the success toast register
+              // auto-close once approved; the in-panel confirmation shows briefly
               setTimeout(onClose, 1200);
             }}
           />

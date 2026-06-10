@@ -246,7 +246,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
 export const RESEARCH: ResearchDef[] = [
   {
     id: "ev_institute",
-    name: "Verdana EV Research Institute",
+    name: "County EV Research Institute",
     foundingCost: 500_000,
     monthlyCost: 10_000,
     timelineMonths: 24,
@@ -324,7 +324,7 @@ export const BILLS: BillDef[] = [
     name: "Ban on Single-Use Plastics",
     description: "Prohibit single-use plastic bags, straws, and foam containers county-wide.",
     supportRequirement: 50,
-    carbonDelta: -0.005,
+    carbonDelta: -0.004,
     supportImpact: -8,
     feedback:
       "Less plastic means less petroleum extracted and burned, and cleaner waterways. Some shoppers resist the change, so expect pushback.",
@@ -335,7 +335,7 @@ export const BILLS: BillDef[] = [
     name: "Carbon Tax on Local Businesses",
     description: "Charge large emitters per tonne of CO₂, funding clean projects.",
     supportRequirement: 50,
-    carbonDelta: -0.007,
+    carbonDelta: -0.006,
     supportImpact: -12,
     budgetDelta: 600_000,
     feedback:
@@ -347,7 +347,7 @@ export const BILLS: BillDef[] = [
     name: "Mandatory Home Energy Audits",
     description: "Require energy audits at point of home sale to flag efficiency upgrades.",
     supportRequirement: 50,
-    carbonDelta: -0.006,
+    carbonDelta: -0.005,
     supportImpact: -7,
     feedback:
       "Audits reveal cheap fixes, insulation, sealing, that cut household emissions for years. Homeowners dislike mandates at sale time.",
@@ -358,7 +358,7 @@ export const BILLS: BillDef[] = [
     name: "Gas-Powered Lawn Equipment Ban",
     description: "Phase out gas mowers and blowers in favor of electric tools.",
     supportRequirement: 50,
-    carbonDelta: -0.005,
+    carbonDelta: -0.004,
     supportImpact: -10,
     feedback:
       "Gas lawn equipment is shockingly dirty per hour of use. Landscapers and some homeowners resist, but the air-quality win is immediate.",
@@ -369,7 +369,7 @@ export const BILLS: BillDef[] = [
     name: "County-Wide 20mph Speed Limit",
     description: "Lower urban speed limits to cut fuel burn and save lives.",
     supportRequirement: 50,
-    carbonDelta: -0.004,
+    carbonDelta: -0.003,
     supportImpact: -9,
     feedback:
       "Slower city driving burns less fuel and dramatically reduces crashes. Commuters complain about travel time, though.",
@@ -380,7 +380,7 @@ export const BILLS: BillDef[] = [
     name: "Mandatory EV Transition by 2045",
     description: "Require all new vehicle sales to be electric by 2045.",
     supportRequirement: 50,
-    carbonDelta: -0.015,
+    carbonDelta: -0.01,
     supportImpact: -15,
     requiresResearch: "ev_institute",
     feedback:
@@ -392,7 +392,7 @@ export const BILLS: BillDef[] = [
     name: "Zoning Reform for Dense Housing",
     description: "Allow walkable, mixed-use density near transit corridors.",
     supportRequirement: 50,
-    carbonDelta: -0.007,
+    carbonDelta: -0.006,
     supportImpact: -5,
     slowRecovery: true,
     feedback:
@@ -404,7 +404,7 @@ export const BILLS: BillDef[] = [
     name: "Industrial Emission Cap & Trade",
     description: "Set a hard emissions cap for industry and let firms trade allowances.",
     supportRequirement: 50,
-    carbonDelta: -0.016,
+    carbonDelta: -0.01,
     supportImpact: -14,
     feedback:
       "A shrinking cap guarantees falling industrial emissions while letting the market find the cheapest cuts. Heavy industry lobbies hard against it.",

@@ -5,6 +5,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { useGameStore } from "@/lib/store";
+import { studentActionStatus } from "@/lib/engine/engine";
 import type { StudentActionDef } from "@/lib/engine/types";
 import {
   getChallenge,
@@ -31,19 +33,27 @@ export function ChallengeModal({
   onClose: () => void;
   onComplete: (scale: number) => void;
 }) {
-  const content = def ? getChallenge(def.id) : undefined;
+  // Repeats rotate through the action's challenge variants. The variant is
+  // locked when the modal opens, so the count bump that happens mid-modal
+  // (when the reward is applied) can't swap the scene under the player.
+  const [content, setContent] = useState<
+    ReturnType<typeof getChallenge> | undefined
+  >(undefined);
   const [stage, setStage] = useState<Stage>("intro");
   const [score, setScore] = useState(0);
   const completed = useRef(false);
 
-  // Reset whenever a new action's challenge opens.
+  // Pick the variant + reset whenever a new action's challenge opens.
   useEffect(() => {
-    if (open) {
+    if (open && def) {
+      const game = useGameStore.getState().game;
+      const timesDone = game ? studentActionStatus(game, def.id).count : 0;
+      setContent(getChallenge(def.id, timesDone));
       setStage("intro");
       setScore(0);
       completed.current = false;
     }
-  }, [open, def?.id]);
+  }, [open, def?.id, def]);
 
   if (!def) return null;
 
@@ -225,6 +235,8 @@ function QuizChallenge({
     const isRight = idx === q.answer;
     const nextCorrect = correct + (isRight ? 1 : 0);
     if (isRight) setCorrect(nextCorrect);
+    // A wrong answer lingers longer so there's time to read the correct
+    // (green-highlighted) option and the explanation.
     setTimeout(() => {
       if (i + 1 < challenge.questions.length) {
         setI(i + 1);
@@ -232,7 +244,7 @@ function QuizChallenge({
       } else {
         onDone(nextCorrect / challenge.questions.length);
       }
-    }, 1100);
+    }, isRight ? 1100 : 2600);
   };
 
   return (
@@ -314,49 +326,76 @@ function SortChallenge({
   // shuffle items once
   const items = useMemo(() => shuffle(challenge.items), [challenge]);
   const [assign, setAssign] = useState<Record<number, string>>({});
+  // After Check, show which items were wrong and where they belonged before
+  // moving on, so a mistake actually teaches something.
+  const [revealed, setRevealed] = useState(false);
   const allAssigned = items.every((_, idx) => assign[idx]);
-
-  const submit = () => {
-    const right = items.filter((it, idx) => assign[idx] === it.bucket).length;
-    onDone(right / items.length);
-  };
+  const right = items.filter((it, idx) => assign[idx] === it.bucket).length;
+  const bucketLabel = (id: string) =>
+    challenge.buckets.find((b) => b.id === id)?.label ?? id;
 
   return (
     <div className="space-y-3">
-      {items.map((it, idx) => (
-        <motion.div
-          key={idx}
-          className="glass rounded-lg p-2"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: idx * 0.05, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <p className="mb-2 text-sm text-fog">{it.label}</p>
-          <div className="flex flex-wrap gap-2">
-            {challenge.buckets.map((b) => (
-              <motion.button
-                key={b.id}
-                onClick={() => setAssign((a) => ({ ...a, [idx]: b.id }))}
-                whileTap={{ scale: 0.92 }}
-                className={`rounded-full px-3 py-1 text-xs transition-colors ${
-                  assign[idx] === b.id
-                    ? "bg-leaf text-night font-semibold"
-                    : "glass text-mist hover:text-fog"
-                }`}
-              >
-                {b.label}
-              </motion.button>
-            ))}
-          </div>
-        </motion.div>
-      ))}
+      {items.map((it, idx) => {
+        const isRight = revealed && assign[idx] === it.bucket;
+        const isWrong = revealed && assign[idx] !== it.bucket;
+        return (
+          <motion.div
+            key={idx}
+            className={`glass rounded-lg p-2 ${
+              isRight ? "border border-leaf/50" : isWrong ? "border border-danger/50" : ""
+            }`}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: idx * 0.05, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <p className="mb-2 text-sm text-fog">
+              {isRight ? "✓ " : isWrong ? "✗ " : ""}
+              {it.label}
+            </p>
+            {revealed ? (
+              isWrong && (
+                <p className="text-xs">
+                  <span className="text-danger">You picked {bucketLabel(assign[idx])}.</span>{" "}
+                  <span className="text-leaf">It belongs in {bucketLabel(it.bucket)}.</span>
+                </p>
+              )
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {challenge.buckets.map((b) => (
+                  <motion.button
+                    key={b.id}
+                    onClick={() => setAssign((a) => ({ ...a, [idx]: b.id }))}
+                    whileTap={{ scale: 0.92 }}
+                    className={`rounded-full px-3 py-1 text-xs transition-colors ${
+                      assign[idx] === b.id
+                        ? "bg-leaf text-night font-semibold"
+                        : "glass text-mist hover:text-fog"
+                    }`}
+                  >
+                    {b.label}
+                  </motion.button>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        );
+      })}
       <div className="flex items-center justify-between pt-1">
         <p className="text-[11px] text-mist">
-          {challenge.buckets.map((b) => b.hint && `${b.label}: ${b.hint}`).filter(Boolean).join("  ·  ")}
+          {revealed
+            ? `${right} of ${items.length} sorted right`
+            : challenge.buckets.map((b) => b.hint && `${b.label}: ${b.hint}`).filter(Boolean).join("  ·  ")}
         </p>
-        <Button size="sm" onClick={submit} disabled={!allAssigned}>
-          Check
-        </Button>
+        {revealed ? (
+          <Button size="sm" onClick={() => onDone(right / items.length)}>
+            Continue
+          </Button>
+        ) : (
+          <Button size="sm" onClick={() => setRevealed(true)} disabled={!allAssigned}>
+            Check
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -445,6 +484,9 @@ function OrderChallenge({
   const [order, setOrder] = useState<number[]>(() =>
     shuffledIndices(challenge.steps.length),
   );
+  // After locking in, show which steps were misplaced and where they belonged.
+  const [revealed, setRevealed] = useState(false);
+  const right = order.filter((origIdx, pos) => origIdx === pos).length;
 
   const move = (pos: number, dir: -1 | 1) => {
     const next = [...order];
@@ -454,50 +496,68 @@ function OrderChallenge({
     setOrder(next);
   };
 
-  const submit = () => {
-    const right = order.filter((origIdx, pos) => origIdx === pos).length;
-    onDone(right / challenge.steps.length);
-  };
-
   return (
     <div className="space-y-2">
-      {order.map((origIdx, pos) => (
-        <motion.div
-          key={origIdx}
-          layout
-          transition={{ type: "spring", stiffness: 500, damping: 32 }}
-          className="flex items-center gap-2 glass rounded-lg p-2"
-        >
-          <motion.span layout="position" className="w-5 text-center text-xs font-semibold text-cyan">
-            {pos + 1}
-          </motion.span>
-          <motion.span layout="position" className="flex-1 text-sm text-fog">
-            {challenge.steps[origIdx]}
-          </motion.span>
-          <div className="flex flex-col">
-            <button
-              onClick={() => move(pos, -1)}
-              disabled={pos === 0}
-              className="px-1 text-mist transition-colors hover:text-fog disabled:opacity-20"
-              aria-label="Move up"
-            >
-              ▲
-            </button>
-            <button
-              onClick={() => move(pos, 1)}
-              disabled={pos === order.length - 1}
-              className="px-1 text-mist transition-colors hover:text-fog disabled:opacity-20"
-              aria-label="Move down"
-            >
-              ▼
-            </button>
-          </div>
-        </motion.div>
-      ))}
-      <div className="flex justify-end pt-1">
-        <Button size="sm" onClick={submit}>
-          Lock it in
-        </Button>
+      {order.map((origIdx, pos) => {
+        const isRight = revealed && origIdx === pos;
+        const isWrong = revealed && origIdx !== pos;
+        return (
+          <motion.div
+            key={origIdx}
+            layout
+            transition={{ type: "spring", stiffness: 500, damping: 32 }}
+            className={`flex items-center gap-2 glass rounded-lg p-2 ${
+              isRight ? "border border-leaf/50" : isWrong ? "border border-danger/50" : ""
+            }`}
+          >
+            <motion.span layout="position" className="w-5 text-center text-xs font-semibold text-cyan">
+              {pos + 1}
+            </motion.span>
+            <motion.span layout="position" className="flex-1 text-sm text-fog">
+              {challenge.steps[origIdx]}
+              {isWrong && (
+                <span className="block text-xs text-leaf">
+                  Should be step {origIdx + 1}
+                </span>
+              )}
+            </motion.span>
+            {!revealed && (
+              <div className="flex flex-col">
+                <button
+                  onClick={() => move(pos, -1)}
+                  disabled={pos === 0}
+                  className="px-1 text-mist transition-colors hover:text-fog disabled:opacity-20"
+                  aria-label="Move up"
+                >
+                  ▲
+                </button>
+                <button
+                  onClick={() => move(pos, 1)}
+                  disabled={pos === order.length - 1}
+                  className="px-1 text-mist transition-colors hover:text-fog disabled:opacity-20"
+                  aria-label="Move down"
+                >
+                  ▼
+                </button>
+              </div>
+            )}
+            {revealed && <span className="text-sm">{isRight ? "✓" : "✗"}</span>}
+          </motion.div>
+        );
+      })}
+      <div className="flex items-center justify-between pt-1">
+        <p className="text-[11px] text-mist">
+          {revealed ? `${right} of ${challenge.steps.length} in the right spot` : " "}
+        </p>
+        {revealed ? (
+          <Button size="sm" onClick={() => onDone(right / challenge.steps.length)}>
+            Continue
+          </Button>
+        ) : (
+          <Button size="sm" onClick={() => setRevealed(true)}>
+            Lock it in
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -513,34 +573,36 @@ function PickChallenge({
 }) {
   const options = useMemo(() => shuffle(challenge.options), [challenge]);
   const [picked, setPicked] = useState<number | null>(null);
+  // The strongest option, revealed after picking so a weak pick still teaches
+  // what the better call was.
+  const bestIdx = useMemo(
+    () => options.reduce((m, o, i) => (o.quality > options[m].quality ? i : m), 0),
+    [options],
+  );
 
-  const choose = (idx: number) => {
-    if (picked !== null) return;
-    setPicked(idx);
-    setTimeout(() => onDone(options[idx].quality), 1500);
-  };
+  const show = picked !== null;
+  const pickedBest = picked === bestIdx;
 
   return (
     <div className="space-y-2">
       {options.map((o, idx) => {
-        const show = picked !== null;
         const isPicked = picked === idx;
-        const good = o.quality >= 0.8;
+        const isBest = idx === bestIdx;
         const cls = show
-          ? isPicked
-            ? good
-              ? "border-leaf/60 bg-leaf/15"
-              : "border-amber/60 bg-amber/10"
-            : "border-white/10 opacity-60"
+          ? isBest
+            ? "border-leaf/60 bg-leaf/15"
+            : isPicked
+              ? "border-amber/60 bg-amber/10"
+              : "border-white/10 opacity-60"
           : "border-white/12 hover:border-leaf/40";
         return (
           <motion.button
             key={idx}
-            onClick={() => choose(idx)}
+            onClick={() => picked === null && setPicked(idx)}
             disabled={show}
             initial={{ opacity: 0, y: 10 }}
             animate={{
-              opacity: show && !isPicked ? 0.6 : 1,
+              opacity: show && !isPicked && !isBest ? 0.6 : 1,
               y: 0,
               scale: show && isPicked ? [1, 1.03, 1] : 1,
             }}
@@ -549,9 +611,12 @@ function PickChallenge({
             whileTap={show ? undefined : { scale: 0.98 }}
             className={`w-full rounded-lg border px-3 py-2 text-left transition-colors ${cls}`}
           >
-            <p className="text-sm text-fog">{o.label}</p>
+            <p className="text-sm text-fog">
+              {show && isBest ? "★ " : ""}
+              {o.label}
+            </p>
             <AnimatePresence>
-              {show && isPicked && (
+              {show && (isPicked || isBest) && (
                 <motion.p
                   className="mt-1 text-xs text-mist"
                   initial={{ opacity: 0, height: 0 }}
@@ -565,6 +630,16 @@ function PickChallenge({
           </motion.button>
         );
       })}
+      {show && (
+        <div className="flex items-center justify-between pt-1">
+          <p className="text-[11px] text-mist">
+            {pickedBest ? "You made the strongest call." : "★ marks the strongest call."}
+          </p>
+          <Button size="sm" onClick={() => onDone(options[picked!].quality)}>
+            Continue
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -45,7 +45,7 @@ export default function SignupPage() {
 
     const sb = getSupabaseBrowser();
     if (!sb) {
-      setMsg("Supabase isn't configured yet. You can still play as a guest.");
+      setMsg("Accounts aren't available right now. You can still play as a guest.");
       return;
     }
 

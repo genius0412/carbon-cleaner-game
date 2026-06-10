@@ -71,6 +71,7 @@ export default function AccountPage() {
                 Email: <strong className="text-fog">{user.email ?? ", "}</strong>
               </p>
             </Card>
+            <DeleteAccountCard />
           </>
         )}
       </section>
@@ -98,7 +99,7 @@ function DisplayNameCard({ userId, initial }: { userId: string; initial: string 
     }
     const sb = getSupabaseBrowser();
     if (!sb) {
-      setMsg({ ok: false, text: "Supabase isn't configured." });
+      setMsg({ ok: false, text: "Account changes aren't available right now." });
       return;
     }
     setBusy(true);
@@ -141,6 +142,61 @@ function DisplayNameCard({ userId, initial }: { userId: string; initial: string 
   );
 }
 
+/* ---------------- Delete account ---------------- */
+function DeleteAccountCard() {
+  const { signOut } = useAuth();
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const deleteAccount = async () => {
+    const sb = getSupabaseBrowser();
+    if (!sb) {
+      setErr("Account changes aren't available right now.");
+      return;
+    }
+    setBusy(true);
+    setErr(null);
+    const { error } = await sb.rpc("delete_user");
+    if (error) {
+      setBusy(false);
+      setErr("Couldn't delete your account. Please try again.");
+      return;
+    }
+    await signOut();
+    window.location.href = "/";
+  };
+
+  return (
+    <Card className="mt-6 border-danger/25">
+      <h2 className="font-display text-lg font-semibold text-danger">Delete account</h2>
+      <p className="mt-1 text-sm text-mist">
+        Permanently removes your account and all of its saved games.
+      </p>
+      {!confirming ? (
+        <Button variant="ghost" className="mt-3" onClick={() => setConfirming(true)}>
+          Delete account…
+        </Button>
+      ) : (
+        <div className="mt-3 space-y-2">
+          <p className="text-sm font-semibold text-fog">
+            Are you sure? This can&apos;t be undone.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="danger" onClick={deleteAccount} disabled={busy}>
+              {busy ? "Deleting…" : "Yes, delete my account"}
+            </Button>
+            <Button variant="secondary" onClick={() => setConfirming(false)} disabled={busy}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+      {err && <p className="mt-2 text-sm text-amber">{err}</p>}
+    </Card>
+  );
+}
+
 /* ---------------- Password ---------------- */
 function PasswordCard({
   isGoogle,
@@ -169,7 +225,7 @@ function PasswordCard({
     }
     const sb = getSupabaseBrowser();
     if (!sb) {
-      setMsg({ ok: false, text: "Supabase isn't configured." });
+      setMsg({ ok: false, text: "Account changes aren't available right now." });
       return;
     }
     setBusy(true);

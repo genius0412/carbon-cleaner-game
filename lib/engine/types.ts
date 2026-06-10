@@ -174,6 +174,9 @@ export interface GameState {
   carbonGainPerMonth: number; // base, before dynamic penalties
   support: number;
   budget: number;
+  /** Consecutive months the effective carbon gain has held at/below zero.
+   *  Winning requires sustaining this for GAME.netZeroHoldMonths. */
+  netZeroMonths?: number;
 
   // world
   regions: Region[];

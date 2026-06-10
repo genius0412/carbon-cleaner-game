@@ -11,7 +11,7 @@ import { sanitizeRoles } from "@/lib/roles";
 export async function POST(request: Request) {
   const sb = await getSupabaseServer();
   if (!sb) {
-    return NextResponse.json({ error: "Supabase isn't configured." }, { status: 500 });
+    return NextResponse.json({ error: "Classrooms aren't available right now." }, { status: 500 });
   }
 
   const {

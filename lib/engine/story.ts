@@ -15,6 +15,7 @@
  * Pure + data-only so it stays testable and UI-agnostic.
  */
 
+import { GAME } from "../config/gameConstants";
 import type { GameState, FeatureKey } from "./types";
 
 export type BeatKind = "story" | "civic";
@@ -40,6 +41,14 @@ export interface StoryBeat {
 const isStudent = (s: GameState) => s.mode === "student";
 const civicDone = (s: GameState) => !!s.civic?.boostApplied;
 
+/**
+ * Whole in-game months since the start of the run. Time-based triggers use
+ * this (>= comparisons) instead of exact year/month windows so a beat can
+ * never be jumped over by skipping months or whole years at once.
+ */
+const monthsElapsed = (s: GameState) =>
+  (s.year - GAME.startYear) * 12 + (s.month - GAME.startMonth);
+
 export const STORY_BEATS: StoryBeat[] = [
   // ====================================================================
   // ACT I, ARRIVAL
@@ -53,11 +62,11 @@ export const STORY_BEATS: StoryBeat[] = [
     title: "Day one in office",
     lines: [
       "The transition team's gone and the building's finally quiet. It's just us and the work now, Mayor.",
-      "Here's the situation, plainly: Verdana's carbon count is climbing every single month. The atmosphere's at 430 parts per million and we're adding to it.",
+      "Here's the situation, plainly: {county}'s carbon count is climbing every single month. The atmosphere's at 430 parts per million and we're adding to it.",
       "The scientists are unanimous, if we cross 600 ppm, it's over. Failed harvests, a flooded harbor, summers nobody can work through.",
       "But we have time, and we have a county full of people who want a future. Open the map. Pick a region. Let's put steel in the ground. Or rather, trees in the ground.",
     ],
-    trigger: (s) => s.year === 2026 && s.month >= 2,
+    trigger: (s) => monthsElapsed(s) >= 1,
     cta: "Let's get to work",
   },
   {
@@ -69,10 +78,10 @@ export const STORY_BEATS: StoryBeat[] = [
     title: "How we win this",
     lines: [
       "Mayor, before you spend a dollar, understand the one number that matters: Carbon Gain per Month. Right now it's positive. We're emitting.",
-      "Every project you build pushes that number down. Get it to zero or below, net-zero, and we've won, even if it's not yet 2050.",
+      "Every project you build pushes that number down. Get it to zero or below and keep it there for a full year, that's net-zero for real, and we've won, even if it's not yet 2050.",
       "And terrain matters. Solar loves the open plains; wind and geothermal want the mountains; algae and scrubbers belong on the coast and in the city. Build where the land works for you and you'll get more out of every project.",
     ],
-    trigger: (s) => s.year === 2026 && s.month >= 3,
+    trigger: (s) => monthsElapsed(s) >= 2,
     cta: "Understood",
   },
 
@@ -108,7 +117,7 @@ export const STORY_BEATS: StoryBeat[] = [
       "Second, and this is the part people miss, completed research makes the infrastructure you ALREADY built more efficient. Research a Smart Grid and every solar panel and EV depot you own quietly starts producing more. Your past investments keep paying off.",
       "Founding a corporation costs money up front plus a monthly operating budget, and the work takes years. Start early. The sooner you fund it, the sooner the whole county compounds.",
     ],
-    trigger: (s) => s.builtInfra.length >= 2 || (s.year === 2026 && s.month >= 6),
+    trigger: (s) => s.builtInfra.length >= 2 || monthsElapsed(s) >= 5,
     modes: ["mayor"], // research is a mayor-only feature
     unlocks: ["research"],
     cta: "Unlock Research",
@@ -194,7 +203,7 @@ export const STORY_BEATS: StoryBeat[] = [
     avatar: "✊",
     title: "The people are organizing",
     lines: [
-      "Mayor, families across the county are packing our meetings. They don't just want you to act locally; they want Verdana's voice carried up the chain.",
+      "Mayor, families across the county are packing our meetings. They don't just want you to act locally; they want {county}'s voice carried up the chain.",
       "There's something only a real person can do that no press release ever will: put your name on a letter to your representative and actually send it.",
       "Do it once, and mean it. We'll help you draft it from the data. One genuine letter from a community that's clearly doing the work, that moves people in power.",
     ],
@@ -215,7 +224,7 @@ export const STORY_BEATS: StoryBeat[] = [
       "We're going to write to a real representative about climate change. Use the facts, make it honest, make it yours.",
       "And you only need to send it once. A single sincere letter, actually delivered, carries more weight than a hundred forwarded ones. Quality over noise, that's how you're heard.",
     ],
-    trigger: (s) => isStudent(s) && !civicDone(s) && s.month >= 3,
+    trigger: (s) => isStudent(s) && !civicDone(s) && monthsElapsed(s) >= 2,
     modes: ["student"],
     unlocks: ["civic"],
     cta: "Write my letter",
@@ -247,7 +256,7 @@ export const STORY_BEATS: StoryBeat[] = [
     avatar: "🔬",
     title: "Crossing 460 ppm",
     lines: [
-      "We've passed 460 ppm. The air over Verdana is measurably warmer than the day you took office, and you can feel it in the summers now.",
+      "We've passed 460 ppm. The air over {county} is measurably warmer than the day you took office, and you can feel it in the summers now.",
       "Slowing the gain isn't enough anymore, I need it negative. That means the heavy hitters: scrubbers, cap-and-trade, the big research-tier infrastructure.",
       "If you haven't founded the Carbon Capture Authority yet, do it. Direct air capture is the only thing that takes the count down instead of just slowing the climb.",
     ],
@@ -263,7 +272,7 @@ export const STORY_BEATS: StoryBeat[] = [
     title: "Halfway there",
     lines: [
       "We're halfway through your mandate, Mayor. Half your time's already spent.",
-      "Take a breath and look at what Verdana's become under you, the panels on the rooftops, the turbines on the ridge, the kids who've never known a smoggy sky.",
+      "Take a breath and look at what {county}'s become under you, the panels on the rooftops, the turbines on the ridge, the kids who've never known a smoggy sky.",
       "But sentiment won't finish the job. Check your gain number against zero, and let's plan the back half like the future depends on it. Because it does.",
     ],
     trigger: (s) => s.year >= 2038,
@@ -294,10 +303,25 @@ export const STORY_BEATS: StoryBeat[] = [
     lines: [
       "Mayor, monthly carbon gain is almost flat. We are one, maybe two good decisions from net-zero.",
       "Whatever's left in the tank, one more region, one more bill, one more efficiency breakthrough landing, now is when it counts.",
-      "Years from now, people will point to this moment and this county. Finish it.",
+      "Years from now, people will point to this moment and to {county}. Finish it.",
     ],
     trigger: (s) => s.carbonGainPerMonth > 0 && s.carbonGainPerMonth < 0.008,
     cta: "Finish it",
+  },
+  {
+    id: "netzero_hold",
+    kind: "story",
+    speaker: "Dr. Imani Soto",
+    role: "Lead Climate Scientist",
+    avatar: "🔬",
+    title: "The first net-zero month",
+    lines: [
+      "There it is. This month, {county} put no new carbon into the sky. I've waited my whole career to say that sentence.",
+      "But one good month isn't a cured county, it's a snapshot. Keep the gain at or below zero for twelve months straight and history will call it real.",
+      "Protect what got us here. Keep support healthy, keep the projects funded, and don't let anything slip back into the red.",
+    ],
+    trigger: (s) => s.carbonGainPerMonth <= GAME.netZeroThreshold,
+    cta: "Hold the line",
   },
 ];
 
@@ -312,7 +336,13 @@ export function nextStoryBeat(
     // Never re-summon civic action once the letter has been sent.
     if (beat.kind === "civic" && state.civic?.boostApplied) continue;
     try {
-      if (beat.trigger(state)) return beat;
+      if (beat.trigger(state)) {
+        // Personalize: "{county}" in any line becomes the player's county name.
+        return {
+          ...beat,
+          lines: beat.lines.map((l) => l.split("{county}").join(state.cityName)),
+        };
+      }
     } catch {
       /* defensive: ignore bad triggers */
     }

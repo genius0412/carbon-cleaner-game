@@ -116,6 +116,26 @@ end;
 $$;
 grant execute on function public.email_for_identifier(text) to anon, authenticated;
 
+-- Self-service account deletion ("Delete account" on the account page).
+-- Deleting an auth user needs elevated rights, so this runs as the definer and
+-- only ever deletes the caller's own account. Cascades remove their profile
+-- and game saves; classrooms they taught survive with teacher_id cleared.
+create or replace function public.delete_user()
+returns void
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'Not signed in.';
+  end if;
+  delete from auth.users where id = auth.uid();
+end;
+$$;
+revoke execute on function public.delete_user() from public, anon;
+grant execute on function public.delete_user() to authenticated;
+
 -- ============================================================================
 -- game_saves
 -- A save belongs to a logged-in user (user_id) OR to a guest (guest_code).
@@ -292,7 +312,10 @@ create policy "civic_uploads_insert" on public.civic_uploads
 -- ============================================================================
 -- Counts games that actually reached net-zero (a win): finished, with carbon
 -- gain at or below zero. (carbon_gain stores effectiveCarbonGain at save time.)
-create or replace view public.global_stats as
+-- security_invoker makes the view run with the caller's permissions instead of
+-- the owner's (game_saves is world-readable via RLS, so the result is the same).
+create or replace view public.global_stats
+  with (security_invoker = on) as
   select count(*)::int as total_finished
   from public.game_saves
   where finished_at is not null

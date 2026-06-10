@@ -8,7 +8,6 @@ import { getSupabaseBrowser } from "@/lib/supabase/client";
 import { loadLocal, getLocalSave } from "@/lib/saves";
 import { useGameStore } from "@/lib/store";
 import { formatYearMonth, effectiveCarbonGain } from "@/lib/engine/engine";
-import { aggregatedSources, allBlanks, blankTag } from "@/lib/config/dataBlanks";
 import type { GameState } from "@/lib/engine/types";
 import { generateReportPdf } from "@/lib/report/pdf";
 
@@ -97,7 +96,6 @@ export default function ReportPage({
     );
   }
 
-  const sources = aggregatedSources();
   const won = state.status === "won";
 
   return (
@@ -166,24 +164,6 @@ export default function ReportPage({
             <img src={proofUrl} alt="Civic action proof" className="mt-3 max-h-96 rounded-lg" />
           </Card>
         )}
-
-        <Card>
-          <h2 className="font-display text-lg font-semibold text-leaf">Bibliography (MLA)</h2>
-          {sources.length === 0 ? (
-            <p className="mt-2 text-sm text-amber">
-              Sources will appear here once data blanks are cited. Outstanding
-              data points: {allBlanks().filter((b) => !b.source).map((b) => blankTag(b.id)).join(", ")}.
-            </p>
-          ) : (
-            <ol className="mt-3 space-y-2 text-sm">
-              {sources.map((s, i) => (
-                <li key={i} className="text-fog/90 [text-indent:-1.5rem] [padding-left:1.5rem]">
-                  {s.source}
-                </li>
-              ))}
-            </ol>
-          )}
-        </Card>
       </article>
     </main>
   );

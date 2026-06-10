@@ -36,7 +36,7 @@ export default function LoginPage() {
     setMsg(null);
     const sb = getSupabaseBrowser();
     if (!sb) {
-      setMsg("Supabase isn't configured. Use guest mode or a resume code.");
+      setMsg("Logging in isn't available right now. Use guest mode or a resume code.");
       setBusy(false);
       return;
     }

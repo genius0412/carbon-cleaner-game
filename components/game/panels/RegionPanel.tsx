@@ -12,6 +12,7 @@ import {
   upgradeCost,
 } from "@/lib/engine/engine";
 import { infraById } from "@/lib/engine/content";
+import { gainCut } from "../impact";
 import { TERRAIN_LABELS } from "@/lib/engine/regions";
 import { GAME } from "@/lib/config/gameConstants";
 import type { Region } from "@/lib/engine/types";
@@ -106,7 +107,7 @@ export function RegionPanel({
               <div className="mt-2 space-y-0.5 text-[11px]">
                 <p className="text-fog/80">Cost: ${def.cost.toLocaleString()}</p>
                 <p className="text-leaf">
-                  Carbon: {eff.toFixed(5)} ppm/mo
+                  🌿 Cuts carbon gain by {gainCut(eff)}
                   {isBuilt && currentLevel > 1 && (
                     <span className="text-cyan"> · {currentLevel}× upgraded</span>
                   )}
@@ -127,8 +128,8 @@ export function RegionPanel({
                   {atMaxLevel
                     ? "✓ Max level"
                     : !canAffordUpgrade
-                      ? `Upgrade — need $${upCost.toLocaleString()}`
-                      : `⬆ Upgrade to Lvl ${currentLevel + 1} — $${upCost.toLocaleString()}`}
+                      ? `Upgrade (need $${upCost.toLocaleString()})`
+                      : `⬆ Upgrade to Lvl ${currentLevel + 1} ($${upCost.toLocaleString()})`}
                 </Button>
               ) : (
                 <Button

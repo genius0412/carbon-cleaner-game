@@ -13,8 +13,7 @@ export default function AboutPage() {
           Understanding climate change
         </h1>
         <p className="mt-4 text-lg text-mist">
-          A grounding in the science and stakes behind the game, global, then
-          local. Amber chips are real figures awaiting cited sources.
+          The science behind the game, and why we set it in a county like yours.
         </p>
 
         <section className="mt-10 space-y-4">
@@ -30,10 +29,10 @@ export default function AboutPage() {
             atmosphere.
           </p>
           <p className="text-fog/90 leading-relaxed">
-            The consequences compound: oceans warm and expand, ice sheets melt,
-            and sea levels have already risen about <DataChip id={4} /> since
-            1900. Heatwaves, droughts, wildfires, and stronger storms grow more
-            frequent and more severe.
+            And the effects feed on each other. Oceans warm and expand, ice
+            sheets melt, and sea levels have already risen about{" "}
+            <DataChip id={4} /> since 1900. Heatwaves, droughts, wildfires, and
+            stronger storms keep getting more frequent and more severe.
           </p>
         </section>
 
@@ -50,37 +49,26 @@ export default function AboutPage() {
             <DataChip id={7} />, hitting vulnerable communities hardest.
           </p>
           <p className="text-fog/90 leading-relaxed">
-            That is the premise of Carbon Cleaner: a single county of 100,000
-            people, carbon-dependent today, with the tools to change course. The
-            county stands in for <em>your</em> community, the decisions are the
-            same ones real local governments face.
+            That's where Carbon Cleaner starts. One county of 100,000 people,
+            running on carbon today but holding every tool it needs to change
+            course. It stands in for <em>your</em> community, and the decisions
+            in the game are the same ones real local governments wrestle with.
           </p>
         </section>
 
         <section className="mt-10">
           <Card glow="leaf">
             <h2 className="font-display text-2xl font-semibold">
-              The project's goals
+              What we set out to do
             </h2>
-            <ul className="mt-4 space-y-3 text-fog/90">
-              <li>
-                <strong className="text-leaf">Understand</strong>, teach real
-                climate impacts at both global and local scales.
-              </li>
-              <li>
-                <strong className="text-leaf">Use data</strong>, present real,
-                cited numbers, never invented ones.
-              </li>
-              <li>
-                <strong className="text-leaf">Propose solutions</strong>, every
-                in-game action is a concrete, real-world climate intervention.
-              </li>
-              <li>
-                <strong className="text-leaf">Take civic action</strong>, players
-                write to real representatives and produce a shareable report for
-                stakeholders.
-              </li>
-            </ul>
+            <p className="mt-4 text-fog/90 leading-relaxed">
+              We wanted a game that teaches real climate impacts with real,
+              cited numbers instead of invented ones, where every action is
+              something a county could actually do. And we wanted it to push
+              players past the screen. You write a real letter to a real
+              representative, and the report you finish with is something you
+              can hand to a parent, a teacher, or a council member.
+            </p>
           </Card>
         </section>
       </article>

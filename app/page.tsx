@@ -37,10 +37,10 @@ export default function Home() {
           <span className="text-leaf">net-zero by 2050.</span>
         </h1>
         <p className="mt-6 max-w-2xl text-balance text-lg leading-relaxed text-mist">
-          Carbon Cleaner is a climate-strategy game where you govern a fictional
-          U.S. county, building clean infrastructure, funding research, passing
-          bills, and rallying public support to scrub carbon from the sky before
-          time runs out.
+          Carbon Cleaner is a climate strategy game. You run a fictional U.S.
+          county and have until 2050 to get its emissions to zero, building
+          clean energy, funding research, passing laws, and keeping voters on
+          your side the whole way.
         </p>
         <div className="mt-9 flex flex-col items-center gap-4 sm:flex-row">
           <Link
@@ -67,9 +67,8 @@ export default function Home() {
           Why Carbon Cleaner exists
         </h2>
         <p className="mx-auto mb-8 max-w-2xl text-center text-sm text-mist">
-          Climate change is the defining challenge of our generation, global in
-          scale, but felt in every local community. The real numbers below tell
-          the story. (Amber chips mark figures awaiting cited sources.)
+          Climate change is global, but it lands hardest close to home. These
+          are real numbers from cited sources.
         </p>
         <div className="grid gap-5 md:grid-cols-2">
           <Card glow="leaf">
@@ -123,10 +122,10 @@ export default function Home() {
         <Card className="mx-auto">
           <h2 className="font-display text-xl font-semibold">Who created this</h2>
           <p className="mx-auto mt-3 max-w-2xl text-sm text-mist">
-            Carbon Cleaner was built as an AP World History civic-action project on
-            climate change. It pairs a strategy game with a real-world action layer:
-            players don't just simulate change, they write to their actual
-            representatives. Meet the team on the{" "}
+            We built Carbon Cleaner as an AP World History civic-action project
+            on climate change. The game is only half of it. Somewhere along the
+            way, you'll write a real letter to a real representative. Meet us on
+            the{" "}
             <Link href="/team" className="text-leaf hover:underline">
               Team page
             </Link>

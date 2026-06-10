@@ -23,7 +23,7 @@ export function GoogleButton({
   const signIn = async () => {
     const sb = getSupabaseBrowser();
     if (!sb) {
-      onError?.("Supabase isn't configured yet.");
+      onError?.("Sign-in isn't available right now.");
       return;
     }
     setBusy(true);

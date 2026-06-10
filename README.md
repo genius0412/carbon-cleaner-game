@@ -1,8 +1,8 @@
 # 🌍 Carbon Cleaner
 
 A browser-based **climate-strategy game** built as an AP World History civic-action
-project on climate change. Lead a fictional U.S. county (default state: *Verdana*,
-population 100,000) to **carbon net-zero by 2050**, without losing the public's
+project on climate change. Lead a fictional U.S. county (population 100,000) to
+**carbon net-zero by 2050**, without losing the public's
 trust, by building clean infrastructure, funding research, passing legislation,
 planting trees, and taking **real-world civic action**.
 
