@@ -66,6 +66,7 @@ export function createInitialState(
     tookNegativeActionThisMonth: false,
     log: [],
     seenStoryIds: [],
+    seenFeedback: [],
     unlockedFeatures: [],
     civic: characterType === "mayor" ? undefined : {},
     finishedAt: null,

@@ -197,6 +197,10 @@ export interface GameState {
   /** Story beats already shown (so they don't replay across reloads). */
   seenStoryIds: string[];
 
+  /** Success-feedback messages already shown once. Buying/building the same
+   *  item again updates silently instead of re-popping the same explainer. */
+  seenFeedback?: string[];
+
   /**
    * Features unlocked through the storyline. "build" is always available;
    * others ("trees", "research", "bills", "civic") unlock via story beats.

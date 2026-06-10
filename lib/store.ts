@@ -109,11 +109,22 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
     playSound(successSound);
     // Some actions (e.g. tree planting) update silently with no bottom popup.
-    set(
-      opts?.silentSuccess
-        ? { game: res.state }
-        : { game: res.state, lastFeedback: { title: successTitle, message: res.message, ok: true } },
-    );
+    if (opts?.silentSuccess) {
+      set({ game: res.state });
+      scheduleSave();
+      return;
+    }
+    // The explanatory popup only fires the first time you buy a given item;
+    // repeat purchases (e.g. the same infra in another region) update silently.
+    const seen = res.state.seenFeedback ?? [];
+    if (seen.includes(res.message)) {
+      set({ game: res.state });
+    } else {
+      set({
+        game: { ...res.state, seenFeedback: [...seen, res.message] },
+        lastFeedback: { title: successTitle, message: res.message, ok: true },
+      });
+    }
     scheduleSave();
   };
 
@@ -121,6 +132,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   const withDefaults = (state: GameState): GameState => ({
     ...state,
     seenStoryIds: state.seenStoryIds ?? [],
+    seenFeedback: state.seenFeedback ?? [],
     unlockedFeatures: state.unlockedFeatures ?? [],
     studentActions: state.studentActions ?? [],
     studentActionCarbon: state.studentActionCarbon ?? 0,
