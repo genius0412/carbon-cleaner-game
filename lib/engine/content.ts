@@ -20,8 +20,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "County-Wide LED Streetlight Conversion",
     description:
       "Swap every municipal streetlight for efficient LEDs. Cuts grid demand across the county.",
-    cost: 90_000,
-    carbonDelta: -0.00075,
+    cost: 180_000,
+    carbonDelta: -0.000375,
     supportDelta: 2,
     feedback:
       "LEDs use a fraction of the energy of old sodium lamps, an easy win residents notice on their utility bills. Modest carbon savings, and people like brighter, cheaper streets.",
@@ -36,8 +36,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Expanded Public Bus Routes",
     description:
       "Add frequent electric-ready bus lines so families can leave the car at home.",
-    cost: 160_000,
-    carbonDelta: -0.0045,
+    cost: 320_000,
+    carbonDelta: -0.00225,
     supportDelta: -2,
     feedback:
       "Every rider who swaps a car commute for the bus removes tailpipe emissions. Some drivers grumble about lane changes, but transit is one of the highest-leverage local levers.",
@@ -52,8 +52,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Mandatory Commercial Recycling Program",
     description:
       "Require businesses to sort recyclables, diverting waste from landfill methane.",
-    cost: 70_000,
-    carbonDelta: -0.001,
+    cost: 140_000,
+    carbonDelta: -0.0005,
     supportDelta: -3,
     feedback:
       "Landfills release methane as waste rots; recycling keeps materials in use and emissions down. Businesses dislike new rules, so expect a small support dip.",
@@ -68,8 +68,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Solar Panels on Public Buildings",
     description:
       "Cover schools, libraries, and offices with rooftop solar to generate clean power on-site.",
-    cost: 225_000,
-    carbonDelta: -0.0035,
+    cost: 450_000,
+    carbonDelta: -0.00175,
     supportDelta: 3,
     feedback:
       "On-site solar shrinks the county's reliance on fossil power and shields budgets from price spikes. Visible panels signal real action, voters approve.",
@@ -84,8 +84,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Urban Tree Planting Initiative",
     description:
       "Launch a county greening program (see the Tree Planting panel to choose species).",
-    cost: 45_000,
-    carbonDelta: -0.000375,
+    cost: 90_000,
+    carbonDelta: -0.0001875,
     supportDelta: 5,
     feedback:
       "Trees pull carbon from the air slowly but steadily, cool neighborhoods, and are wildly popular. The offset is gradual, pair it with faster measures.",
@@ -100,8 +100,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Green Building Code for New Construction",
     description:
       "Require high-efficiency standards on all new builds, pays off over decades.",
-    cost: 55_000,
-    carbonDelta: -0.0025,
+    cost: 110_000,
+    carbonDelta: -0.00125,
     supportDelta: -2,
     feedback:
       "Locking in efficiency at construction time avoids decades of waste. Developers push back on upfront costs, so the support hit is real but the long game is strong.",
@@ -118,8 +118,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Electric County Fleet",
     description:
       "Electrify every county-owned vehicle, from buses to maintenance trucks.",
-    cost: 350_000,
-    carbonDelta: -0.0035,
+    cost: 700_000,
+    carbonDelta: -0.00175,
     supportDelta: 1,
     feedback:
       "Public fleets drive predictable routes, perfect for EVs. Eliminating their diesel is a clean, visible commitment that nudges residents toward EVs too.",
@@ -134,8 +134,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Smart Grid Energy Management",
     description:
       "Sensors and software that balance load and slash transmission losses, boosts your other clean power.",
-    cost: 410_000,
-    carbonDelta: -0.003,
+    cost: 820_000,
+    carbonDelta: -0.0015,
     supportDelta: 2,
     feedback:
       "A smart grid wastes less of every clean kilowatt you generate. Research it and your existing solar and EV systems get more efficient automatically.",
@@ -150,8 +150,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Atmospheric Carbon Scrubber Array",
     description:
       "Direct-air-capture units that pull CO₂ straight from the sky.",
-    cost: 700_000,
-    carbonDelta: -0.007,
+    cost: 1_400_000,
+    carbonDelta: -0.0035,
     supportDelta: 0,
     feedback:
       "Direct air capture removes carbon that's already up there, the only tool that can take the count down, not just slow it. Energy-hungry and pricey, so power it cleanly.",
@@ -166,8 +166,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Algae Bio-Reactor Carbon Sinks",
     description:
       "Engineered algae tanks that gulp CO₂ and can be harvested for biofuel.",
-    cost: 490_000,
-    carbonDelta: -0.0045,
+    cost: 980_000,
+    carbonDelta: -0.00225,
     supportDelta: 2,
     feedback:
       "Algae captures carbon far faster per acre than trees and yields useful biomass. Coastal and urban water access makes these sites hum.",
@@ -182,8 +182,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Geothermal District Heating Network",
     description:
       "Tap the earth's heat to warm whole neighborhoods without burning gas.",
-    cost: 550_000,
-    carbonDelta: -0.005,
+    cost: 1_100_000,
+    carbonDelta: -0.0025,
     supportDelta: 1,
     feedback:
       "Geothermal replaces gas furnaces with steady underground heat, huge winter savings. Mountain geology makes drilling far more productive here.",
@@ -198,8 +198,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Autonomous Electric Transit Pods",
     description:
       "On-demand self-driving electric pods that make car ownership optional.",
-    cost: 650_000,
-    carbonDelta: -0.0055,
+    cost: 1_300_000,
+    carbonDelta: -0.00275,
     supportDelta: 3,
     feedback:
       "Shared autonomous EVs cut both emissions and traffic, and people love the convenience. They also make your bus network more effective.",
@@ -214,8 +214,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Vertical Wind Turbine Neighborhoods",
     description:
       "Compact vertical-axis turbines that generate power right where people live.",
-    cost: 380_000,
-    carbonDelta: -0.004,
+    cost: 760_000,
+    carbonDelta: -0.002,
     supportDelta: 1,
     feedback:
       "Vertical turbines work in gusty, turbulent air that traditional blades can't use, ideal on ridgelines. Distributed power means fewer losses.",
@@ -230,8 +230,8 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Carbon-Negative Concrete Initiative",
     description:
       "Switch public works to concrete that absorbs more CO₂ than it emits.",
-    cost: 445_000,
-    carbonDelta: -0.00375,
+    cost: 890_000,
+    carbonDelta: -0.001875,
     supportDelta: 0,
     feedback:
       "Cement is one of the world's biggest emitters; carbon-negative mixes flip that. Every sidewalk and bridge becomes a tiny carbon sink, and it strengthens your building code.",
