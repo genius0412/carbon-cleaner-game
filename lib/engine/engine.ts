@@ -78,7 +78,12 @@ export function createInitialState(
 // ---------------------------------------------------------------------------
 
 export function formatYearMonth(state: GameState): string {
-  return `${MONTH_NAMES[state.month - 1]} ${state.year}`;
+  // Apply the one-time 2026 baseline shift to saves that predate it, mirroring
+  // the +1-year migration in the store. This keeps stale pre-2026 saves from
+  // rendering an old year anywhere the date is shown (play menu, report, etc).
+  // Idempotent: migrated saves already have the +1 baked into state.year.
+  const year = state.yearMigrated ? state.year : state.year + 1;
+  return `${MONTH_NAMES[state.month - 1]} ${year}`;
 }
 
 export function clampSupport(s: number): number {

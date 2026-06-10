@@ -20,7 +20,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "County-Wide LED Streetlight Conversion",
     description:
       "Swap every municipal streetlight for efficient LEDs. Cuts grid demand across the county.",
-    cost: 180_000,
+    cost: 90_000,
     carbonDelta: -0.00075,
     supportDelta: 2,
     feedback:
@@ -36,7 +36,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Expanded Public Bus Routes",
     description:
       "Add frequent electric-ready bus lines so families can leave the car at home.",
-    cost: 320_000,
+    cost: 160_000,
     carbonDelta: -0.0045,
     supportDelta: -2,
     feedback:
@@ -52,7 +52,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Mandatory Commercial Recycling Program",
     description:
       "Require businesses to sort recyclables, diverting waste from landfill methane.",
-    cost: 140_000,
+    cost: 70_000,
     carbonDelta: -0.001,
     supportDelta: -3,
     feedback:
@@ -68,7 +68,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Solar Panels on Public Buildings",
     description:
       "Cover schools, libraries, and offices with rooftop solar to generate clean power on-site.",
-    cost: 450_000,
+    cost: 225_000,
     carbonDelta: -0.0035,
     supportDelta: 3,
     feedback:
@@ -84,7 +84,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Urban Tree Planting Initiative",
     description:
       "Launch a county greening program (see the Tree Planting panel to choose species).",
-    cost: 90_000,
+    cost: 45_000,
     carbonDelta: -0.000375,
     supportDelta: 5,
     feedback:
@@ -100,7 +100,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Green Building Code for New Construction",
     description:
       "Require high-efficiency standards on all new builds, pays off over decades.",
-    cost: 110_000,
+    cost: 55_000,
     carbonDelta: -0.0025,
     supportDelta: -2,
     feedback:
@@ -118,7 +118,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Electric County Fleet",
     description:
       "Electrify every county-owned vehicle, from buses to maintenance trucks.",
-    cost: 700_000,
+    cost: 350_000,
     carbonDelta: -0.0035,
     supportDelta: 1,
     feedback:
@@ -134,7 +134,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Smart Grid Energy Management",
     description:
       "Sensors and software that balance load and slash transmission losses, boosts your other clean power.",
-    cost: 820_000,
+    cost: 410_000,
     carbonDelta: -0.003,
     supportDelta: 2,
     feedback:
@@ -150,7 +150,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Atmospheric Carbon Scrubber Array",
     description:
       "Direct-air-capture units that pull CO₂ straight from the sky.",
-    cost: 1_400_000,
+    cost: 700_000,
     carbonDelta: -0.007,
     supportDelta: 0,
     feedback:
@@ -166,7 +166,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Algae Bio-Reactor Carbon Sinks",
     description:
       "Engineered algae tanks that gulp CO₂ and can be harvested for biofuel.",
-    cost: 980_000,
+    cost: 490_000,
     carbonDelta: -0.0045,
     supportDelta: 2,
     feedback:
@@ -182,7 +182,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Geothermal District Heating Network",
     description:
       "Tap the earth's heat to warm whole neighborhoods without burning gas.",
-    cost: 1_100_000,
+    cost: 550_000,
     carbonDelta: -0.005,
     supportDelta: 1,
     feedback:
@@ -198,7 +198,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Autonomous Electric Transit Pods",
     description:
       "On-demand self-driving electric pods that make car ownership optional.",
-    cost: 1_300_000,
+    cost: 650_000,
     carbonDelta: -0.0055,
     supportDelta: 3,
     feedback:
@@ -214,7 +214,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Vertical Wind Turbine Neighborhoods",
     description:
       "Compact vertical-axis turbines that generate power right where people live.",
-    cost: 760_000,
+    cost: 380_000,
     carbonDelta: -0.004,
     supportDelta: 1,
     feedback:
@@ -230,7 +230,7 @@ export const INFRASTRUCTURE: InfrastructureDef[] = [
     name: "Carbon-Negative Concrete Initiative",
     description:
       "Switch public works to concrete that absorbs more CO₂ than it emits.",
-    cost: 890_000,
+    cost: 445_000,
     carbonDelta: -0.00375,
     supportDelta: 0,
     feedback:

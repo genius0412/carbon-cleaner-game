@@ -3,9 +3,21 @@
 import { useEffect, useState } from "react";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
 import { listLocalSaves } from "@/lib/saves";
-import { formatYearMonth } from "@/lib/engine/engine";
+import { MONTH_NAMES } from "@/lib/config/gameConstants";
 import { roleLabel } from "@/lib/roles";
-import type { CharacterType } from "@/lib/engine/types";
+import type { CharacterType, GameState } from "@/lib/engine/types";
+
+/**
+ * The displayed in-game date, with the one-time 2026 baseline shift applied to
+ * any save that predates it. Mirrors the +1-year migration in the store/saves
+ * layer so finished leaderboard rows (which may never be re-saved) don't show a
+ * stale year like "January 2025" when the game starts in 2026.
+ */
+function shiftedReached(rawYear: number, month: number, migrated: boolean): { reached: string; sortKey: number } {
+  const year = migrated ? rawYear : rawYear + 1;
+  const reached = month >= 1 && month <= 12 ? `${MONTH_NAMES[month - 1]} ${year}` : "";
+  return { reached, sortKey: year * 12 + month };
+}
 
 /**
  * Public "Hall of net-zero": the players who reached net-zero, ranked by how
@@ -38,7 +50,7 @@ export function Leaderboard() {
         const { data } = await sb
           .from("game_saves")
           .select(
-            "city_name, character_type, year_month, status:state->>status, player:state->>playerName, gyear:state->>year, gmonth:state->>month",
+            "city_name, character_type, year_month, status:state->>status, player:state->>playerName, gyear:state->>year, gmonth:state->>month, migrated:state->>yearMigrated",
           )
           .not("finished_at", "is", null)
           .limit(500);
@@ -46,14 +58,18 @@ export function Leaderboard() {
         const winners = (data ?? [])
           .filter((r: Record<string, unknown>) => r.status === "won")
           .map((r: Record<string, unknown>) => {
-            const year = Number(r.gyear) || 0;
+            const rawYear = Number(r.gyear) || 0;
             const month = Number(r.gmonth) || 0;
+            const migrated = r.migrated === "true" || r.migrated === true;
+            const { reached, sortKey } = shiftedReached(rawYear, month, migrated);
             return {
               name: (r.player as string)?.trim() || "Anonymous",
               county: (r.city_name as string) || "Unknown county",
               role: r.character_type as CharacterType,
-              reached: (r.year_month as string) || "",
-              sortKey: year * 12 + month,
+              // Prefer the recomputed (shifted) date; fall back to the stored
+              // string only if we couldn't derive year/month from the save.
+              reached: reached || (r.year_month as string) || "",
+              sortKey,
             };
           })
           .sort((a, b) => a.sortKey - b.sortKey)
@@ -121,13 +137,17 @@ function localRows(): Row[] {
   try {
     return listLocalSaves()
       .filter((e) => e.state?.status === "won")
-      .map((e) => ({
-        name: e.state.playerName?.trim() || "You",
-        county: e.state.cityName || "Unknown county",
-        role: e.state.characterType,
-        reached: formatYearMonth(e.state),
-        sortKey: e.state.year * 12 + e.state.month,
-      }))
+      .map((e) => {
+        const s = e.state as GameState;
+        const { reached, sortKey } = shiftedReached(s.year, s.month, Boolean(s.yearMigrated));
+        return {
+          name: s.playerName?.trim() || "You",
+          county: s.cityName || "Unknown county",
+          role: s.characterType,
+          reached,
+          sortKey,
+        };
+      })
       .sort((a, b) => a.sortKey - b.sortKey)
       .slice(0, 10);
   } catch {
