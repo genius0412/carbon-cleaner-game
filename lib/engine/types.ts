@@ -212,4 +212,7 @@ export interface GameState {
 
   // meta
   finishedAt?: string | null;
+  /** One-time migration flag: years were shifted to the 2026 start. New games
+   *  are created already-migrated; older saves get +1 year on load. */
+  yearMigrated?: boolean;
 }

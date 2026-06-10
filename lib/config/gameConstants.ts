@@ -14,7 +14,7 @@ export const GAME = {
   population: 100_000,
 
   // --- Time ---
-  startYear: 2025,
+  startYear: 2026,
   startMonth: 1, // January
   endYear: 2050, // last playable year (game over Jan 2051)
   // Real time -> game time. 1 in-game month per 30 real seconds at 1x.

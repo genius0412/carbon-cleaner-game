@@ -121,6 +121,10 @@ export const useGameStore = create<GameStore>((set, get) => {
     unlockedFeatures: state.unlockedFeatures ?? [],
     studentActions: state.studentActions ?? [],
     studentActionCarbon: state.studentActionCarbon ?? 0,
+    // One-time shift: saves made before the 2026 baseline get +1 year so the
+    // date doesn't look stale. Idempotent via the yearMigrated flag.
+    year: state.yearMigrated ? state.year : state.year + 1,
+    yearMigrated: true,
   });
 
   /** Fire a story beat if one is due and none is currently showing. */

@@ -5,7 +5,7 @@ import Link from "next/link";
 export const metadata = { title: "How to Play, Carbon Cleaner" };
 
 const gauges = [
-  { name: "Year / Month", desc: "The clock runs Jan 2025 → Dec 2050. At 1x, one in-game month passes per real minute." },
+  { name: "Year / Month", desc: "The clock runs Jan 2026 → Dec 2050. At 1x, one in-game month passes per real minute." },
   { name: "Carbon Gain / Month", desc: "The key metric: how much CO₂ (ppm) your county adds each month. Drive it to ≤ 0.00 to win." },
   { name: "Current Carbon (ppm)", desc: "Starts at 430. If it hits 600, the game is lost." },
   { name: "Population Support", desc: "0–100%, starts at 65%. Below 50% bills can't pass; below 30% residents undermine progress." },

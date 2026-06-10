@@ -17,7 +17,7 @@ Project hygiene: clear folder structure, commented code, a README.md with setup 
 Keep the game loop in one well-isolated module (e.g. lib/engine/) so the simulation logic is testable and separate from UI.
 2. The fictional world
 The game is set in a fictional U.S.-style state (default name Verdana, but the player names their own city, see §6). Default starting conditions (these are tunable game constants, NOT real-world data, keep as given unless noted):
-Year: January 2025, ends December 2050 (game over Jan 2051).
+Year: January 2026, ends December 2050 (game over Jan 2051).
 Population: 100,000.
 Starting global CO₂: 430 ppm. Failure threshold: 600 ppm.
 Starting Carbon Gain: positive (county is emitting); goal is ≤ 0.00 ppm/month before Dec 2050.

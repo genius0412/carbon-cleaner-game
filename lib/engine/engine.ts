@@ -69,6 +69,7 @@ export function createInitialState(
     unlockedFeatures: [],
     civic: characterType === "mayor" ? undefined : {},
     finishedAt: null,
+    yearMigrated: true, // new games already start in the current (2026) baseline
   };
 }
 

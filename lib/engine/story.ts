@@ -57,7 +57,7 @@ export const STORY_BEATS: StoryBeat[] = [
       "The scientists are unanimous, if we cross 600 ppm, it's over. Failed harvests, a flooded harbor, summers nobody can work through.",
       "But we have time, and we have a county full of people who want a future. Open the map. Pick a region. Let's put steel in the ground. Or rather, trees in the ground.",
     ],
-    trigger: (s) => s.year === 2025 && s.month >= 2,
+    trigger: (s) => s.year === 2026 && s.month >= 2,
     cta: "Let's get to work",
   },
   {
@@ -72,7 +72,7 @@ export const STORY_BEATS: StoryBeat[] = [
       "Every project you build pushes that number down. Get it to zero or below, net-zero, and we've won, even if it's not yet 2050.",
       "And terrain matters. Solar loves the open plains; wind and geothermal want the mountains; algae and scrubbers belong on the coast and in the city. Build where the land works for you and you'll get more out of every project.",
     ],
-    trigger: (s) => s.year === 2025 && s.month >= 3,
+    trigger: (s) => s.year === 2026 && s.month >= 3,
     cta: "Understood",
   },
 
@@ -108,7 +108,7 @@ export const STORY_BEATS: StoryBeat[] = [
       "Second, and this is the part people miss, completed research makes the infrastructure you ALREADY built more efficient. Research a Smart Grid and every solar panel and EV depot you own quietly starts producing more. Your past investments keep paying off.",
       "Founding a corporation costs money up front plus a monthly operating budget, and the work takes years. Start early. The sooner you fund it, the sooner the whole county compounds.",
     ],
-    trigger: (s) => s.builtInfra.length >= 2 || (s.year === 2025 && s.month >= 6),
+    trigger: (s) => s.builtInfra.length >= 2 || (s.year === 2026 && s.month >= 6),
     modes: ["mayor"], // research is a mayor-only feature
     unlocks: ["research"],
     cta: "Unlock Research",
