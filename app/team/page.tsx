@@ -5,9 +5,9 @@ export const metadata = { title: "Our Team, Carbon Cleaner" };
 
 // Photos live in /public/team/ (drop the image files there; see render below).
 const team = [
-  { name: "Dohun Kim", role: "Game Designer & Developer", photo: "/team/dohun-kim.jpg", blurb: "Developer with a passion for clean code. Strategic game designer." },
-  { name: "Raymond Kwok", role: "Researcher", photo: "/team/raymond-kwok.jpg", blurb: "Dedicated researcher exploring innovative solutions." },
-  { name: "Arnie Sreeram", role: "Game Designer & Developer", photo: "/team/arnie-sreeram.jpg", blurb: "Creative game designer with a keen eye for detail." },
+  { name: "Dohun Kim", role: "Game Designer & Developer", photo: "/team/dohun-kim.png", blurb: "Developer with a passion for clean code. Strategic game designer." },
+  { name: "Raymond Kwok", role: "Researcher", photo: "/team/raymond-kwok.png", blurb: "Dedicated researcher exploring innovative solutions." },
+  { name: "Arnie Sreeram", role: "Game Designer & Developer", photo: "/team/arnie-sreeram.png", blurb: "Creative game designer with a keen eye for detail." },
 ];
 
 export default function TeamPage() {
