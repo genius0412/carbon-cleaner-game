@@ -46,7 +46,7 @@ export function OnboardingTour({
         part: 1,
         selector: '[data-tour="gauges"]',
         title: "Your four vital signs",
-        body: "Carbon Gain (per month): drive this to zero to win. Carbon: your current level, don't let it hit the cap. Support: keep people on your side or you lose the power to act. Budget: what you can spend.",
+        body: "Carbon Gain is the one to watch. Get it to zero and hold it for a year to win. Carbon is your running total, and if it hits 600 you lose. Support keeps your power to act, and Budget is what you can spend.",
       },
       {
         part: 1,
@@ -76,7 +76,7 @@ export function OnboardingTour({
       {
         part: 2,
         title: "Extras",
-        body: "Join a class to put your city on a live scoreboard, and replay this tour anytime from the “?” button.",
+        body: "Join a class to put your county on a live scoreboard, and replay this tour anytime from the “?” button.",
       },
       {
         part: 2,

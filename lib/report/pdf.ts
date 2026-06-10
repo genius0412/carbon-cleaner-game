@@ -2,14 +2,13 @@
 
 /**
  * Client-side PDF generation for the final report (jsPDF).
- * Includes: city/mode, final stats, action timeline, civic-action letter,
- * proof screenshot (if available), and the MLA bibliography.
+ * Includes: county/mode, final stats, action timeline, civic-action letter,
+ * and the proof screenshot (if available).
  */
 
 import { jsPDF } from "jspdf";
 import type { GameState } from "../engine/types";
 import { formatYearMonth, effectiveCarbonGain } from "../engine/engine";
-import { aggregatedSources, allBlanks, blankTag } from "../config/dataBlanks";
 
 async function loadImageDataUrl(url: string): Promise<{ data: string; w: number; h: number } | null> {
   try {
@@ -130,20 +129,6 @@ export async function generateReportPdf(state: GameState, proofUrl: string | nul
         body("(Proof image could not be embedded.)", 9);
       }
     }
-  }
-
-  // Bibliography
-  heading("Bibliography (MLA)");
-  const sources = aggregatedSources();
-  if (sources.length === 0) {
-    body(
-      "No sources cited yet. Outstanding data points needing citations: " +
-        allBlanks().filter((b) => !b.source).map((b) => blankTag(b.id)).join(", ") +
-        ".",
-      9,
-    );
-  } else {
-    sources.forEach((s) => body(s.source, 10));
   }
 
   doc.save(`${state.cityName.replace(/\s+/g, "-")}-carbon-cleaner-report.pdf`);

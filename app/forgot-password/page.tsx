@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
     setOk(false);
     const sb = getSupabaseBrowser();
     if (!sb) {
-      setMsg("Supabase isn't configured.");
+      setMsg("Password reset isn't available right now.");
       setBusy(false);
       return;
     }

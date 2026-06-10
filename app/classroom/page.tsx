@@ -38,20 +38,18 @@ function friendlyClassError(error: {
   const code = error.code;
 
   // Table/policies not applied in the live database (schema drift).
-  if (/permission denied for (table|relation|schema)/i.test(msg)) {
-    return "Your Supabase database is missing INSERT permission on the classrooms table. Re-run the schema GRANTs (see README/schema.sql).";
-  }
-  if (code === "42P01" || /does not exist/i.test(msg)) {
-    return "The classrooms table doesn't exist in your database yet, run schema.sql in Supabase.";
-  }
-  if (/row-level security/i.test(msg)) {
-    return "Blocked by row-level security on classrooms. Re-run the classroom policies from schema.sql in Supabase.";
+  if (
+    /permission denied for (table|relation|schema)/i.test(msg) ||
+    code === "42P01" ||
+    /does not exist/i.test(msg) ||
+    /row-level security/i.test(msg)
+  ) {
+    return "Classrooms aren't available right now. Please try again later.";
   }
   if (code === "PGRST301" || /jwt|not authenticated/i.test(msg)) {
     return "Your session wasn't recognized, please log in again.";
   }
-  // Fall back to the raw reason so nothing is hidden.
-  return msg ? `Couldn't create class: ${msg}` : "Couldn't create a class code. Please try again.";
+  return "Couldn't create a class code. Please try again.";
 }
 
 export default function ClassroomPage() {
@@ -544,7 +542,7 @@ function JoinWithGameSection() {
       <Card className="mt-6">
         <h2 className="font-display text-xl font-semibold text-cyan">Join a class with your game</h2>
         <p className="mt-1 text-sm text-mist">
-          To put your city on a class scoreboard, you first need a game going.
+          To put your county on a class scoreboard, you first need a game going.
           Start or continue one, then come back here with your teacher&apos;s code.
         </p>
         <Link

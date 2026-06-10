@@ -25,7 +25,7 @@ const SCENES: Scene[] = [
     accent: "amber",
     body: [
       "Carbon dioxide is piling up in the sky and trapping heat. Worldwide it has climbed past 430 parts per million and keeps rising.",
-      "Here in Verdana, the count sits at 430 ppm and gains a little more every single month. Cross 600 and the harvests fail, the coast floods, and there is no coming back.",
+      "Here in our county, the count sits at 430 ppm and gains a little more every single month. Cross 600 and the harvests fail, the coast floods, and there is no coming back.",
     ],
   },
   {
@@ -34,7 +34,7 @@ const SCENES: Scene[] = [
     title: "Your mission, until 2050",
     accent: "leaf",
     body: [
-      "Bend the curve. Get the county's monthly carbon gain down to zero, net-zero, before 2050.",
+      "Bend the curve. Get the county's monthly carbon gain down to zero and keep it there, before 2050.",
       "Build clean infrastructure across the map, fund breakthrough research, pass bold laws, and plant living carbon sinks. Every region is a choice.",
     ],
   },
@@ -44,7 +44,7 @@ const SCENES: Scene[] = [
     title: "You can't do it alone",
     accent: "cyan",
     body: [
-      "Every decision spends two currencies: money, and the public's trust. Push too hard and support collapses, and a county that won't follow you can't be saved.",
+      "Every decision spends two things, money and the public's trust. Push too hard and support collapses, and a county that won't follow you can't be saved.",
       "Your advisors and your citizens will speak up along the way. Listen to them. The people are not a gauge to manage; they're how you win.",
     ],
   },

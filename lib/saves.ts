@@ -297,14 +297,27 @@ export async function updatePlayerNameForUser(
   }
 }
 
-/** Delete a cloud save by id. */
-export async function deleteCloudSave(id: string): Promise<void> {
+/** Delete a cloud save by id. Returns false when the row is still there
+ *  afterwards (network error, or the delete was blocked by RLS). */
+export async function deleteCloudSave(id: string): Promise<boolean> {
   const sb = getSupabaseBrowser();
-  if (!sb) return;
+  if (!sb) return true;
   try {
-    await sb.from("game_saves").delete().eq("id", id);
+    const { data, error } = await sb
+      .from("game_saves")
+      .delete()
+      .eq("id", id)
+      .select("id");
+    if (!error && (data?.length ?? 0) > 0) return true;
+    // 0 rows deleted: either already gone (fine) or silently blocked — check.
+    const { data: still } = await sb
+      .from("game_saves")
+      .select("id")
+      .eq("id", id)
+      .maybeSingle();
+    return !still;
   } catch {
-    /* ignore */
+    return false;
   }
 }
 

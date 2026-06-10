@@ -10,6 +10,7 @@ import { useAutoPause } from "../useAutoPause";
 import { ChallengeModal } from "../challenges/ChallengeModal";
 import { STUDENT_ACTIONS } from "@/lib/engine/studentActions";
 import { studentActionStatus } from "@/lib/engine/engine";
+import { gainCut } from "../impact";
 import type {
   GameState,
   StudentActionCategory,
@@ -48,7 +49,7 @@ export function StudentActionsPanel({
   return (
     <Modal open={open} onClose={onClose} title="Take Action" wide>
       <p className="-mt-2 mb-4 text-sm text-mist">
-        You don't need a city budget to make a difference. Organize, advocate,
+        You don't need a county budget to make a difference. Organize, advocate,
         and change habits, every action builds public support and chips away at
         emissions. Repeat your favourites (they get a little less effective each
         time) and run fundraisers to bankroll trees and local builds.
@@ -113,6 +114,10 @@ function ActionCard({
   const status = studentActionStatus(game, def.id);
   const tooPoor = def.cost > 0 && game.budget < def.cost;
   const disabled = !status.available || tooPoor;
+  // What the NEXT use of this action delivers, after diminishing returns on
+  // repeats and any synergy boost, so "Do again" shows its real current value.
+  const nextFactor = Math.pow(def.diminishing, status.count) * (1 + status.synergyBonus);
+  const nextCarbon = def.carbonDelta * nextFactor;
 
   const buttonLabel = status.locked
     ? "🔒 Locked"
@@ -145,7 +150,9 @@ function ActionCard({
           <Chip className="text-leaf">⚡ boosts every other action</Chip>
         ) : null}
         {def.carbonDelta < 0 && (
-          <Chip className="text-leaf">🌿 cuts emissions</Chip>
+          <Chip className="text-leaf">
+            🌿 cuts carbon gain {gainCut(nextCarbon)}
+          </Chip>
         )}
         {def.supportDelta > 0 && (
           <Chip className="text-cyan">👥 +{def.supportDelta}% support</Chip>

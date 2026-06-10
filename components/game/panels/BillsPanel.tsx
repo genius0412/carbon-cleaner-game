@@ -6,6 +6,7 @@ import { DataChip } from "@/components/ui/DataChip";
 import { useGameStore } from "@/lib/store";
 import { useAutoPause } from "../useAutoPause";
 import { BILLS } from "@/lib/engine/content";
+import { gainCut } from "../impact";
 import { GAME } from "@/lib/config/gameConstants";
 
 export function BillsPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -48,7 +49,9 @@ export function BillsPanel({ open, onClose }: { open: boolean; onClose: () => vo
                 </p>
               )}
               <div className="mt-2 space-y-0.5 text-[11px]">
-                <p className="text-leaf">Carbon: {b.carbonDelta.toFixed(4)} ppm/mo</p>
+                <p className="text-leaf">
+                  🌿 Cuts carbon gain by {gainCut(b.carbonDelta)}
+                </p>
                 <p className="text-amber">Support: {b.supportImpact}%</p>
                 {b.budgetDelta ? <p className="text-leaf">Budget: +${b.budgetDelta.toLocaleString()}</p> : null}
               </div>

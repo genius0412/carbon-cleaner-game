@@ -16,7 +16,7 @@ State: React state/Context (or Zustand) for the live game loop; persist to Supab
 Project hygiene: clear folder structure, commented code, a README.md with setup steps (Supabase project creation, env vars, SQL migration, npm run dev), and the DATA_TO_FILL.md and supabase/schema.sql files.
 Keep the game loop in one well-isolated module (e.g. lib/engine/) so the simulation logic is testable and separate from UI.
 2. The fictional world
-The game is set in a fictional U.S.-style state (default name Verdana, but the player names their own city, see §6). Default starting conditions (these are tunable game constants, NOT real-world data, keep as given unless noted):
+The game is set in the player's own fictional U.S. county (the player names it, see §6). Default starting conditions (these are tunable game constants, NOT real-world data). NOTE: balance has since been retuned in code — lib/config/gameConstants.ts, lib/engine/content.ts, and lib/engine/studentActions.ts are the source of truth, and scripts/sim-test.ts asserts the difficulty targets (mayor hard, diligent student attainable, win = hold net-zero 12 months):
 Year: January 2026, ends December 2050 (game over Jan 2051).
 Population: 100,000.
 Starting global CO₂: 430 ppm. Failure threshold: 600 ppm.
@@ -103,7 +103,7 @@ Founding
 Monthly
 Timeline
 Unlocks
-Verdana EV Research Institute
+State EV Research Institute
 $500k
 $10k
 24 mo

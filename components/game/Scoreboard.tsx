@@ -139,11 +139,15 @@ export function Scoreboard({
                             You
                           </span>
                         )}
-                        {r.finished_at && (
+                        {r.status === "won" ? (
                           <span className="rounded-full bg-leaf/15 px-2 py-0.5 text-[10px] text-leaf">
                             ✓ net-zero
                           </span>
-                        )}
+                        ) : r.finished_at ? (
+                          <span className="rounded-full bg-white/8 px-2 py-0.5 text-[10px] text-mist">
+                            game over
+                          </span>
+                        ) : null}
                       </div>
                       {r.player_name && (
                         <span className="text-xs text-mist">{r.player_name}</span>

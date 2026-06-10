@@ -46,13 +46,14 @@ export function createInitialState(
   return {
     mode,
     characterType,
-    cityName: cityName || `${GAME.stateName} City`,
+    cityName: cityName || "Greenfield County",
     createdAt: new Date().toISOString(),
     year: GAME.startYear,
     month: GAME.startMonth,
     status: "playing",
     carbonPpm: GAME.startingCarbonPpm,
-    carbonGainPerMonth: GAME.startingCarbonGainPerMonth,
+    carbonGainPerMonth: baseCarbonGain(mode),
+    netZeroMonths: 0,
     support: mode === "mayor" ? GAME.mayorStartingSupport : GAME.startingSupport,
     budget,
     regions: buildRegions(),
@@ -89,6 +90,13 @@ export function formatYearMonth(state: GameState): string {
 
 export function clampSupport(s: number): number {
   return Math.max(GAME.supportMin, Math.min(GAME.supportMax, s));
+}
+
+/** Baseline emissions for a mode (mayors answer for far more of the county). */
+export function baseCarbonGain(mode: GameState["mode"]): number {
+  return mode === "student"
+    ? GAME.student.startingCarbonGainPerMonth
+    : GAME.startingCarbonGainPerMonth;
 }
 
 /**
@@ -150,7 +158,7 @@ export function researchBoostSummary(
  * even after retroactive research boosts.
  */
 export function recomputeCarbonGain(state: GameState): number {
-  let gain = GAME.startingCarbonGainPerMonth;
+  let gain = baseCarbonGain(state.mode);
 
   // infrastructure
   for (const b of state.builtInfra) {
@@ -167,14 +175,10 @@ export function recomputeCarbonGain(state: GameState): number {
   }
 
   // trees: convert kg CO2/yr -> a tiny ppm/mo gameplay effect.
-  // Scale factor is a gameplay constant; tree CO2 figures are data blanks.
   for (const t of state.trees) {
     const def = TREES.find((x) => x.id === t.defId);
     if (!def) continue;
-    const treesTotal = t.batches * GAME.treesPerBatch;
-    const kgPerYear = treesTotal * def.co2PerYearPerTree;
-    // 1,000,000 kg/yr ~= 0.001 ppm/mo reduction (balance constant)
-    gain -= (kgPerYear / 1_000_000) * 0.001;
+    gain -= treesDelta(def, t.batches);
   }
 
   // civic action boost (student)
@@ -186,6 +190,19 @@ export function recomputeCarbonGain(state: GameState): number {
   gain += state.studentActionCarbon ?? 0;
 
   return gain;
+}
+
+/**
+ * ppm/mo reduction from planting `batches` of a tree species. Converts the
+ * species' kg CO2/yr into the gameplay effect: 1,000,000 kg/yr ~= 0.001 ppm/mo
+ * (balance constant); tree CO2 figures themselves are cited data.
+ */
+export function treesDelta(
+  def: { co2PerYearPerTree: number },
+  batches: number,
+): number {
+  const kgPerYear = batches * GAME.treesPerBatch * def.co2PerYearPerTree;
+  return (kgPerYear / 1_000_000) * 0.001;
 }
 
 /** Absolute month index for cooldown math: year*12 + (month-1). */
@@ -306,6 +323,10 @@ export function tickMonth(prev: GameState): GameState {
   state.carbonGainPerMonth = recomputeCarbonGain(state);
   const effGain = effectiveCarbonGain(state);
   state.carbonPpm = Math.max(0, state.carbonPpm + effGain);
+  // The net-zero hold streak only advances with real months on the clock, so
+  // touching zero for an instant (or buying a win mid-month) isn't enough.
+  state.netZeroMonths =
+    effGain <= GAME.netZeroThreshold ? (state.netZeroMonths ?? 0) + 1 : 0;
 
   // 4) advance the calendar
   let month = state.month + 1;
@@ -350,8 +371,8 @@ export function evaluateStatus(state: GameState): GameState["status"] {
     state.lostReason = "carbon";
     return "lost";
   }
-  // win: effective gain at or below net-zero, before Jan 2051
-  if (effectiveCarbonGain(state) <= GAME.netZeroThreshold) {
+  // win: net-zero held for a full year, before Jan 2051
+  if ((state.netZeroMonths ?? 0) >= GAME.netZeroHoldMonths) {
     // require minimal governing function (support not in total paralysis)
     if (state.support >= GAME.supportParalysisBelow) return "won";
   }
@@ -639,11 +660,14 @@ export function plantTrees(
     : [...prev.trees, { defId: treeDefId, batches }];
 
   const totalTrees = batches * GAME.treesPerBatch;
+  // Goodwill scales with the size of the program, capped: token plantings
+  // can't be spammed to farm approval between unpopular moves.
+  const supportBump = Math.min(2, cost / 50_000);
   const state: GameState = {
     ...prev,
     budget: prev.budget - cost,
     trees,
-    support: clampSupport(prev.support + 1),
+    support: clampSupport(prev.support + supportBump),
     log: [
       ...prev.log,
       {

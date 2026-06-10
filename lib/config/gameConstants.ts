@@ -10,7 +10,6 @@
 
 export const GAME = {
   // --- World framing (fictional) ---
-  stateName: "Verdana",
   population: 100_000,
 
   // --- Time ---
@@ -25,10 +24,15 @@ export const GAME = {
   startingCarbonPpm: 430,
   failureCarbonPpm: 600,
   // The county starts emitting: positive carbon gain per month (ppm/mo).
-  // This is a gameplay value, not a real measurement.
-  startingCarbonGainPerMonth: 0.045,
-  // Win when carbon gain per month <= this.
+  // This is a gameplay value, not a real measurement. The mayor answers for
+  // the whole county's emissions (and has the tools to match); students fight
+  // a smaller share they can plausibly move through grassroots action.
+  startingCarbonGainPerMonth: 0.065,
+  // Net-zero is carbon gain per month <= this...
   netZeroThreshold: 0.0,
+  // ...held for this many consecutive months to win. A single lucky month
+  // isn't a cured county; this also stops day-one insta-wins.
+  netZeroHoldMonths: 12,
 
   // --- Population support (%) ---
   startingSupport: 65,
@@ -56,6 +60,10 @@ export const GAME = {
 
   // --- Student mode adjustments ---
   student: {
+    // Students tackle a smaller, school-and-neighbourhood share of emissions.
+    // Tuned so a student who works the action menu steadily, sends the civic
+    // letter, and plants some trees reaches net-zero with room to spare.
+    startingCarbonGainPerMonth: 0.04,
     // Small budgets: students act mainly through advocacy + civic action, but
     // older students can still afford a couple of small-scale local builds
     // (e.g. the $90k tree initiative).

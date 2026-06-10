@@ -136,6 +136,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     unlockedFeatures: state.unlockedFeatures ?? [],
     studentActions: state.studentActions ?? [],
     studentActionCarbon: state.studentActionCarbon ?? 0,
+    netZeroMonths: state.netZeroMonths ?? 0,
     // One-time shift: saves made before the 2026 baseline get +1 year so the
     // date doesn't look stale. Idempotent via the yearMigrated flag.
     year: state.yearMigrated ? state.year : state.year + 1,
@@ -156,7 +157,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     set({
       lastFeedback: {
         title: "⚠️ Re-election at risk",
-        message: `Approval has dropped to ${Math.round(game.support)}%. Try to gain more support among your population — you need to be re-voted in ${electionYear} and must stay above ${GAME.election.minSupport}%!`,
+        message: `Approval is down to ${Math.round(game.support)}%. The ${electionYear} election is coming, and you need at least ${GAME.election.minSupport}% to stay in office. Win some goodwill back before then.`,
         ok: false,
       },
     });

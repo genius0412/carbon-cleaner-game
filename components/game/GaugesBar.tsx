@@ -8,6 +8,7 @@ import type { GameState } from "@/lib/engine/types";
 
 export function GaugesBar({ game }: { game: GameState }) {
   const effGain = effectiveCarbonGain(game);
+  const holdLeft = GAME.netZeroHoldMonths - (game.netZeroMonths ?? 0);
   const ppmRange = GAME.failureCarbonPpm - GAME.startingCarbonPpm;
   const ppmFill = (game.carbonPpm - GAME.startingCarbonPpm) / ppmRange;
 
@@ -22,7 +23,11 @@ export function GaugesBar({ game }: { game: GameState }) {
           label="Carbon Gain / mo"
           value={`${effGain >= 0 ? "+" : ""}${effGain.toFixed(4)} ppm`}
           tone={effGain <= 0 ? "leaf" : effGain < 0.02 ? "amber" : "danger"}
-          hint={effGain <= 0 ? "Net-zero reached!" : "Goal: ≤ 0.0000"}
+          hint={
+            effGain <= 0
+              ? `Net-zero! Hold ${holdLeft} more month${holdLeft === 1 ? "" : "s"}`
+              : "Goal: ≤ 0.0000"
+          }
         />
       ),
       pulse: effGain.toFixed(4),

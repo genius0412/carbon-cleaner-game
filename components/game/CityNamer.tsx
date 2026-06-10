@@ -79,9 +79,9 @@ export function CityNamer({ onConfirm }: { onConfirm: (name: string) => void }) 
 
   return (
     <div className="mx-auto max-w-xl text-center">
-      <h1 className="font-display text-4xl font-semibold">Name your city</h1>
+      <h1 className="font-display text-4xl font-semibold">Name your county</h1>
       <p className="mt-3 text-mist">
-        Spin the two wheels to name your city. You get {SPIN_LIMIT} spins, no
+        Spin the two wheels to name your county. You get {SPIN_LIMIT} spins, no
         typing, let fate (and good word lists) decide.
       </p>
 
@@ -93,7 +93,7 @@ export function CityNamer({ onConfirm }: { onConfirm: (name: string) => void }) 
         </div>
 
         <div className="mt-8">
-          <p className="text-xs uppercase tracking-widest text-mist">Your city</p>
+          <p className="text-xs uppercase tracking-widest text-mist">Your county</p>
           <AnimatePresence mode="wait">
             <motion.p
               key={spinning ? "spinning" : name}
@@ -120,7 +120,7 @@ export function CityNamer({ onConfirm }: { onConfirm: (name: string) => void }) 
                 : `🎲 Spin the wheels (${SPIN_LIMIT})`}
           </Button>
           <Button onClick={() => onConfirm(name)} disabled={spinning || !hasSpun}>
-            {hasSpun ? `Found ${name} →` : "Spin to name your city"}
+            {hasSpun ? `Found ${name} →` : "Spin to name your county"}
           </Button>
         </div>
       </Card>

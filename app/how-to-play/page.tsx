@@ -6,7 +6,7 @@ export const metadata = { title: "How to Play, Carbon Cleaner" };
 
 const gauges = [
   { name: "Year / Month", desc: "The clock runs Jan 2026 → Dec 2050. At 1x, one in-game month passes per real minute." },
-  { name: "Carbon Gain / Month", desc: "The key metric: how much CO₂ (ppm) your county adds each month. Drive it to ≤ 0.00 to win." },
+  { name: "Carbon Gain / Month", desc: "How much CO₂ (in ppm) your county adds each month. Get it to 0.00 or below and hold it for a year to win." },
   { name: "Current Carbon (ppm)", desc: "Starts at 430. If it hits 600, the game is lost." },
   { name: "Population Support", desc: "0–100%. The Mayor starts at 55%. Below 50% bills can't pass; below 30% residents undermine progress. As Mayor, keep it above 50% to survive re-election." },
   { name: "Budget", desc: "Starts at $2M (Mayor), plus a steady monthly municipal grant. Every project draws from it." },
@@ -19,8 +19,7 @@ export default function HowToPlayPage() {
       <section className="z-10 mx-auto w-full max-w-4xl px-6 py-12">
         <h1 className="font-display text-4xl font-semibold sm:text-5xl">How to Play</h1>
         <p className="mt-4 max-w-2xl text-lg text-mist">
-          Your mandate: reach net-zero carbon by 2050 without losing the public's
-          trust.
+          Reach net-zero carbon by 2050 without losing the public&apos;s trust.
         </p>
 
         <h2 className="mt-10 font-display text-2xl font-semibold text-leaf">The gauges</h2>
@@ -48,7 +47,7 @@ export default function HowToPlayPage() {
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <Card>
             <h3 className="font-display font-semibold text-fog">🏛️ Mayor</h3>
-            <p className="mt-1 text-sm text-mist">Full powers: the Shop, Research Corporations, Bills, and Tree Planting. Upgrade existing facilities to multiply their capture. The complete strategy loop.</p>
+            <p className="mt-1 text-sm text-mist">You get every tool, building, research, bills, and tree planting, plus upgrades that multiply what your facilities capture.</p>
           </Card>
           <Card>
             <h3 className="font-display font-semibold text-fog">🎓 Older Student</h3>
@@ -63,11 +62,11 @@ export default function HowToPlayPage() {
         <h2 className="mt-12 font-display text-2xl font-semibold text-leaf">Win &amp; lose</h2>
         <Card className="mt-4">
           <p className="text-sm text-fog/90">
-            <strong className="text-leaf">Win</strong> by getting Carbon Gain/Month to ≤ 0.00 any time before December 2050 (with at least minimal governing support).
+            <strong className="text-leaf">Win</strong> by getting Carbon Gain/Month to ≤ 0.00 and holding it there for 12 months in a row, any time before December 2050 (with at least minimal governing support).
             <br />
             <strong className="text-danger">Lose</strong> if you reach January 2051 without net-zero, or if Current Carbon hits 600 ppm.
             <br />
-            <strong className="text-amber">Mayor only:</strong> you govern on a 4-year term. There's a re-election every four years (2028, 2032, …) — if your approval is below 50% that January, you're voted out and the game ends.
+            <strong className="text-amber">Mayor only:</strong> you govern on a 4-year term, with a re-election in 2028 and every four years after. If your approval is below 50% that January, you're voted out and the game ends.
           </p>
         </Card>
 

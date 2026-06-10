@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LeafLogo } from "@/components/ui/LeafLogo";
-import { AccountLink } from "@/components/auth/AccountLink";
+import { AuthNav } from "@/components/auth/AccountLink";
+import { FEEDBACK_FORM_URL, ISSUE_FORM_URL } from "@/lib/links";
 
 const links = [
   { href: "/about", label: "About" },
@@ -23,7 +24,7 @@ export function SiteNav() {
             {l.label}
           </Link>
         ))}
-        <AccountLink />
+        <AuthNav />
         <Link
           href="/play"
           className="rounded-full bg-leaf px-5 py-2 font-semibold text-night transition-transform hover:scale-105"
@@ -31,12 +32,15 @@ export function SiteNav() {
           Play
         </Link>
       </nav>
-      <Link
-        href="/play"
-        className="rounded-full bg-leaf px-4 py-1.5 text-sm font-semibold text-night sm:hidden"
-      >
-        Play
-      </Link>
+      <div className="flex items-center gap-3 sm:hidden">
+        <AuthNav compact />
+        <Link
+          href="/play"
+          className="rounded-full bg-leaf px-4 py-1.5 text-sm font-semibold text-night"
+        >
+          Play
+        </Link>
+      </div>
     </header>
   );
 }
@@ -55,6 +59,22 @@ export function SiteFooter() {
           <Link href="/team" className="hover:text-fog">Team</Link>
           <Link href="/sources" className="hover:text-fog">Sources</Link>
           <Link href="/classroom" className="hover:text-fog">Classroom</Link>
+          <a
+            href={FEEDBACK_FORM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-fog"
+          >
+            Feedback ↗
+          </a>
+          <a
+            href={ISSUE_FORM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-fog"
+          >
+            Report an issue ↗
+          </a>
         </nav>
         <p>
           Carbon Cleaner · An AP World History civic-action project on climate change ·
