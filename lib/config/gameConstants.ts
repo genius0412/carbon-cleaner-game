@@ -32,10 +32,14 @@ export const GAME = {
 
   // --- Population support (%) ---
   startingSupport: 65,
+  // The mayor starts mid-term with thinner approval, so buying unpopular things
+  // carelessly can cost the next election.
+  mayorStartingSupport: 55,
   supportMin: 0,
   supportMax: 100,
-  // Passive recovery when no negative action taken this month.
-  passiveSupportRecoveryPerMonth: 0.5,
+  // Passive recovery when no negative action taken this month. ~3%/year so
+  // idling/skipping no longer floods support back up.
+  passiveSupportRecoveryPerMonth: 0.25,
   passiveRecoveryCap: 80, // cannot passively rise above this
   // Thresholds for governance effects.
   supportBillsBlockedBelow: 50, // bills cannot pass under this
@@ -71,6 +75,29 @@ export const GAME = {
   // matching/mismatching terrain (gameplay balance, not real data).
   terrainBonus: 1.25,
   terrainPenalty: 0.8,
+
+  // --- Elections (mayor only) ---
+  // The mayor governs on a 4-year term and starts mid-term: the first re-election
+  // is in 2028, then every 4 years (2032, 2036, ...). If approval is below
+  // minSupport at the January of an election year, the mayor is voted out (loss).
+  election: {
+    firstYear: 2028,
+    termYears: 4,
+    minSupport: 50, // must be at/above this to win re-election
+    warnSupport: 40, // drop to/below this and a "win back support" warning fires
+  },
+
+  // --- Facility upgrades ---
+  // Existing infrastructure can be upgraded to deepen its carbon capture. Each
+  // level multiplies the facility's effective reduction by its level number
+  // (L2 = 2x, L3 = 3x). Upgrading is costly (escalates with level) but pays off.
+  upgrade: {
+    maxLevel: 3,
+    // Cost to go from level L -> L+1 = base build cost * costFactor * L.
+    costFactor: 1.5,
+    // Small approval bump per upgrade (visible civic improvement).
+    supportPerLevel: 1,
+  },
 
   // --- Tree planting ---
   treesPerBatch: 10,

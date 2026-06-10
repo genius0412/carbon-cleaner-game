@@ -25,7 +25,7 @@ const assert = (cond: boolean, msg: string) => {
 };
 
 assert(state.carbonGainPerMonth > 0, "starts emitting (positive gain)");
-assert(state.support === 65, "starts at 65% support");
+assert(state.support === 55, "mayor starts at 55% support");
 assert(state.budget === 2_000_000, "mayor starts with $2M");
 
 // Greedy strategy played out month-by-month, keeping a cash reserve.
@@ -57,11 +57,15 @@ while (state.status === "playing" && months < 1000) {
     }
   }
 
-  // 3) build the strongest unlocked infra on an empty region we can afford
+  // 3) build the strongest unlocked infra on an empty region we can afford.
+  //    Defend approval: only take support-costing builds while support is
+  //    healthy, so the recurring re-election (50% floor) is never lost.
   const emptyRegion = state.regions.find((rg) => !rg.builtInfraId);
   if (emptyRegion) {
     const options = INFRASTRUCTURE.filter(
-      (i) => !i.requiresResearch || state.completedResearch.includes(i.requiresResearch),
+      (i) =>
+        (!i.requiresResearch || state.completedResearch.includes(i.requiresResearch)) &&
+        (i.supportDelta >= 0 || state.support > 60),
     ).sort((a, b) => a.carbonDelta - b.carbonDelta);
     for (const opt of options) {
       if (state.budget - opt.cost > RESERVE) {

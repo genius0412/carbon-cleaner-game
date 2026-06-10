@@ -98,7 +98,7 @@ export interface TreeDef {
 /** A logged action for the timeline / final report. */
 export interface ActionLogEntry {
   yearMonth: string; // "March 2031"
-  type: "infrastructure" | "research" | "bill" | "trees" | "civic" | "student";
+  type: "infrastructure" | "research" | "bill" | "trees" | "civic" | "student" | "election";
   label: string;
   detail: string;
 }
@@ -177,7 +177,9 @@ export interface GameState {
 
   // world
   regions: Region[];
-  builtInfra: { infraId: string; regionId: string }[];
+  /** Built infrastructure per region. `level` (default 1) is the upgrade tier:
+   *  higher levels multiply that facility's carbon capture (see GAME.upgrade). */
+  builtInfra: { infraId: string; regionId: string; level?: number }[];
   completedResearch: string[];
   activeResearch: ActiveResearch[];
   passedBills: string[];
@@ -209,6 +211,13 @@ export interface GameState {
     proofPassedCheck?: boolean;
     boostApplied?: boolean;
   };
+
+  // elections (mayor only)
+  /** Why the game was lost, for end-screen messaging. */
+  lostReason?: "carbon" | "timeout" | "election";
+  /** The upcoming election year we've already shown the low-approval warning
+   *  for, so it fires at most once per term. */
+  electionWarningShownFor?: number;
 
   // meta
   finishedAt?: string | null;

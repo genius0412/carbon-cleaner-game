@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "@/lib/store";
+import { GAME } from "@/lib/config/gameConstants";
+import { upcomingElectionYear } from "@/lib/engine/engine";
 import type { Region } from "@/lib/engine/types";
 import { GaugesBar } from "./GaugesBar";
 import { GameClock } from "./GameClock";
@@ -276,6 +278,13 @@ export function Dashboard({ onExit }: { onExit?: () => void }) {
               <>
                 <p>Research done: {game.completedResearch.length}</p>
                 <p>Bills passed: {game.passedBills.length}</p>
+                <p
+                  className={
+                    game.support < GAME.election.minSupport ? "text-amber" : undefined
+                  }
+                >
+                  🗳️ Next election: {upcomingElectionYear(game)} (need ≥{GAME.election.minSupport}%)
+                </p>
               </>
             )}
             {isStudent && <p>Actions taken: {game.studentActions.length}</p>}

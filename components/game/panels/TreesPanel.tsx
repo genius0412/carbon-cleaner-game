@@ -24,9 +24,9 @@ export function TreesPanel({ open, onClose }: { open: boolean; onClose: () => vo
         value: <DataChip id={25} />.
       </p>
 
-      <div className="mb-4 flex items-center gap-3">
+      <div className="mb-4 flex flex-wrap items-center gap-3">
         <span className="text-sm text-mist">Batches ({GAME.treesPerBatch} trees each):</span>
-        {[1, 2, 5, 10].map((n) => (
+        {[1, 2, 5, 10, 25, 100].map((n) => (
           <button
             key={n}
             onClick={() => setBatches(n)}

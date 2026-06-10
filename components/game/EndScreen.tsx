@@ -6,12 +6,26 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useGameStore } from "@/lib/store";
 import { formatYearMonth, effectiveCarbonGain } from "@/lib/engine/engine";
+import { GAME } from "@/lib/config/gameConstants";
 import type { GameState } from "@/lib/engine/types";
 
 export function EndScreen({ game }: { game: GameState }) {
   const meta = useGameStore((s) => s.meta);
   const reset = useGameStore((s) => s.reset);
   const won = game.status === "won";
+  const votedOut = !won && game.lostReason === "election";
+
+  const icon = won ? "🌍✨" : votedOut ? "🗳️" : "⏳";
+  const heading = won
+    ? "Net-Zero Achieved!"
+    : votedOut
+      ? "Voted Out of Office"
+      : "Time Ran Out";
+  const blurb = won
+    ? `${game.cityName} reached carbon net-zero in ${formatYearMonth(game)}. You led your county to a livable future.`
+    : votedOut
+      ? `${game.cityName}'s voters didn't re-elect you — approval fell below ${GAME.election.minSupport}% at the ${formatYearMonth(game)} election. Build public support alongside your climate work next time.`
+      : `${game.cityName} didn't reach net-zero in time. The fight continues, try again with what you've learned.`;
 
   return (
     <motion.div
@@ -45,16 +59,10 @@ export function EndScreen({ game }: { game: GameState }) {
           animate={{ scale: 1, rotate: 0 }}
           transition={{ delay: 0.15, type: "spring", stiffness: 240 }}
         >
-          {won ? "🌍✨" : "⏳"}
+          {icon}
         </motion.div>
-        <h2 className="mt-4 font-display text-3xl font-semibold">
-          {won ? "Net-Zero Achieved!" : "Time Ran Out"}
-        </h2>
-        <p className="mt-2 text-mist">
-          {won
-            ? `${game.cityName} reached carbon net-zero in ${formatYearMonth(game)}. You led your county to a livable future.`
-            : `${game.cityName} didn't reach net-zero in time. The fight continues, try again with what you've learned.`}
-        </p>
+        <h2 className="mt-4 font-display text-3xl font-semibold">{heading}</h2>
+        <p className="mt-2 text-mist">{blurb}</p>
 
         <div className="mt-5 grid grid-cols-2 gap-2 text-sm">
           <Stat label="Final carbon gain" value={`${effectiveCarbonGain(game).toFixed(4)} ppm/mo`} />

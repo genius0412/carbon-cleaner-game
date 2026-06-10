@@ -53,7 +53,7 @@ export function createInitialState(
     status: "playing",
     carbonPpm: GAME.startingCarbonPpm,
     carbonGainPerMonth: GAME.startingCarbonGainPerMonth,
-    support: GAME.startingSupport,
+    support: mode === "mayor" ? GAME.mayorStartingSupport : GAME.startingSupport,
     budget,
     regions: buildRegions(),
     builtInfra: [],
@@ -98,6 +98,7 @@ export function effectiveInfraDelta(
   def: InfrastructureDef,
   region: Region,
   completedResearch: string[],
+  level: number = 1,
 ): number {
   let delta = def.carbonDelta;
 
@@ -109,6 +110,9 @@ export function effectiveInfraDelta(
   for (const rid of def.boostedBy) {
     if (completedResearch.includes(rid)) delta *= 1.25;
   }
+
+  // upgrade tier: each level scales capture linearly (L2 = 2x, L3 = 3x).
+  delta *= Math.max(1, level);
   return delta;
 }
 
@@ -125,11 +129,14 @@ export function researchBoostSummary(
     if (!def || !region) continue;
     if (def.boostedBy.includes(researchId)) {
       count++;
-      const before = effectiveInfraDelta(def, region, state.completedResearch);
-      const after = effectiveInfraDelta(def, region, [
-        ...state.completedResearch,
-        researchId,
-      ]);
+      const level = b.level ?? 1;
+      const before = effectiveInfraDelta(def, region, state.completedResearch, level);
+      const after = effectiveInfraDelta(
+        def,
+        region,
+        [...state.completedResearch, researchId],
+        level,
+      );
       added += before - after; // positive number = extra reduction
     }
   }
@@ -149,7 +156,7 @@ export function recomputeCarbonGain(state: GameState): number {
     const def = infraById(b.infraId);
     const region = state.regions.find((r) => r.id === b.regionId);
     if (!def || !region) continue;
-    gain += effectiveInfraDelta(def, region, state.completedResearch);
+    gain += effectiveInfraDelta(def, region, state.completedResearch, b.level ?? 1);
   }
 
   // bills
@@ -183,6 +190,25 @@ export function recomputeCarbonGain(state: GameState): number {
 /** Absolute month index for cooldown math: year*12 + (month-1). */
 export function monthIndex(state: GameState): number {
   return state.year * 12 + (state.month - 1);
+}
+
+/** Is `year` a mayoral election year (2028, 2032, ...)? */
+export function isElectionYear(year: number): boolean {
+  const { firstYear, termYears } = GAME.election;
+  return year >= firstYear && (year - firstYear) % termYears === 0;
+}
+
+/**
+ * The next election year strictly in the player's future. Elections resolve in
+ * the January of an election year, so an election that already resolved this
+ * very January counts as past (returns the following term's year).
+ */
+export function upcomingElectionYear(state: GameState): number {
+  const { firstYear, termYears } = GAME.election;
+  const now = state.year * 12 + (state.month - 1);
+  let e = firstYear;
+  while (e * 12 <= now) e += termYears; // Jan of year e == index e*12
+  return e;
 }
 
 /**
@@ -291,6 +317,23 @@ export function tickMonth(prev: GameState): GameState {
   state.year = year;
   state.tookNegativeActionThisMonth = false;
 
+  // 4b) mayoral election, resolved every January of an election year. Losing
+  // the vote (approval under the threshold) ends the game.
+  if (state.mode === "mayor" && state.month === 1 && isElectionYear(state.year)) {
+    if (state.support < GAME.election.minSupport) {
+      state.status = "lost";
+      state.lostReason = "election";
+      if (!state.finishedAt) state.finishedAt = new Date().toISOString();
+      return state;
+    }
+    state.log.push({
+      yearMonth: formatYearMonth(state),
+      type: "election",
+      label: "Won re-election",
+      detail: `Returned to office with ${Math.round(state.support)}% approval.`,
+    });
+  }
+
   // 5) win / lose checks
   state.status = evaluateStatus(state);
   if (state.status !== "playing" && !state.finishedAt) {
@@ -302,14 +345,20 @@ export function tickMonth(prev: GameState): GameState {
 
 export function evaluateStatus(state: GameState): GameState["status"] {
   // lose: carbon hits failure threshold
-  if (state.carbonPpm >= GAME.failureCarbonPpm) return "lost";
+  if (state.carbonPpm >= GAME.failureCarbonPpm) {
+    state.lostReason = "carbon";
+    return "lost";
+  }
   // win: effective gain at or below net-zero, before Jan 2051
   if (effectiveCarbonGain(state) <= GAME.netZeroThreshold) {
     // require minimal governing function (support not in total paralysis)
     if (state.support >= GAME.supportParalysisBelow) return "won";
   }
   // lose: reached Jan 2051 without net zero
-  if (state.year > GAME.endYear) return "lost";
+  if (state.year > GAME.endYear) {
+    state.lostReason = "timeout";
+    return "lost";
+  }
   return "playing";
 }
 
@@ -434,6 +483,69 @@ export function replaceInfrastructure(
   if (state.status !== "playing" && !state.finishedAt)
     state.finishedAt = new Date().toISOString();
   return { state, ok: true, message: def.feedback };
+}
+
+/** Current upgrade level of the facility built in a region (1 if none/base). */
+export function infraLevel(state: GameState, regionId: string): number {
+  return state.builtInfra.find((b) => b.regionId === regionId)?.level ?? 1;
+}
+
+/** Cost to upgrade a facility from its current level to the next one. */
+export function upgradeCost(def: InfrastructureDef, currentLevel: number): number {
+  return Math.round(def.cost * GAME.upgrade.costFactor * currentLevel);
+}
+
+/**
+ * Upgrade the facility already built in a region one tier higher. Each level
+ * scales its carbon capture (L2 = 2x, L3 = 3x) for an escalating cost, plus a
+ * small approval bump. Capped at GAME.upgrade.maxLevel.
+ */
+export function upgradeInfrastructure(prev: GameState, regionId: string): ActionResult {
+  const region = prev.regions.find((r) => r.id === regionId);
+  const built = prev.builtInfra.find((b) => b.regionId === regionId);
+  if (!region || !built)
+    return { state: prev, ok: false, message: "Nothing to upgrade here yet." };
+  const def = infraById(built.infraId);
+  if (!def) return { state: prev, ok: false, message: "Unknown infrastructure." };
+
+  const level = built.level ?? 1;
+  if (level >= GAME.upgrade.maxLevel)
+    return { state: prev, ok: false, message: "Already at the maximum upgrade level." };
+
+  let cost = upgradeCost(def, level);
+  if (prev.support < GAME.supportParalysisBelow) cost *= GAME.paralysisCostMultiplier;
+  if (prev.budget < cost)
+    return { state: prev, ok: false, message: "Not enough budget to upgrade." };
+
+  const nextLevel = level + 1;
+  const builtInfra = prev.builtInfra.map((b) =>
+    b.regionId === regionId ? { ...b, level: nextLevel } : b,
+  );
+
+  const state: GameState = {
+    ...prev,
+    budget: prev.budget - cost,
+    builtInfra,
+    support: clampSupport(prev.support + GAME.upgrade.supportPerLevel),
+    log: [
+      ...prev.log,
+      {
+        yearMonth: formatYearMonth(prev),
+        type: "infrastructure",
+        label: `Upgraded ${def.name} to Lvl ${nextLevel}`,
+        detail: `In ${region.name}. Cost $${cost.toLocaleString()}. Carbon capture now ${nextLevel}×.`,
+      },
+    ],
+  };
+  state.carbonGainPerMonth = recomputeCarbonGain(state);
+  state.status = evaluateStatus(state);
+  if (state.status !== "playing" && !state.finishedAt)
+    state.finishedAt = new Date().toISOString();
+  return {
+    state,
+    ok: true,
+    message: `${def.name} upgraded to Level ${nextLevel}. It now captures ${nextLevel}× the carbon.`,
+  };
 }
 
 export function foundResearch(prev: GameState, researchId: string): ActionResult {

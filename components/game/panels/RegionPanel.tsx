@@ -5,9 +5,15 @@ import { Button } from "@/components/ui/Button";
 import { DataChip } from "@/components/ui/DataChip";
 import { useGameStore } from "@/lib/store";
 import { useAutoPause } from "../useAutoPause";
-import { availableInfrastructure, effectiveInfraDelta } from "@/lib/engine/engine";
+import {
+  availableInfrastructure,
+  effectiveInfraDelta,
+  infraLevel,
+  upgradeCost,
+} from "@/lib/engine/engine";
 import { infraById } from "@/lib/engine/content";
 import { TERRAIN_LABELS } from "@/lib/engine/regions";
+import { GAME } from "@/lib/config/gameConstants";
 import type { Region } from "@/lib/engine/types";
 
 export function RegionPanel({
@@ -21,12 +27,14 @@ export function RegionPanel({
   const game = useGameStore((s) => s.game);
   const doBuild = useGameStore((s) => s.doBuild);
   const doReplace = useGameStore((s) => s.doReplace);
+  const doUpgrade = useGameStore((s) => s.doUpgrade);
 
   if (!region || !game) return null;
 
   const builtDef = region.builtInfraId ? infraById(region.builtInfraId) : null;
   const options = availableInfrastructure(game);
   const hasBuilt = !!region.builtInfraId;
+  const currentLevel = infraLevel(game, region.id);
 
   return (
     <Modal open={!!region} onClose={onClose} title={region.name} wide>
@@ -49,7 +57,12 @@ export function RegionPanel({
           const locked = def.requiresResearch && !game.completedResearch.includes(def.requiresResearch);
           const affordable = game.budget >= def.cost;
           const favored = def.favoredTerrain.includes(region.terrain);
-          const eff = effectiveInfraDelta(def, region, game.completedResearch);
+          const eff = effectiveInfraDelta(def, region, game.completedResearch, isBuilt ? currentLevel : 1);
+
+          // Upgrade economics for the facility already built here.
+          const atMaxLevel = currentLevel >= GAME.upgrade.maxLevel;
+          const upCost = upgradeCost(def, currentLevel);
+          const canAffordUpgrade = game.budget >= upCost;
 
           const label = isBuilt
             ? "✓ Exists"
@@ -70,7 +83,7 @@ export function RegionPanel({
                 <span className="text-2xl">{def.icon}</span>
                 {isBuilt ? (
                   <span className="rounded-full bg-leaf/15 px-2 py-0.5 text-[10px] text-leaf">
-                    built here
+                    built · Lvl {currentLevel}/{GAME.upgrade.maxLevel}
                   </span>
                 ) : favored ? (
                   <span className="rounded-full bg-leaf/15 px-2 py-0.5 text-[10px] text-leaf">
@@ -92,20 +105,42 @@ export function RegionPanel({
               )}
               <div className="mt-2 space-y-0.5 text-[11px]">
                 <p className="text-fog/80">Cost: ${def.cost.toLocaleString()}</p>
-                <p className="text-leaf">Carbon: {eff.toFixed(5)} ppm/mo</p>
+                <p className="text-leaf">
+                  Carbon: {eff.toFixed(5)} ppm/mo
+                  {isBuilt && currentLevel > 1 && (
+                    <span className="text-cyan"> · {currentLevel}× upgraded</span>
+                  )}
+                </p>
                 <p className={def.supportDelta >= 0 ? "text-leaf" : "text-amber"}>
                   Support: {def.supportDelta >= 0 ? "+" : ""}{def.supportDelta}%
                 </p>
               </div>
-              <Button
-                size="sm"
-                variant={isBuilt ? "ghost" : hasBuilt ? "secondary" : "primary"}
-                className="mt-3"
-                disabled={isBuilt || !!locked || !affordable}
-                onClick={() => (hasBuilt ? doReplace(region.id, def.id) : doBuild(region.id, def.id))}
-              >
-                {label}
-              </Button>
+              {isBuilt ? (
+                <Button
+                  size="sm"
+                  variant="primary"
+                  className="mt-3"
+                  disabled={atMaxLevel || !canAffordUpgrade}
+                  onClick={() => doUpgrade(region.id)}
+                  title={`Upgrade deepens carbon capture to ${currentLevel + 1}×`}
+                >
+                  {atMaxLevel
+                    ? "✓ Max level"
+                    : !canAffordUpgrade
+                      ? `Upgrade — need $${upCost.toLocaleString()}`
+                      : `⬆ Upgrade to Lvl ${currentLevel + 1} — $${upCost.toLocaleString()}`}
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant={hasBuilt ? "secondary" : "primary"}
+                  className="mt-3"
+                  disabled={!!locked || !affordable}
+                  onClick={() => (hasBuilt ? doReplace(region.id, def.id) : doBuild(region.id, def.id))}
+                >
+                  {label}
+                </Button>
+              )}
             </div>
           );
         })}

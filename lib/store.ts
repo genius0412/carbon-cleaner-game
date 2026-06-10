@@ -15,11 +15,13 @@ import {
   tickMonth,
   buildInfrastructure,
   replaceInfrastructure,
+  upgradeInfrastructure,
   foundResearch,
   passBill,
   plantTrees,
   applyCivicBoost,
   performStudentAction,
+  upcomingElectionYear,
   type ActionResult,
 } from "./engine/engine";
 import { persistSave, makeGuestCode, makeLocalId, type SaveMeta } from "./saves";
@@ -72,6 +74,7 @@ interface GameStore {
   // actions
   doBuild: (regionId: string, infraId: string) => void;
   doReplace: (regionId: string, infraId: string) => void;
+  doUpgrade: (regionId: string) => void;
   doResearch: (researchId: string) => void;
   doBill: (billId: string) => void;
   doTrees: (treeId: string, batches: number) => void;
@@ -126,6 +129,27 @@ export const useGameStore = create<GameStore>((set, get) => {
     year: state.yearMigrated ? state.year : state.year + 1,
     yearMigrated: true,
   });
+
+  /**
+   * Mayor only: when approval falls to/below the warning threshold and a
+   * re-election is coming up, surface a "win back support" warning once per
+   * term. Returns the (possibly flag-updated) state so the caller can store it.
+   */
+  const maybeElectionWarning = (game: GameState): GameState => {
+    if (game.mode !== "mayor" || game.status !== "playing") return game;
+    if (game.support > GAME.election.warnSupport) return game;
+    const electionYear = upcomingElectionYear(game);
+    if (game.electionWarningShownFor === electionYear) return game;
+    playSound("error");
+    set({
+      lastFeedback: {
+        title: "⚠️ Re-election at risk",
+        message: `Approval has dropped to ${Math.round(game.support)}%. Try to gain more support among your population — you need to be re-voted in ${electionYear} and must stay above ${GAME.election.minSupport}%!`,
+        ok: false,
+      },
+    });
+    return { ...game, electionWarningShownFor: electionYear };
+  };
 
   /** Fire a story beat if one is due and none is currently showing. */
   const maybeFireStory = (game: GameState) => {
@@ -213,7 +237,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       const { game, paused, openPanels, activeStory } = get();
       if (!game || game.status !== "playing") return;
       if (paused || openPanels > 0 || activeStory) return;
-      const next = tickMonth(game);
+      const next = maybeElectionWarning(tickMonth(game));
       set({ game: next });
       if (next.status !== "playing") {
         endSound(next.status);
@@ -244,6 +268,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       for (let i = 0; i < wholeMonths && next.status === "playing"; i++) {
         next = tickMonth(next);
       }
+      next = maybeElectionWarning(next);
       p = next.status === "playing" ? p - wholeMonths : 0;
       set({ game: next, monthProgress: p });
 
@@ -285,7 +310,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     skipMonth: () => {
       const { game, activeStory } = get();
       if (!game || game.status !== "playing" || activeStory) return;
-      const next = tickMonth(game);
+      const next = maybeElectionWarning(tickMonth(game));
       set({
         game: next,
         monthProgress: 0,
@@ -303,6 +328,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       for (let i = 0; i < 12 && next.status === "playing"; i++) {
         next = tickMonth(next);
       }
+      next = maybeElectionWarning(next);
       set({
         game: next,
         monthProgress: 0,
@@ -325,6 +351,11 @@ export const useGameStore = create<GameStore>((set, get) => {
       const { game } = get();
       if (!game) return;
       applyResult(replaceInfrastructure(game, regionId, infraId), "Infrastructure replaced", "build");
+    },
+    doUpgrade: (regionId) => {
+      const { game } = get();
+      if (!game) return;
+      applyResult(upgradeInfrastructure(game, regionId), "Facility upgraded", "build");
     },
     doResearch: (researchId) => {
       const { game } = get();
