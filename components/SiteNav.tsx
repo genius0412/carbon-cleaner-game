@@ -24,6 +24,22 @@ export function SiteNav() {
             {l.label}
           </Link>
         ))}
+        <a
+          href={FEEDBACK_FORM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="transition-colors hover:text-fog"
+        >
+          Feedback ↗
+        </a>
+        <a
+          href={ISSUE_FORM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="transition-colors hover:text-fog"
+        >
+          Report an issue ↗
+        </a>
         <AuthNav />
         <Link
           href="/play"

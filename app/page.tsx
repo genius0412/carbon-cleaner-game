@@ -5,13 +5,6 @@ import { Leaderboard } from "@/components/Leaderboard";
 import { Card } from "@/components/ui/Card";
 import { DataChip } from "@/components/ui/DataChip";
 
-// ---------------------------------------------------------------------------
-// Feedback Google Forms. Paste the real form URLs between the quotes below
-// when you have them (keep the https://... full link).
-// ---------------------------------------------------------------------------
-const GENERAL_FEEDBACK_URL = "[add link here]";
-const BUG_REPORT_URL = "[add link here]";
-
 export default function Home() {
   return (
     <main className="relative flex min-h-screen flex-col overflow-hidden eco-grid">
@@ -63,37 +56,6 @@ export default function Home() {
             How to Play
           </Link>
         </div>
-      </section>
-
-      {/* Feedback: two Google Forms (general feedback + bug/problem report) */}
-      <section className="z-10 mx-auto w-full max-w-3xl px-6 pb-16">
-        <Card glow="cyan" className="text-center">
-          <h2 className="font-display text-xl font-semibold sm:text-2xl">
-            💬 We'd love your feedback
-          </h2>
-          <p className="mx-auto mt-2 max-w-xl text-sm text-mist">
-            Help us make Carbon Cleaner better. Tell us what you think, or let us
-            know if something's broken.
-          </p>
-          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a
-              href={GENERAL_FEEDBACK_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full rounded-full bg-leaf px-7 py-3 text-sm font-semibold text-night transition-transform hover:scale-105 glow-leaf sm:w-auto"
-            >
-              📝 Share general feedback
-            </a>
-            <a
-              href={BUG_REPORT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full rounded-full border border-white/15 px-7 py-3 text-sm font-medium text-fog/90 transition-colors hover:bg-white/5 sm:w-auto"
-            >
-              🐞 Report a problem
-            </a>
-          </div>
-        </Card>
       </section>
 
       {/* Leaderboard: top net-zero finishers */}
