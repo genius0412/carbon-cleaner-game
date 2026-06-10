@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LeafLogo } from "@/components/ui/LeafLogo";
 import { AuthNav } from "@/components/auth/AccountLink";
+import { FEEDBACK_FORM_URL, ISSUE_FORM_URL } from "@/lib/links";
 
 const links = [
   { href: "/about", label: "About" },
@@ -59,7 +60,7 @@ export function SiteFooter() {
           <Link href="/sources" className="hover:text-fog">Sources</Link>
           <Link href="/classroom" className="hover:text-fog">Classroom</Link>
           <a
-            href="https://docs.google.com/forms/d/e/1FAIpQLScq48B4dI4eMySz6NEolbrOpIOyIVJpUgvOY-T-MKf-dWA9NA/viewform"
+            href={FEEDBACK_FORM_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-fog"
@@ -67,7 +68,7 @@ export function SiteFooter() {
             Feedback ↗
           </a>
           <a
-            href="https://docs.google.com/forms/d/e/1FAIpQLSdKcEe7gHF63j_sxI5xgFpOYppVv9tcG3GS_ZPOTQTsnhoq6Q/viewform"
+            href={ISSUE_FORM_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-fog"

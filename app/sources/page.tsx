@@ -16,7 +16,7 @@ export default function SourcesPage() {
         </h1>
         <p className="mt-4 text-lg text-mist">
           Every real-world figure in Carbon Cleaner comes from a published
-          source, cited MLA-style below.
+          source, cited MLA-style below. All the sources were hand-picked by our research team.
         </p>
 
         <SourcesExport sources={sources.map((s) => s.source)} />

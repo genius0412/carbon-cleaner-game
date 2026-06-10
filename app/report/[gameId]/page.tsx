@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
-import { loadLocal, getLocalSave } from "@/lib/saves";
+import { loadLocal, getLocalSave, listLocalSaves } from "@/lib/saves";
 import { useGameStore } from "@/lib/store";
 import { formatYearMonth, effectiveCarbonGain } from "@/lib/engine/engine";
 import type { GameState } from "@/lib/engine/types";
@@ -32,11 +32,18 @@ export default function ReportPage({
       const isCurrent =
         !!liveGame &&
         (gameId === "local" || gameId === liveMeta.id || gameId === liveMeta.localId);
-      if (isCurrent) setState(liveGame);
+      // Track success in a plain variable: the `state` React value in this
+      // closure never updates mid-effect, so checking it after a fetch would
+      // (and previously did) wrongly trigger the fallback for older games.
+      let found = false;
+      if (isCurrent) {
+        setState(liveGame);
+        found = true;
+      }
 
       // local saves: "local" = most recent, "local-xxxx" = a specific game.
       if (gameId === "local" || gameId.startsWith("local-")) {
-        if (!isCurrent) {
+        if (!found) {
           const local = gameId === "local" ? loadLocal() : getLocalSave(gameId);
           if (local) setState(local.state);
         }
@@ -48,13 +55,16 @@ export default function ReportPage({
         try {
           // Only fall back to the persisted snapshot when we don't already have
           // the live (fresher) state for this game.
-          if (!isCurrent) {
+          if (!found) {
             const { data } = await sb
               .from("game_saves")
               .select("state")
               .eq("id", gameId)
               .maybeSingle();
-            if (data?.state) setState(data.state as GameState);
+            if (data?.state) {
+              setState(data.state as GameState);
+              found = true;
+            }
           }
           // proof image
           const { data: up } = await sb
@@ -75,9 +85,14 @@ export default function ReportPage({
           /* fall back to local */
         }
       }
-      if (!isCurrent && !state) {
-        const local = loadLocal();
-        if (local) setState(local.state);
+      if (!found) {
+        // Offline last resort: this game's own local mirror (a synced save is
+        // stored under its localId, so match on the cloud id too). Never show
+        // a different game's save here.
+        const mirror = listLocalSaves().find(
+          (e) => e.key === gameId || e.meta.id === gameId,
+        );
+        if (mirror) setState(mirror.state);
       }
       setLoading(false);
     })();

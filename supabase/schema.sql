@@ -310,16 +310,16 @@ create policy "civic_uploads_insert" on public.civic_uploads
 -- ============================================================================
 -- global_stats, a view exposing the "reached net-zero" count for the Home page
 -- ============================================================================
--- Counts games that actually reached net-zero (a win): finished, with carbon
--- gain at or below zero. (carbon_gain stores effectiveCarbonGain at save time.)
+-- Counts games that actually WON (reached and held net-zero). Filtering on
+-- the saved status matters: a game can end in a loss (voted out, or time ran
+-- out mid-hold) while its carbon gain happens to sit at or below zero.
 -- security_invoker makes the view run with the caller's permissions instead of
 -- the owner's (game_saves is world-readable via RLS, so the result is the same).
 create or replace view public.global_stats
   with (security_invoker = on) as
   select count(*)::int as total_finished
   from public.game_saves
-  where finished_at is not null
-    and carbon_gain <= 0;
+  where state->>'status' = 'won';
 
 -- ============================================================================
 -- Storage bucket for civic-action proof screenshots

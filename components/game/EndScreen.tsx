@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { useGameStore } from "@/lib/store";
 import { formatYearMonth, effectiveCarbonGain } from "@/lib/engine/engine";
 import { GAME } from "@/lib/config/gameConstants";
+import { FEEDBACK_FORM_URL, ISSUE_FORM_URL } from "@/lib/links";
 import type { GameState } from "@/lib/engine/types";
 
 export function EndScreen({ game }: { game: GameState }) {
@@ -77,6 +78,27 @@ export function EndScreen({ game }: { game: GameState }) {
           </Link>
           <Button variant="ghost" onClick={reset}>Play again</Button>
         </div>
+
+        <p className="mt-5 text-xs text-mist">
+          How was it? We read everything.{" "}
+          <a
+            href={FEEDBACK_FORM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-leaf hover:underline"
+          >
+            Share feedback ↗
+          </a>{" "}
+          ·{" "}
+          <a
+            href={ISSUE_FORM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-leaf hover:underline"
+          >
+            Report a problem ↗
+          </a>
+        </p>
       </Card>
       </motion.div>
     </motion.div>

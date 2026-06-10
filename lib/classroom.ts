@@ -71,6 +71,8 @@ export interface ScoreboardRow {
   /** Current atmospheric carbon (ppm) at last save. */
   carbon_amount: number | null;
   finished_at: string | null;
+  /** Game outcome from the save: "won" | "lost" | "playing" (null = unknown). */
+  status: string | null;
 }
 
 export interface ClassScoreboard {
@@ -80,15 +82,17 @@ export interface ClassScoreboard {
   rows: ScoreboardRow[];
 }
 
-/** Finishers rank first by finish time; everyone else by lowest carbon gain. */
+/** Winners rank first by finish time; everyone else by lowest carbon gain.
+ *  A finished-but-lost game ranks with the rest, ending the game by losing
+ *  shouldn't beat someone still playing well. */
 export function rankScoreboard(rows: ScoreboardRow[]): ScoreboardRow[] {
-  const finishers = rows
-    .filter((r) => r.finished_at)
+  const winners = rows
+    .filter((r) => r.status === "won" && r.finished_at)
     .sort((a, b) => (a.finished_at! < b.finished_at! ? -1 : 1));
-  const playing = rows
-    .filter((r) => !r.finished_at)
+  const rest = rows
+    .filter((r) => !(r.status === "won" && r.finished_at))
     .sort((a, b) => a.carbon_gain - b.carbon_gain);
-  return [...finishers, ...playing];
+  return [...winners, ...rest];
 }
 
 /**
@@ -109,7 +113,7 @@ export async function fetchClassScoreboard(code: string): Promise<ClassScoreboar
     if (!cls) return null;
     const { data } = await sb
       .from("classroom_members")
-      .select("game_save_id, city_name, game_saves(carbon_gain, carbon_amount, year_month, finished_at, city_name, player_name, character_type)")
+      .select("game_save_id, city_name, game_saves(carbon_gain, carbon_amount, year_month, finished_at, city_name, player_name, character_type, status:state->>status)")
       .eq("classroom_id", cls.id);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mapped: ScoreboardRow[] = (data ?? []).map((m: any) => ({
@@ -121,6 +125,7 @@ export async function fetchClassScoreboard(code: string): Promise<ClassScoreboar
       year_month: m.game_saves?.year_month ?? null,
       carbon_amount: m.game_saves?.carbon_amount ?? null,
       finished_at: m.game_saves?.finished_at ?? null,
+      status: m.game_saves?.status ?? null,
     }));
     return {
       classId: cls.id as string,
