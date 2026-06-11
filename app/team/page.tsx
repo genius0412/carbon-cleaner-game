@@ -6,7 +6,7 @@ export const metadata = { title: "Our Team, Carbon Cleaner" };
 // Photos live in /public/team/ (drop the image files there; see render below).
 const team = [
   { name: "Dohun Kim", role: "Core Designer & Game Developer", photo: "/team/dohun-kim.png", blurb: "Developer that makes the core functionalities of the game. Has a passion for clean code. Strategic game designer." },
-  { name: "Raymond Kwok", role: "Researcher", photo: "/team/raymond-kwok.png", blurb: "Raymond Kwok is a high school student at Weston High School. He loves to spend time playing soccer, practicing the piano, and bass fishing with his dad, which drives him to protect our environment. Besides his time at school, he works as an architect and project manager for his dad. He is responsible for data research, discovering new ideas, and networking with schools and teachers. He also enjoys g**ning with his bf oh-johnson." },
+  { name: "Raymond Kwok", role: "Researcher", photo: "/team/raymond-kwok.png", blurb: "Raymond Kwok is a high school student at Weston High School. He loves to spend time playing soccer, practicing the piano, and bass fishing with his dad, which drives him to protect our environment. Besides his time at school, he works as an architect and project manager for his dad. He is responsible for data research, discovering new ideas, and networking with schools and teachers." },
   { name: "Arnie Sreeram", role: "Game Designer & Developer", photo: "/team/arnie-sreeram.png", blurb: "Creative game designer with a keen eye for detail." },
 ];
 
