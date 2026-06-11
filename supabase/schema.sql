@@ -308,18 +308,22 @@ create policy "civic_uploads_insert" on public.civic_uploads
   for insert with check (true);
 
 -- ============================================================================
--- global_stats, a view exposing the "reached net-zero" count for the Home page
+-- global_stats, a view exposing the public Home page counters
 -- ============================================================================
--- Counts games that actually WON (reached and held net-zero). Filtering on
--- the saved status matters: a game can end in a loss (voted out, or time ran
--- out mid-hold) while its carbon gain happens to sit at or below zero.
--- security_invoker makes the view run with the caller's permissions instead of
--- the owner's (game_saves is world-readable via RLS, so the result is the same).
+-- total_finished counts games that actually WON (reached and held net-zero).
+-- Filtering on the saved status matters: a game can end in a loss (voted out,
+-- or time ran out mid-hold) while its carbon gain happens to sit at or below
+-- zero. total_players is everyone who has signed up; total_games is every game
+-- ever started. security_invoker makes the view run with the caller's
+-- permissions instead of the owner's (profiles and game_saves are both
+-- world-readable via RLS, so the counts are the same for everyone).
 create or replace view public.global_stats
   with (security_invoker = on) as
-  select count(*)::int as total_finished
-  from public.game_saves
-  where state->>'status' = 'won';
+  select
+    (select count(*)::int from public.game_saves
+       where state->>'status' = 'won') as total_finished,
+    (select count(*)::int from public.profiles) as total_players,
+    (select count(*)::int from public.game_saves) as total_games;
 
 -- ============================================================================
 -- Storage bucket for civic-action proof screenshots

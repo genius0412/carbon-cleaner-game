@@ -92,6 +92,8 @@ export function SiteFooter() {
           <Link href="/team" className="hover:text-fog">Team</Link>
           <Link href="/sources" className="hover:text-fog">Sources</Link>
           <Link href="/classroom" className="hover:text-fog">Classroom</Link>
+          <Link href="/privacy" className="hover:text-fog">Privacy</Link>
+          <Link href="/terms" className="hover:text-fog">Terms</Link>
           <a
             href={FEEDBACK_FORM_URL}
             target="_blank"

@@ -236,19 +236,13 @@ export function OnboardingTour({
               </div>
             </div>
 
-            {isPart2 ? (
-              !last && (
-                <button
-                  onClick={onClose}
-                  className="mt-3 w-full text-center text-[11px] text-mist transition-colors hover:text-fog"
-                >
-                  Skip the rest
-                </button>
-              )
-            ) : (
-              <p className="mt-3 w-full text-center text-[11px] text-mist/70">
-                Quick essentials, optional tips come next.
-              </p>
+            {isPart2 && !last && (
+              <button
+                onClick={onClose}
+                className="mt-3 w-full text-center text-[11px] text-mist transition-colors hover:text-fog"
+              >
+                Skip the rest
+              </button>
             )}
           </div>
         </motion.div>

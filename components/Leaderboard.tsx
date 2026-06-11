@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
 import { listLocalSaves } from "@/lib/saves";
 import { MONTH_NAMES } from "@/lib/config/gameConstants";
-import { roleLabel } from "@/lib/roles";
+import { ALL_ROLES, roleLabel } from "@/lib/roles";
 import type { CharacterType, GameState } from "@/lib/engine/types";
 
 /**
@@ -21,9 +21,9 @@ function shiftedReached(rawYear: number, month: number, migrated: boolean): { re
 
 /**
  * Public "Hall of net-zero": the players who reached net-zero, ranked by how
- * soon (in-game) they got there. Shows up to the top 10; if fewer people have
- * finished, it simply shows everyone. Falls back to the viewer's own local wins
- * when there's no backend configured (dev/offline).
+ * soon (in-game) they got there. The tab bar filters to a single role (or all
+ * roles), each ranked independently and shown up to the top 10. Falls back to
+ * the viewer's own local wins when there's no backend configured (dev/offline).
  */
 interface Row {
   name: string;
@@ -35,8 +35,17 @@ interface Row {
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
+/** The leaderboard tabs: every playable role, plus an "All" view first. */
+const TABS: { key: CharacterType | "all"; label: string }[] = [
+  { key: "all", label: "All" },
+  ...ALL_ROLES.map((r) => ({ key: r.type, label: r.label })),
+];
+
 export function Leaderboard() {
+  // Holds every winner (sorted, unsliced); the selected tab decides which slice
+  // of the top 10 actually renders.
   const [rows, setRows] = useState<Row[] | null>(null);
+  const [tab, setTab] = useState<CharacterType | "all">("all");
 
   useEffect(() => {
     let active = true;
@@ -72,8 +81,7 @@ export function Leaderboard() {
               sortKey,
             };
           })
-          .sort((a, b) => a.sortKey - b.sortKey)
-          .slice(0, 10);
+          .sort((a, b) => a.sortKey - b.sortKey);
 
         if (active) setRows(winners);
       } catch {
@@ -85,20 +93,44 @@ export function Leaderboard() {
     };
   }, []);
 
+  const visible =
+    rows === null
+      ? null
+      : rows.filter((r) => tab === "all" || r.role === tab).slice(0, 10);
+
   return (
     <section className="z-10 mx-auto w-full max-w-3xl px-6 pb-16">
       <h2 className="mb-2 text-center font-display text-2xl font-semibold sm:text-3xl">
         🏆 Hall of net-zero
       </h2>
-      <p className="mx-auto mb-8 max-w-xl text-center text-sm text-mist">
+      <p className="mx-auto mb-6 max-w-xl text-center text-sm text-mist">
         The change-makers who reached net-zero, ranked by how soon they got there.
       </p>
 
-      {rows === null ? (
+      <div className="mb-8 flex flex-wrap justify-center gap-2">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            onClick={() => setTab(t.key)}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+              tab === t.key
+                ? "bg-leaf text-night"
+                : "border border-white/15 text-fog/90 hover:bg-white/5"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {visible === null ? (
         <p className="text-center text-sm text-mist">Loading the leaderboard…</p>
-      ) : rows.length === 0 ? (
+      ) : visible.length === 0 ? (
         <p className="text-center text-sm text-mist">
-          No one has reached net-zero yet. Be the first to make the board!
+          {tab === "all"
+            ? "No one has reached net-zero yet. Be the first to make the board!"
+            : `No ${roleLabel(tab as CharacterType)} has reached net-zero yet. Be the first!`}
         </p>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-leaf/15">
@@ -111,7 +143,7 @@ export function Leaderboard() {
             <span className="text-right">Net-zero</span>
           </div>
           <ul>
-            {rows.map((r, i) => (
+            {visible.map((r, i) => (
               <li
                 key={i}
                 className="grid grid-cols-1 gap-1 border-t border-white/5 px-4 py-3 text-sm first:border-t-0 sm:grid-cols-[2.5rem_1fr_1fr_8rem_7rem] sm:items-center sm:gap-3"
@@ -148,8 +180,7 @@ function localRows(): Row[] {
           sortKey,
         };
       })
-      .sort((a, b) => a.sortKey - b.sortKey)
-      .slice(0, 10);
+      .sort((a, b) => a.sortKey - b.sortKey);
   } catch {
     return [];
   }
